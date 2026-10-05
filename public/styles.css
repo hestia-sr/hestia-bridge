@@ -143,6 +143,14 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   display: flex; align-items: center; gap: .5rem;
 }
 .topbar-title { font-weight: 700; font-size: .95rem; flex: 1; color: var(--muted); }
+.lang-btn {
+  border: 1px solid var(--border); background: #fff; cursor: pointer;
+  border-radius: 999px; padding: .35rem .75rem;
+  display: inline-flex; align-items: center; gap: .35rem;
+  font-size: .82rem; font-weight: 700; color: var(--text);
+}
+.lang-btn:hover { background: var(--chip); }
+.lang-globe { font-size: .95rem; }
 .drawer-backdrop {
   position: fixed; inset: 0; background: rgba(15,23,42,.4); z-index: 40;
 }
