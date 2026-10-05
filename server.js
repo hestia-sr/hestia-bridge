@@ -46,13 +46,14 @@ function loadDb() {
         keys: Array.isArray(d.keys) ? d.keys : [],
         usage: Array.isArray(d.usage) ? d.usage : [],
         workers: Array.isArray(d.workers) ? d.workers : [],
-        wqueue: Array.isArray(d.wqueue) ? d.wqueue : []
+        wqueue: Array.isArray(d.wqueue) ? d.wqueue : [],
+        users: Array.isArray(d.users) ? d.users : []
       };
     }
   } catch (e) {
     console.error('[db] load failed, starting fresh:', e.message);
   }
-  return { providers: [], keys: [], usage: [], workers: [], wqueue: [] };
+  return { providers: [], keys: [], usage: [], workers: [], wqueue: [], users: [] };
 }
 const db = loadDb();
 let saveTimer = null;
@@ -99,30 +100,53 @@ function maskKey(k) {
   return k.slice(0, 6) + '...' + k.slice(-4);
 }
 
-/* --------------------------- sessions (admin) ---------------------------- */
-const sessions = new Map(); // token -> expiresAt
-function createSession() {
+/* ------------------------ sessions (admin + users) ----------------------- */
+const sessions = new Map(); // token -> { role, userId, email, expiresAt }
+function createSessionObj(s) {
   const token = crypto.randomBytes(32).toString('hex');
-  sessions.set(token, Date.now() + SESSION_TTL_MS);
+  sessions.set(token, Object.assign({}, s, { expiresAt: Date.now() + SESSION_TTL_MS }));
   return token;
 }
-function validSession(req) {
+function setSessionCookie(res, token) {
+  res.setHeader('Set-Cookie',
+    'hb_session=' + token + '; Path=/; HttpOnly; SameSite=Lax; Max-Age=' + Math.floor(SESSION_TTL_MS / 1000));
+}
+function sessionOf(req) {
   const token = parseCookies(req).hb_session;
-  if (!token) return false;
-  const exp = sessions.get(token);
-  if (!exp || exp < Date.now()) {
+  if (!token) return null;
+  const s = sessions.get(token);
+  if (!s || s.expiresAt < Date.now()) {
     sessions.delete(token);
-    return false;
+    return null;
   }
-  return true;
+  return s;
 }
 function requireAdmin(req, res, next) {
-  if (!validSession(req)) return res.status(401).json({ error: 'not_authenticated' });
+  const s = sessionOf(req);
+  if (!s) return res.status(401).json({ error: 'not_authenticated' });
+  if (s.role !== 'admin') return res.status(403).json({ error: 'admin_only' });
+  req.session = s;
+  next();
+}
+/* Regular logged-in users (and admin). Suspended accounts are rejected. */
+function requireUser(req, res, next) {
+  const s = sessionOf(req);
+  if (!s) return res.status(401).json({ error: 'not_authenticated' });
+  if (s.role === 'admin') {
+    req.session = s;
+    req.user = null;
+    return next();
+  }
+  const u = db.users.find(x => x.id === s.userId);
+  if (!u) return res.status(401).json({ error: 'not_authenticated' });
+  if (u.suspended) return res.status(403).json({ error: 'account_suspended' });
+  req.session = s;
+  req.user = u;
   next();
 }
 setInterval(() => {
   const t = Date.now();
-  for (const [k, exp] of sessions) if (exp < t) sessions.delete(k);
+  for (const [k, s] of sessions) if (!s || s.expiresAt < t) sessions.delete(k);
 }, 60 * 60 * 1000).unref();
 
 /* ------------------------- rate limit (bridge) --------------------------- */
@@ -163,6 +187,11 @@ function requireBridgeKey(req, res, next) {
   const key = db.keys.find(k => k.token === token);
   if (!key) return bridgeError(res, 401, 'Invalid API key.');
   if (key.revoked) return bridgeError(res, 401, 'This API key has been revoked.');
+  if (key.userId) {
+    const owner = db.users.find(u => u.id === key.userId);
+    if (!owner) return bridgeError(res, 401, 'Key owner account no longer exists.');
+    if (owner.suspended) return bridgeError(res, 403, 'Key owner account is suspended.');
+  }
   if (rateLimited(key.id)) {
     limitedToday.set(key.id, todayStr());
     res.set('Retry-After', '60');
@@ -223,23 +252,85 @@ async function fetchUpstreamModels(baseUrl, apiKey) {
 /* ============================ public: health ============================= */
 app.get('/api/health', (req, res) => res.json({ ok: true, service: 'hestia-bridge' }));
 
-/* ============================ admin: auth ================================ */
+/* ==================== auth: register + login (admin & user) ============ */
+const MAX_PER_DEVICE = 3; // maks akun per device, selebihnya auto-suspend
+const BLOCKED_DOMAINS = new Set(['hotmail.com', 'hotmail.co.id', 'outlook.com', 'outlook.co.id', 'live.com', 'live.co.id', 'msn.com']);
+const TEMP_DOMAINS = new Set(('tempmail.com temp-mail.org guerrillamail.com guerrillamail.org 10minutemail.com 10minutemail.net ' +
+  'mailinator.com yopmail.com yopmail.fr trashmail.com throwawaymail.com getnada.com mohmal.com emailondeck.com ' +
+  'tempail.com fakemail.net dispostable.com maildrop.cc harakirimail.com anonbox.net burnermail.io crazymailing.com ' +
+  'dashmail.io dropmail.me fakeinbox.com incognitomail.org spamgourmet.com tmpmail.org deadaddress.com moakt.com ' +
+  'tempmailo.com mailnesia.com mintemail.com sharklasers.com spambog.com teleworm.us veryrealemail.com ' +
+  'e4ward.com mailnull.com spambox.us mytrashmail.com pookmail.com sogetthis.com zippymail.info').split(' '));
+function emailCheck(email) {
+  const m = String(email || '').trim().toLowerCase().match(/^([^\s@]+)@([^\s@]+\.[^\s@]+)$/);
+  if (!m) return { ok: false, msg: 'Format email tidak valid.' };
+  const d = m[2];
+  if (BLOCKED_DOMAINS.has(d)) return { ok: false, msg: 'Hotmail/Outlook diblokir. Pakai Gmail ya.' };
+  if (TEMP_DOMAINS.has(d)) return { ok: false, msg: 'Email sementara diblokir.' };
+  if (d !== 'gmail.com') return { ok: false, msg: 'Hanya Gmail yang bisa daftar.' };
+  return { ok: true, email: m[1] + '@' + d };
+}
+function usersOnDevice(fp) {
+  if (!fp) return [];
+  return db.users.filter(u => u.role !== 'admin' && u.deviceFingerprint === fp);
+}
+app.post('/api/auth/register', async (req, res) => {
+  const { email, password, fingerprint } = req.body || {};
+  const chk = emailCheck(email);
+  if (!chk.ok) return res.status(400).json({ error: chk.msg });
+  const em = chk.email;
+  if (!password || String(password).length < 6) {
+    return res.status(400).json({ error: 'Sandi minimal 6 karakter.' });
+  }
+  if (db.users.some(u => u.email === em)) {
+    return res.status(400).json({ error: 'Email sudah terdaftar. Silakan masuk.' });
+  }
+  const fp = String(fingerprint || '').slice(0, 128);
+  let suspended = false;
+  const sameDevice = usersOnDevice(fp);
+  if (sameDevice.length >= MAX_PER_DEVICE) {
+    // Auto-suspend: akun baru + akun-akun lama di device yang sama.
+    suspended = true;
+    sameDevice.forEach(u => { u.suspended = true; });
+  }
+  const user = {
+    id: uid('user_'),
+    email: em,
+    passwordHash: bcrypt.hashSync(String(password), 10),
+    role: (ADMIN_EMAIL && em === ADMIN_EMAIL) ? 'admin' : 'user',
+    deviceFingerprint: fp || null,
+    suspended,
+    createdAt: nowIso()
+  };
+  db.users.push(user);
+  saveDb();
+  const token = createSessionObj({ role: user.role, userId: user.id, email: user.email });
+  setSessionCookie(res, token);
+  res.json({ ok: true, role: user.role, email: user.email, suspended: user.suspended });
+});
 app.post('/api/auth/login', async (req, res) => {
-  if (!ADMIN_EMAIL || !ADMIN_PASSWORD_HASH) {
-    return res.status(503).json({ error: 'admin_not_configured' });
-  }
   const { email, password } = req.body || {};
-  if (String(email || '').trim().toLowerCase() !== ADMIN_EMAIL) {
-    return res.status(401).json({ error: 'invalid_credentials' });
+  const em = String(email || '').trim().toLowerCase();
+  // Admin via env (tetap seperti semula).
+  if (ADMIN_EMAIL && ADMIN_PASSWORD_HASH && em === ADMIN_EMAIL) {
+    let ok = false;
+    try { ok = await bcrypt.compare(String(password || ''), ADMIN_PASSWORD_HASH); }
+    catch (e) { ok = false; }
+    if (!ok) return res.status(401).json({ error: 'Email atau password salah.' });
+    const token = createSessionObj({ role: 'admin', userId: 'admin', email: ADMIN_EMAIL });
+    setSessionCookie(res, token);
+    return res.json({ ok: true, role: 'admin', email: ADMIN_EMAIL });
   }
+  // Pengguna terdaftar.
+  const u = db.users.find(x => x.email === em);
   let ok = false;
-  try { ok = await bcrypt.compare(String(password || ''), ADMIN_PASSWORD_HASH); }
+  try { ok = !!u && await bcrypt.compare(String(password || ''), u.passwordHash || ''); }
   catch (e) { ok = false; }
-  if (!ok) return res.status(401).json({ error: 'invalid_credentials' });
-  const token = createSession();
-  res.setHeader('Set-Cookie',
-    'hb_session=' + token + '; Path=/; HttpOnly; SameSite=Lax; Max-Age=' + Math.floor(SESSION_TTL_MS / 1000));
-  res.json({ ok: true });
+  if (!u || !ok) return res.status(401).json({ error: 'Email atau password salah.' });
+  if (u.suspended) return res.status(403).json({ error: 'Akun kamu di-suspend. Hubungi admin.' });
+  const token = createSessionObj({ role: u.role, userId: u.id, email: u.email });
+  setSessionCookie(res, token);
+  res.json({ ok: true, role: u.role, email: u.email, suspended: !!u.suspended });
 });
 app.post('/api/auth/logout', (req, res) => {
   const token = parseCookies(req).hb_session;
@@ -248,8 +339,14 @@ app.post('/api/auth/logout', (req, res) => {
   res.json({ ok: true });
 });
 app.get('/api/auth/me', (req, res) => {
-  if (!validSession(req)) return res.status(401).json({ error: 'not_authenticated' });
-  res.json({ ok: true, email: ADMIN_EMAIL });
+  const s = sessionOf(req);
+  if (!s) return res.status(401).json({ error: 'not_authenticated' });
+  if (s.role === 'admin') {
+    return res.json({ ok: true, role: 'admin', email: s.email || ADMIN_EMAIL });
+  }
+  const u = db.users.find(x => x.id === s.userId);
+  if (!u) return res.status(401).json({ error: 'not_authenticated' });
+  res.json({ ok: true, role: u.role, email: u.email, suspended: !!u.suspended });
 });
 
 /* ========================== admin: providers ============================= */
@@ -323,11 +420,13 @@ app.get('/api/keys', requireAdmin, (req, res) => {
     keys: db.keys.map(k => {
       const p = db.providers.find(x => x.id === k.providerId);
       const w = k.workerId ? db.workers.find(x => x.id === k.workerId) : null;
+      const owner = k.userId ? db.users.find(x => x.id === k.userId) : null;
       return {
         id: k.id, name: k.name, masked: maskKey(k.token),
         mode: k.mode || 'provider',
         providerId: k.providerId, providerName: p ? p.name : '(deleted)',
         workerId: k.workerId || null, workerName: w ? w.name : null,
+        userId: k.userId || null, ownerEmail: owner ? owner.email : 'admin',
         createdAt: k.createdAt, lastUsedAt: k.lastUsedAt || null,
         revoked: !!k.revoked, stats: keyStats(k.id)
       };
@@ -358,6 +457,7 @@ app.post('/api/keys', requireAdmin, (req, res) => {
     mode: m,
     providerId: pid,
     workerId: wid,
+    userId: null, // admin-owned
     createdAt: nowIso(),
     lastUsedAt: null,
     revoked: false
@@ -437,6 +537,185 @@ app.post('/api/keys/:id/bind', requireAdmin, (req, res) => {
   res.json({ ok: true, id: k.id, workerId: k.workerId, workerName: w ? w.name : null });
 });
 
+/* ==================== user: my keys (self-service, no limits) ============ */
+function userKeyShape(k) {
+  const p = db.providers.find(x => x.id === k.providerId);
+  const w = k.workerId ? db.workers.find(x => x.id === k.workerId) : null;
+  return {
+    id: k.id, name: k.name, masked: maskKey(k.token),
+    mode: k.mode || 'provider',
+    providerId: k.providerId, providerName: p ? p.name : '(deleted)',
+    workerId: k.workerId || null, workerName: w ? w.name : null,
+    workerOnline: w ? workerOnline(w) : null,
+    createdAt: k.createdAt, lastUsedAt: k.lastUsedAt || null,
+    revoked: !!k.revoked, stats: keyStats(k.id)
+  };
+}
+/* Ownership check for /api/my-keys/:id. Returns the key or sends 404/403. */
+function ownKey(req, res) {
+  const myId = req.user ? req.user.id : null;
+  const k = db.keys.find(x => x.id === req.params.id);
+  if (!k) { res.status(404).json({ error: 'key_not_found' }); return null; }
+  if ((k.userId || null) !== myId) { res.status(403).json({ error: 'not_your_key' }); return null; }
+  return k;
+}
+app.get('/api/my-keys', requireUser, (req, res) => {
+  const myId = req.user ? req.user.id : null;
+  res.json({ keys: db.keys.filter(k => (k.userId || null) === myId).map(userKeyShape) });
+});
+app.post('/api/my-keys', requireUser, (req, res) => {
+  const { name, mode, providerId, workerId } = req.body || {};
+  const m = mode === 'worker' ? 'worker' : 'provider';
+  if (!name || !String(name).trim()) return res.status(400).json({ error: 'name is required' });
+  let pid = null, wid = null;
+  if (m === 'provider') {
+    const p = db.providers.find(x => x.id === providerId);
+    if (!p) return res.status(400).json({ error: 'provider_not_found' });
+    pid = p.id;
+  } else {
+    const w = db.workers.find(x => x.id === workerId);
+    if (!w) return res.status(400).json({ error: 'worker_not_found' });
+    // A key may only bind to the user's own worker or an admin worker.
+    const myId = req.user ? req.user.id : null;
+    const ownerId = w.userId || null;
+    if (ownerId !== myId && ownerId !== null) {
+      return res.status(403).json({ error: 'not_your_worker' });
+    }
+    wid = w.id;
+  }
+  // No limits on how many keys a user may create (Hestia's decision).
+  const k = {
+    id: uid('key_'),
+    token: 'hb-' + crypto.randomBytes(24).toString('hex'),
+    name: String(name).trim().slice(0, 60),
+    mode: m,
+    providerId: pid,
+    workerId: wid,
+    userId: req.user ? req.user.id : null,
+    createdAt: nowIso(),
+    lastUsedAt: null,
+    revoked: false
+  };
+  db.keys.push(k);
+  saveDb();
+  // Full token is returned exactly once, at creation.
+  res.json({ id: k.id, name: k.name, token: k.token, mode: m, providerId: pid, workerId: wid });
+});
+app.get('/api/my-keys/:id/reveal', requireUser, (req, res) => {
+  const k = ownKey(req, res);
+  if (!k) return;
+  res.json({ id: k.id, token: k.token });
+});
+app.delete('/api/my-keys/:id', requireUser, (req, res) => {
+  const k = ownKey(req, res);
+  if (!k) return;
+  db.keys = db.keys.filter(x => x.id !== k.id);
+  db.usage = db.usage.filter(u => u.keyId !== k.id);
+  saveDb();
+  res.json({ ok: true });
+});
+
+/* ============ user: safe provider & worker lists (no secrets) ============ */
+app.get('/api/my-providers', requireUser, (req, res) => {
+  // NEVER expose provider.apiKey to non-admin callers.
+  res.json({ providers: db.providers.map(p => ({ id: p.id, name: p.name })) });
+});
+function userWorkerShape(w) {
+  // Worker tokens are NEVER exposed here.
+  return {
+    id: w.id, name: w.name, online: workerOnline(w),
+    lastHeartbeat: w.lastHeartbeat || null, createdAt: w.createdAt
+  };
+}
+// Workers the user may bind keys to: their own + admin's. No tokens.
+app.get('/api/my-workers/available', requireUser, (req, res) => {
+  const myId = req.user ? req.user.id : null;
+  res.json({
+    workers: db.workers
+      .filter(w => (w.userId || null) === myId || (w.userId || null) === null)
+      .map(userWorkerShape)
+  });
+});
+// The user's OWN workers ("Worker Saya" section). No tokens.
+app.get('/api/my-workers', requireUser, (req, res) => {
+  const myId = req.user ? req.user.id : null;
+  res.json({
+    workers: db.workers
+      .filter(w => (w.userId || null) === myId)
+      .map(userWorkerShape)
+  });
+});
+app.post('/api/my-workers', requireUser, (req, res) => {
+  const { name } = req.body || {};
+  if (!name || !String(name).trim()) return res.status(400).json({ error: 'name required' });
+  const w = {
+    id: uid('worker_'),
+    name: String(name).trim().slice(0, 60),
+    token: 'wt-' + crypto.randomBytes(16).toString('hex'),
+    userId: req.user ? req.user.id : null,
+    createdAt: nowIso(),
+    lastHeartbeat: null
+  };
+  db.workers.push(w);
+  saveDb();
+  // Full worker token is returned exactly once, at creation.
+  res.json({ id: w.id, name: w.name, token: w.token, createdAt: w.createdAt });
+});
+/* Ownership check for /api/my-workers/:id. Returns the worker or sends 404/403. */
+function ownWorker(req, res) {
+  const myId = req.user ? req.user.id : null;
+  const w = db.workers.find(x => x.id === req.params.id);
+  if (!w) { res.status(404).json({ error: 'worker_not_found' }); return null; }
+  if ((w.userId || null) !== myId) { res.status(403).json({ error: 'not_your_worker' }); return null; }
+  return w;
+}
+app.delete('/api/my-workers/:id', requireUser, (req, res) => {
+  const w = ownWorker(req, res);
+  if (!w) return;
+  // Unbind keys bound to this worker (mirrors admin DELETE /api/workers/:id).
+  db.keys.forEach(k => { if (k.workerId === w.id) k.workerId = null; });
+  db.workers = db.workers.filter(x => x.id !== w.id);
+  saveDb();
+  res.json({ ok: true });
+});
+
+/* ========================= admin: user management ========================= */
+app.get('/api/users', requireAdmin, (req, res) => {
+  res.json({
+    users: db.users.map(u => ({
+      id: u.id, email: u.email, role: u.role,
+      createdAt: u.createdAt, suspended: !!u.suspended,
+      keyCount: db.keys.filter(k => k.userId === u.id).length
+    }))
+  });
+});
+app.post('/api/users/:id/suspend', requireAdmin, (req, res) => {
+  const u = db.users.find(x => x.id === req.params.id);
+  if (!u || u.role === 'admin') return res.status(400).json({ error: 'cannot_suspend' });
+  u.suspended = true;
+  saveDb();
+  res.json({ ok: true });
+});
+app.post('/api/users/:id/unsuspend', requireAdmin, (req, res) => {
+  const u = db.users.find(x => x.id === req.params.id);
+  if (!u || u.role === 'admin') return res.status(400).json({ error: 'cannot_unsuspend' });
+  u.suspended = false;
+  saveDb();
+  res.json({ ok: true });
+});
+app.delete('/api/users/:id', requireAdmin, (req, res) => {
+  const i = db.users.findIndex(x => x.id === req.params.id);
+  if (i < 0) return res.status(404).json({ error: 'user_not_found' });
+  const u = db.users[i];
+  if (u.role === 'admin') return res.status(400).json({ error: 'cannot_delete_admin' });
+  const keyIds = new Set(db.keys.filter(k => k.userId === u.id).map(k => k.id));
+  db.keys = db.keys.filter(k => k.userId !== u.id);
+  db.usage = db.usage.filter(x => !keyIds.has(x.keyId));
+  db.users.splice(i, 1);
+  saveDb();
+  res.json({ ok: true });
+});
+
 /* =========================== admin: workers ============================== */
 const WORKER_ONLINE_MS = 10 * 60 * 1000; // heartbeat considered fresh < 10 min
 const QUEUE_EXPIRE_MS = 220 * 1000;      // pending items older than this expire
@@ -470,6 +749,7 @@ app.post('/api/workers', requireAdmin, (req, res) => {
     id: uid('worker_'),
     name: String(name).trim().slice(0, 60),
     token: 'wt-' + crypto.randomBytes(16).toString('hex'),
+    userId: null, // admin-owned
     createdAt: nowIso(),
     lastHeartbeat: null
   };
@@ -480,10 +760,14 @@ app.post('/api/workers', requireAdmin, (req, res) => {
 });
 app.get('/api/workers', requireAdmin, (req, res) => {
   res.json({
-    workers: db.workers.map(w => ({
-      id: w.id, name: w.name, createdAt: w.createdAt,
-      lastHeartbeat: w.lastHeartbeat, online: workerOnline(w)
-    }))
+    workers: db.workers.map(w => {
+      const owner = w.userId ? db.users.find(x => x.id === w.userId) : null;
+      return {
+        id: w.id, name: w.name, createdAt: w.createdAt,
+        lastHeartbeat: w.lastHeartbeat, online: workerOnline(w),
+        userId: w.userId || null, ownerEmail: owner ? owner.email : 'admin'
+      };
+    })
   });
 });
 app.delete('/api/workers/:id', requireAdmin, (req, res) => {
