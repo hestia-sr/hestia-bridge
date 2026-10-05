@@ -176,9 +176,9 @@ $('#users-refresh-btn').addEventListener('click', async () => { await loadUsers(
 async function loadStats() {
   const s = await api('/api/stats');
   $('#stat-grid').innerHTML =
-    statCard(ICON.key, 'orange', fmtNum(s.totalKeys), 'Total key') +
+    statCard(ICON.key, 'rose', fmtNum(s.totalKeys), 'Total key') +
     statCard(ICON.check, 'green', fmtNum(s.activeKeys), 'Aktif') +
-    statCard(ICON.bolt, 'blue', fmtNum(s.totalRequests), 'Request') +
+    statCard(ICON.bolt, 'purple', fmtNum(s.totalRequests), 'Request') +
     statCard(ICON.warn, 'red', fmtNum(s.limitedKeysToday || 0), 'Limit habis');
 }
 function statCard(icon, tint, num, lbl) {
