@@ -2,13 +2,15 @@
 /* Hestia Bridge frontend — vanilla JS, no build step. */
 
 const $ = s => document.querySelector(s);
+const BRIDGE_BASE = location.origin + '/v1';
 
 const ICON = {
-  copy: '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M8 3h11a1 1 0 0 1 1 1v14h-2V5H8V3zM5 5h2v2H5v12h12v-2h2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" fill="currentColor"/></svg>',
-  ban: '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2c2.1 0 4 0.8 5.4 2.1L6.1 17.4A8 8 0 0 1 12 4zm0 16c-2.1 0-4-0.8-5.4-2.1l11.3-11.3A8 8 0 0 1 12 20z" fill="currentColor"/></svg>',
-  undo: '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M12 5V1L6 7l6 6V9a8 8 0 1 1-8 8H2a10 10 0 1 0 10-12z" fill="currentColor"/></svg>',
-  trash: '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M6 7h12l-1 14H7L6 7zm3-4h6l1 2h4v2H4V5h4l1-2z" fill="currentColor"/></svg>',
-  check: '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M9 16.2l-3.5-3.5L4 14.2 9 19.2 20 8.2 18.6 6.8 9 16.2z" fill="currentColor"/></svg>'
+  copy: '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M8 3h11a1 1 0 0 1 1 1v14h-2V5H8V3zM5 5h2v2H5v12h12v-2h2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" fill="currentColor"/></svg>',
+  key: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M14 3a7 7 0 0 0-6.9 8.2L3 15.3V21h5.7l4.1-4.1A7 7 0 1 0 14 3zm1.4 4.6a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z" fill="currentColor"/></svg>',
+  check: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 16.2l-3.5-3.5L4 14.2 9 19.2 20 8.2 18.6 6.8 9 16.2z" fill="currentColor"/></svg>',
+  bolt: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="currentColor"/></svg>',
+  warn: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2L1 21h22L12 2zm1 14h-2v2h2v-2zm0-7h-2v5h2V9z" fill="currentColor"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 7h12l-1 14H7L6 7zm3-4h6l1 2h4v2H4V5h4l1-2z" fill="currentColor"/></svg>'
 };
 
 async function api(path, opts) {
@@ -28,6 +30,10 @@ function toast(msg) {
   t._h = setTimeout(() => t.classList.add('hidden'), 2600);
 }
 
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
 function fmtDate(iso) {
   if (!iso) return '-';
   const d = new Date(iso);
@@ -36,10 +42,19 @@ function fmtDate(iso) {
 function fmtNum(n) {
   return Number(n || 0).toLocaleString('id-ID');
 }
+function timeAgo(iso) {
+  if (!iso) return 'belum pernah';
+  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 60) return s + ' dtk lalu';
+  if (s < 3600) return Math.floor(s / 60) + ' mnt lalu';
+  if (s < 86400) return Math.floor(s / 3600) + ' jam lalu';
+  return Math.floor(s / 86400) + ' hari lalu';
+}
 
 function showLogin() {
   $('#app-view').classList.add('hidden');
   $('#login-view').classList.remove('hidden');
+  closeDrawer();
 }
 function showApp() {
   $('#login-view').classList.add('hidden');
@@ -72,27 +87,41 @@ $('#logout-btn').addEventListener('click', async () => {
   showLogin();
 });
 
-/* ------------------------------ navigation ------------------------------- */
-$('#main-nav').addEventListener('click', e => {
-  const btn = e.target.closest('.nav-btn');
-  if (!btn) return;
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-  $('#view-' + btn.dataset.view).classList.remove('hidden');
+/* ------------------------------ drawer ---------------------------------- */
+function openDrawer() {
+  $('#drawer').classList.add('open');
+  $('#drawer-backdrop').classList.remove('hidden');
+}
+function closeDrawer() {
+  $('#drawer').classList.remove('open');
+  $('#drawer-backdrop').classList.add('hidden');
+}
+$('#drawer-btn').addEventListener('click', openDrawer);
+$('#drawer-backdrop').addEventListener('click', closeDrawer);
+document.querySelectorAll('.drawer-btn[data-view]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.drawer-btn[data-view]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+    $('#view-' + btn.dataset.view).classList.remove('hidden');
+    $('.topbar-title').textContent = btn.dataset.view === 'keys' ? 'Kunci API' : 'Provider';
+    closeDrawer();
+  });
 });
+$('#refresh-btn').addEventListener('click', async () => { await refreshAll(); toast('Diperbarui.'); });
 
 /* -------------------------------- stats ---------------------------------- */
 async function loadStats() {
   const s = await api('/api/stats');
   $('#stat-grid').innerHTML =
-    statCard(fmtNum(s.activeKeys) + ' / ' + fmtNum(s.totalKeys), 'Key aktif / total') +
-    statCard(fmtNum(s.totalProviders), 'Provider') +
-    statCard(fmtNum(s.requests24h), 'Request 24 jam') +
-    statCard(fmtNum(s.tokens24h), 'Token 24 jam');
+    statCard(ICON.key, 'orange', fmtNum(s.totalKeys), 'Total key') +
+    statCard(ICON.check, 'green', fmtNum(s.activeKeys), 'Aktif') +
+    statCard(ICON.bolt, 'blue', fmtNum(s.totalRequests), 'Request') +
+    statCard(ICON.warn, 'red', fmtNum(s.limitedKeysToday || 0), 'Limit habis');
 }
-function statCard(num, lbl) {
-  return '<div class="stat"><div class="num">' + num + '</div><div class="lbl">' + lbl + '</div></div>';
+function statCard(icon, tint, num, lbl) {
+  return '<div class="stat"><div class="stat-ico ' + tint + '">' + icon + '</div>' +
+    '<div><div class="num">' + num + '</div><div class="lbl">' + lbl + '</div></div></div>';
 }
 
 /* -------------------------------- keys ----------------------------------- */
@@ -100,68 +129,135 @@ let keysCache = [];
 async function loadKeys() {
   const j = await api('/api/keys');
   keysCache = j.keys;
-  const tb = $('#keys-tbody');
+  $('#key-count').textContent = keysCache.length + ' key';
+  const box = $('#key-list');
   if (!keysCache.length) {
-    tb.innerHTML = '<tr><td colspan="9" class="muted">Belum ada key. Buat key pertama lewat tombol "Buat Key".</td></tr>';
-  } else {
-    tb.innerHTML = keysCache.map(k =>
-      '<tr>' +
-      '<td><strong>' + esc(k.name) + '</strong></td>' +
-      '<td>' + esc(k.providerName) + '</td>' +
-      '<td><code>' + esc(k.masked) + '</code></td>' +
-      '<td>' + fmtDate(k.createdAt) + '</td>' +
-      '<td>' + fmtDate(k.lastUsedAt) + '</td>' +
-      '<td>' + fmtNum(k.stats.requests) + '</td>' +
-      '<td>' + fmtNum(k.stats.totalTokens) + '</td>' +
-      '<td>' + (k.revoked
-        ? '<span class="badge off">Revoked</span>'
-        : '<span class="badge on">Aktif</span>') + '</td>' +
-      '<td><div class="row-actions">' +
-        '<button class="btn btn-sm" data-act="copy" data-id="' + k.id + '" title="Salin key">' + ICON.copy + '</button>' +
-        (k.revoked
-          ? '<button class="btn btn-sm" data-act="restore" data-id="' + k.id + '" title="Aktifkan lagi">' + ICON.undo + '</button>'
-          : '<button class="btn btn-sm btn-danger" data-act="revoke" data-id="' + k.id + '" title="Cabut key">' + ICON.ban + '</button>') +
-        '<button class="btn btn-sm btn-danger" data-act="del" data-id="' + k.id + '" title="Hapus permanen">' + ICON.trash + '</button>' +
-      '</div></td></tr>'
-    ).join('');
+    box.innerHTML = '<div class="card"><div class="card-body empty muted">Belum ada key.<br>Klik <strong>+ Tambah key</strong> untuk membuat yang pertama.</div></div>';
+    return;
   }
-  // usage filter options
-  const sel = $('#usage-filter');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">Semua key</option>' +
-    keysCache.map(k => '<option value="' + k.id + '">' + esc(k.name) + '</option>').join('');
-  sel.value = cur;
+  const maxReq = Math.max(1, ...keysCache.map(k => k.stats.requests));
+  box.innerHTML = keysCache.map(k => keyCard(k, maxReq)).join('');
 }
-function esc(s) {
-  return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function keyCard(k, maxReq) {
+  const pct = Math.min(100, Math.round((k.stats.requests / maxReq) * 100));
+  return '<div class="key-card">' +
+    '<div class="key-top">' +
+      '<span class="key-dot' + (k.revoked ? ' off' : '') + '"></span>' +
+      '<span class="key-name">' + esc(k.name) + '</span>' +
+      (k.revoked ? '<span class="badge off">NONAKTIF</span>' : '<span class="badge on">AKTIF</span>') +
+    '</div>' +
+    '<div><span class="key-masked">' + esc(k.masked) + '</span></div>' +
+    '<div class="key-info">' +
+      '<div class="row"><span class="k">Provider</span><span class="v">' + esc(k.providerName) + '</span></div>' +
+      '<div class="row"><span class="k">Request</span><span class="v">' + fmtNum(k.stats.requests) + '</span></div>' +
+      '<div class="row"><span class="k">Token</span><span class="v">' + fmtNum(k.stats.totalTokens) + '</span></div>' +
+      '<div class="usage-bar"><i style="width:' + pct + '%"></i></div>' +
+    '</div>' +
+    '<div class="key-actions">' +
+      (k.revoked
+        ? '<button class="btn btn-sm" data-act="restore" data-id="' + k.id + '">aktifkan</button>'
+        : '<button class="btn btn-sm" data-act="revoke" data-id="' + k.id + '">nonaktifkan</button>') +
+      '<button class="btn btn-sm btn-primary" data-act="connect" data-id="' + k.id + '">Cara sambung</button>' +
+      '<button class="btn btn-sm" data-act="edit" data-id="' + k.id + '">edit</button>' +
+      '<button class="btn btn-sm" data-act="rotate" data-id="' + k.id + '">rotate</button>' +
+      '<button class="btn btn-sm" data-act="reset" data-id="' + k.id + '">reset pakai</button>' +
+      '<button class="btn btn-sm btn-danger" data-act="del" data-id="' + k.id + '">hapus</button>' +
+    '</div>' +
+    '<div class="key-meta">dibuat ' + fmtDate(k.createdAt) + ' · terakhir dipakai ' + timeAgo(k.lastUsedAt) + '</div>' +
+  '</div>';
 }
 
-$('#keys-tbody').addEventListener('click', async e => {
+let connectKeyId = null;
+$('#key-list').addEventListener('click', async e => {
   const btn = e.target.closest('button[data-act]');
   if (!btn) return;
   const id = btn.dataset.id, act = btn.dataset.act;
+  const k = keysCache.find(x => x.id === id);
   try {
-    if (act === 'copy') {
-      const j = await api('/api/keys/' + id + '/reveal');
-      await navigator.clipboard.writeText(j.token);
-      toast('Key disalin.');
-    } else if (act === 'revoke') {
-      if (!confirm('Cabut key ini? Key tidak bisa dipakai lagi sampai diaktifkan ulang.')) return;
+    if (act === 'revoke') {
+      if (!confirm('Nonaktifkan key "' + (k ? k.name : id) + '"? Key tidak bisa dipakai sampai diaktifkan lagi.')) return;
       await api('/api/keys/' + id + '/revoke', { method: 'POST' });
-      toast('Key dicabut.');
+      toast('Key dinonaktifkan.');
       await refreshAll();
     } else if (act === 'restore') {
       await api('/api/keys/' + id + '/restore', { method: 'POST' });
       toast('Key aktif lagi.');
       await refreshAll();
     } else if (act === 'del') {
-      if (!confirm('Hapus key ini permanen? Riwayat usage tetap tersimpan.')) return;
+      if (!confirm('Hapus key "' + (k ? k.name : id) + '" permanen?')) return;
       await api('/api/keys/' + id, { method: 'DELETE' });
       toast('Key dihapus.');
       await refreshAll();
+    } else if (act === 'edit') {
+      $('#rename-name').value = k ? k.name : '';
+      $('#rename-error').classList.add('hidden');
+      $('#rename-modal').dataset.id = id;
+      $('#rename-modal').classList.remove('hidden');
+    } else if (act === 'rotate') {
+      if (!confirm('Buat ulang key ini? Key lama langsung tidak berlaku.')) return;
+      const j = await api('/api/keys/' + id + '/rotate', { method: 'POST' });
+      $('#key-once-value').textContent = j.token;
+      $('#key-form').classList.add('hidden');
+      $('#key-result').classList.remove('hidden');
+      $('#key-modal').classList.remove('hidden');
+      toast('Key baru dibuat — salin sekarang.');
+      await refreshAll();
+    } else if (act === 'reset') {
+      if (!confirm('Nolkan statistik pemakaian key ini?')) return;
+      await api('/api/keys/' + id + '/reset-usage', { method: 'POST' });
+      toast('Statistik direset.');
+      await refreshAll();
+    } else if (act === 'connect') {
+      connectKeyId = id;
+      const j = await api('/api/keys/' + id + '/reveal');
+      $('#connect-base').textContent = BRIDGE_BASE;
+      $('#connect-key').textContent = j.token;
+      $('#connect-key-name').textContent = k ? k.name : '';
+      $('#connect-curl').textContent =
+        'curl ' + BRIDGE_BASE + '/chat/completions \\\n' +
+        '  -H "Authorization: Bearer ' + j.token + '" \\\n' +
+        '  -H "Content-Type: application/json" \\\n' +
+        '  -d \'{"model":"model-id","messages":[{"role":"user","content":"Halo"}]}\'';
+      $('#connect-modal').classList.remove('hidden');
     }
   } catch (ex) { if (ex.message !== 'auth') toast('Gagal: ' + ex.message); }
+});
+$('#connect-modal-close').addEventListener('click', () => $('#connect-modal').classList.add('hidden'));
+$('#connect-modal').addEventListener('click', e => {
+  if (e.target.id === 'connect-modal') $('#connect-modal').classList.add('hidden');
+});
+$('#connect-base-copy').addEventListener('click', async () => {
+  await navigator.clipboard.writeText($('#connect-base').textContent);
+  toast('Base URL disalin.');
+});
+$('#connect-key-copy').addEventListener('click', async () => {
+  await navigator.clipboard.writeText($('#connect-key').textContent);
+  toast('API key disalin.');
+});
+
+/* rename modal */
+$('#rename-modal-close').addEventListener('click', () => $('#rename-modal').classList.add('hidden'));
+$('#rename-modal').addEventListener('click', e => {
+  if (e.target.id === 'rename-modal') $('#rename-modal').classList.add('hidden');
+});
+$('#rename-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = $('#rename-modal').dataset.id;
+  const err = $('#rename-error');
+  err.classList.add('hidden');
+  try {
+    await api('/api/keys/' + id, {
+      method: 'PATCH',
+      body: JSON.stringify({ name: $('#rename-name').value })
+    });
+    $('#rename-modal').classList.add('hidden');
+    toast('Nama diubah.');
+    await refreshAll();
+  } catch (ex) {
+    if (ex.message === 'auth') return;
+    err.textContent = 'Gagal: ' + ex.message;
+    err.classList.remove('hidden');
+  }
 });
 
 /* new key modal */
@@ -171,7 +267,7 @@ $('#new-key-btn').addEventListener('click', async () => {
   $('#key-error').classList.add('hidden');
   try {
     const j = await api('/api/providers');
-    if (!j.providers.length) { toast('Tambah provider dulu sebelum buat key.'); return; }
+    if (!j.providers.length) { toast('Tambah provider dulu di halaman Provider.'); return; }
     $('#key-provider').innerHTML = j.providers.map(p =>
       '<option value="' + p.id + '">' + esc(p.name) + ' (' + p.modelCount + ' model)</option>').join('');
     $('#key-modal').classList.remove('hidden');
@@ -209,24 +305,36 @@ $('#key-form').addEventListener('submit', async e => {
 /* ------------------------------ providers -------------------------------- */
 async function loadProviders() {
   const j = await api('/api/providers');
-  const tb = $('#prov-tbody');
+  const box = $('#prov-list');
   if (!j.providers.length) {
-    tb.innerHTML = '<tr><td colspan="5" class="muted">Belum ada provider.</td></tr>';
+    box.innerHTML = '<div class="card"><div class="card-body empty muted">Belum ada provider.</div></div>';
     return;
   }
-  tb.innerHTML = j.providers.map(p =>
-    '<tr>' +
-    '<td><strong>' + esc(p.name) + '</strong></td>' +
-    '<td><code>' + esc(p.baseUrl) + '</code></td>' +
-    '<td>' + p.modelCount + ' model</td>' +
-    '<td>' + fmtDate(p.createdAt) + '</td>' +
-    '<td><div class="row-actions">' +
-      '<button class="btn btn-sm" data-act="test" data-id="' + p.id + '" title="Test koneksi">' + ICON.check + ' Test</button>' +
-      '<button class="btn btn-sm btn-danger" data-act="del" data-id="' + p.id + '" title="Hapus">' + ICON.trash + '</button>' +
-    '</div></td></tr>'
+  box.innerHTML = j.providers.map(p =>
+    '<div class="key-card">' +
+      '<div class="key-top">' +
+        '<span class="key-dot"></span>' +
+        '<span class="key-name">' + esc(p.name) + '</span>' +
+      '</div>' +
+      '<div><span class="key-masked">' + esc(maskBase(p.baseUrl)) + '</span></div>' +
+      '<div class="key-info">' +
+        '<div class="row"><span class="k">Model</span><span class="v">' + p.modelCount + ' model</span></div>' +
+        '<div class="row"><span class="k">Ditambah</span><span class="v">' + fmtDate(p.createdAt) + '</span></div>' +
+      '</div>' +
+      '<div class="key-actions">' +
+        '<button class="btn btn-sm" data-act="test" data-id="' + p.id + '">Test</button>' +
+        '<button class="btn btn-sm btn-danger" data-act="del" data-id="' + p.id + '">hapus</button>' +
+      '</div>' +
+    '</div>'
   ).join('');
 }
-$('#prov-tbody').addEventListener('click', async e => {
+function maskBase(u) {
+  try {
+    const url = new URL(u);
+    return url.host + (url.pathname.length > 1 ? '/...' : '');
+  } catch (e) { return String(u).slice(0, 28) + '...'; }
+}
+$('#prov-list').addEventListener('click', async e => {
   const btn = e.target.closest('button[data-act]');
   if (!btn) return;
   const id = btn.dataset.id;
@@ -274,41 +382,42 @@ $('#provider-form').addEventListener('submit', async e => {
   }
 });
 
-/* -------------------------------- usage ---------------------------------- */
-async function loadUsage() {
-  const keyId = $('#usage-filter').value;
-  const j = await api('/api/usage?days=30' + (keyId ? '&keyId=' + encodeURIComponent(keyId) : ''));
-  const nameOf = id => {
-    const k = keysCache.find(x => x.id === id);
-    return k ? k.name : id.slice(0, 12);
-  };
-  const tb = $('#usage-tbody');
-  if (!j.rows.length) {
-    tb.innerHTML = '<tr><td colspan="6" class="muted">Belum ada data pemakaian.</td></tr>';
-    return;
-  }
-  tb.innerHTML = j.rows.map(u =>
-    '<tr><td>' + fmtDate(u.ts) + '</td><td>' + esc(nameOf(u.keyId)) + '</td>' +
-    '<td><code>' + esc(u.model) + '</code></td>' +
-    '<td>' + fmtNum(u.promptTokens) + '</td><td>' + fmtNum(u.completionTokens) + '</td>' +
-    '<td>' + (u.streamed ? 'Ya' : 'Tidak') + '</td></tr>'
-  ).join('');
-}
-$('#usage-filter').addEventListener('change', loadUsage);
+/* --------------------------- export CSV ---------------------------------- */
+$('#export-btn').addEventListener('click', async () => {
+  try {
+    const j = await api('/api/usage?days=30');
+    const nameOf = id => {
+      const k = keysCache.find(x => x.id === id);
+      return k ? k.name : id;
+    };
+    const rows = [['waktu', 'key', 'model', 'token_masuk', 'token_keluar', 'stream']]
+      .concat(j.rows.map(u => [u.ts, nameOf(u.keyId), u.model, u.promptTokens, u.completionTokens, u.streamed ? 'ya' : 'tidak']));
+    const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = 'hestia-bridge-usage.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('Data pemakaian diunduh.');
+  } catch (ex) { if (ex.message !== 'auth') toast('Gagal: ' + ex.message); }
+});
 
 /* --------------------------------- boot ----------------------------------- */
 async function refreshAll() {
   await loadStats();
   await loadKeys();
   await loadProviders();
-  await loadUsage();
 }
 (function boot() {
-  $('#base-url-example').textContent = location.origin + '/v1';
-  $('#curl-example').textContent =
-    'curl ' + location.origin + '/v1/chat/completions \\\n' +
+  $('#guide-base-url').textContent = BRIDGE_BASE;
+  $('#login-curl').textContent =
+    'curl ' + BRIDGE_BASE + '/chat/completions \\\n' +
     '  -H "Authorization: Bearer hb-xxxx" \\\n' +
     '  -H "Content-Type: application/json" \\\n' +
     '  -d \'{"model":"model-id","messages":[{"role":"user","content":"Halo"}]}\'';
-  api('/api/auth/me').then(() => { showApp(); refreshAll(); }).catch(() => showLogin());
+  api('/api/auth/me').then(me => {
+    $('#foot-email').textContent = 'masuk sebagai ' + me.email;
+    showApp();
+    refreshAll();
+  }).catch(() => showLogin());
 })();
