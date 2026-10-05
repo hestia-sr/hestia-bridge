@@ -61,6 +61,7 @@ function showAuth() {
 /* Masuk ke dashboard sesuai peran: admin = dashboard penuh, user = Key Saya. */
 function enterApp(me) {
   myRole = me.role || 'admin';
+  window.currentUser = me;
   const isAdmin = myRole === 'admin';
   $('#auth-view').classList.add('hidden');
   $('#app-view').classList.remove('hidden');
@@ -141,9 +142,39 @@ $('#register-form').addEventListener('submit', async e => {
     err.classList.remove('hidden');
   }
 });
-$('#logout-btn').addEventListener('click', async () => {
+async function doLogout() {
   try { await api('/api/auth/logout', { method: 'POST' }); } catch (e) {}
   showAuth();
+}
+$('#logout-btn2').addEventListener('click', doLogout);
+
+/* --------------------------- account panel ------------------------------ */
+const BOT_URL = 'https://t.me/Hestia_gateway_bot';
+function openAccount() {
+  const email = (window.currentUser && window.currentUser.email) || '';
+  $('#account-email').textContent = email || '-';
+  const initial = (email[0] || 'H').toUpperCase();
+  $('#account-avatar').src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(initial) + '&background=9b4dca&color=fff&size=128&bold=true';
+  const panel = $('#account-panel');
+  panel.hidden = false;
+  requestAnimationFrame(() => panel.classList.add('open'));
+  $('#account-backdrop').hidden = false;
+  closeDrawer();
+}
+function closeAccount() {
+  const panel = $('#account-panel');
+  panel.classList.remove('open');
+  $('#account-backdrop').hidden = true;
+  setTimeout(() => { panel.hidden = true; }, 300);
+}
+$('#account-btn').addEventListener('click', openAccount);
+$('#account-close').addEventListener('click', closeAccount);
+$('#account-backdrop').addEventListener('click', closeAccount);
+document.querySelectorAll('.duration-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const d = card.dataset.dur;
+    window.open(BOT_URL + '?start=durasi_' + d, '_blank');
+  });
 });
 
 /* ------------------------------ drawer ---------------------------------- */
@@ -839,6 +870,10 @@ const I18N = {
     'nav.users': 'Pengguna',
     'nav.mykeys': 'Key Saya',
     'nav.logout': 'Keluar',
+    'nav.account': 'Akun',
+    'account.title': 'Akun',
+    'account.duration': 'Tambahan Durasi',
+    'account.viaBot': 'Pembayaran melalui Bot Telegram',
     'hero.keys': 'Kunci API',
     'hero.keys.sub': 'Satu provider = satu API key. Kuota mengikuti provider masing-masing.',
     'hero.providers': 'Provider',
@@ -1026,6 +1061,10 @@ const I18N = {
     'nav.users': 'Users',
     'nav.mykeys': 'My Keys',
     'nav.logout': 'Logout',
+    'nav.account': 'Account',
+    'account.title': 'Account',
+    'account.duration': 'Add Duration',
+    'account.viaBot': 'Payment via Telegram Bot',
     'hero.keys': 'API Keys',
     'hero.keys.sub': 'One provider = one API key. Quota follows each provider.',
     'hero.providers': 'Providers',
