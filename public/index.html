@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hestia Bridge — API Key Dashboard</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============ LOGIN VIEW ============ -->
+<div id="login-view" class="center-wrap hidden">
+  <div class="login-card">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 32 32" width="40" height="40" aria-hidden="true">
+        <rect x="2" y="2" width="28" height="28" rx="8" fill="#f59e0b"/>
+        <path d="M10 21 L16 9 L22 21" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="16" cy="23.5" r="1.8" fill="#fff"/>
+      </svg>
+      <div>
+        <h1>Hestia Bridge</h1>
+        <p class="muted">Kelola API key AI kamu dari satu dashboard.</p>
+      </div>
+    </div>
+    <form id="login-form">
+      <label>Email
+        <input type="email" id="login-email" placeholder="nama@email.com" autocomplete="username" required>
+      </label>
+      <label>Password
+        <input type="password" id="login-password" placeholder="Password admin" autocomplete="current-password" required>
+      </label>
+      <div id="login-error" class="error hidden"></div>
+      <button type="submit" class="btn btn-primary btn-block">Masuk</button>
+    </form>
+    <div class="terminal-card">
+      <div class="term-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title">contoh pakai</span></div>
+<pre class="term-body">curl https://bridge-kamu.up.railway.app/v1/chat/completions \
+  -H "Authorization: Bearer hb-xxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"model-id","messages":[{"role":"user","content":"Halo"}]}'</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP VIEW ============ -->
+<div id="app-view" class="hidden">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand small">
+        <svg class="logo" viewBox="0 0 32 32" width="32" height="32" aria-hidden="true">
+          <rect x="2" y="2" width="28" height="28" rx="8" fill="#f59e0b"/>
+          <path d="M10 21 L16 9 L22 21" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="16" cy="23.5" r="1.8" fill="#fff"/>
+        </svg>
+        <span class="brand-name">Hestia Bridge</span>
+      </div>
+      <nav class="nav" id="main-nav">
+        <button class="nav-btn active" data-view="keys">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M14 3a7 7 0 0 0-6.9 8.2L3 15.3V21h5.7l4.1-4.1A7 7 0 1 0 14 3zm1.4 4.6a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z" fill="currentColor"/></svg>
+          <span>Keys</span>
+        </button>
+        <button class="nav-btn" data-view="providers">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm1 2v2h4V7H5zm12 0v2h-4V7h4zM5 12v4h14v-4H5z" fill="currentColor"/></svg>
+          <span>Providers</span>
+        </button>
+        <button class="nav-btn" data-view="usage">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 20V10h3v10H4zm6.5 0V4h3v16h-3zM17 20v-7h3v7h-3z" fill="currentColor"/></svg>
+          <span>Usage</span>
+        </button>
+      </nav>
+      <button id="logout-btn" class="btn btn-ghost">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4v2H5v14h4v2zm7-16l-4 4h6v2H8l4 4 1.4-1.4L10.8 11H20v-2h-9.2l2.6-2.6L12 5z" fill="currentColor"/></svg>
+        <span>Keluar</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ===== KEYS VIEW ===== -->
+    <section id="view-keys" class="view">
+      <div class="page-head">
+        <div>
+          <h2>API Keys</h2>
+          <p class="muted">Satu key terikat ke satu provider. Kuota mengikuti akun provider aslinya.</p>
+        </div>
+        <button id="new-key-btn" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" fill="currentColor"/></svg>
+          <span>Buat Key</span>
+        </button>
+      </div>
+
+      <div class="stat-grid" id="stat-grid"></div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Daftar Key</h3>
+        </div>
+        <div class="table-wrap">
+          <table class="table" id="keys-table">
+            <thead>
+              <tr><th>Nama</th><th>Provider</th><th>Key</th><th>Dibuat</th><th>Terakhir dipakai</th><th>Request</th><th>Token</th><th>Status</th><th>Aksi</th></tr>
+            </thead>
+            <tbody id="keys-tbody"><tr><td colspan="9" class="muted">Memuat...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Cara pakai di aplikasi HP</h3></div>
+        <div class="card-body">
+          <ol class="steps">
+            <li>Salin salah satu key <code>hb-...</code> di atas.</li>
+            <li>Di aplikasi AI favoritmu (yang mendukung custom OpenAI endpoint), isi <strong>Base URL</strong> dengan alamat web ini + <code>/v1</code>, contoh:<br><code id="base-url-example">https://bridge-kamu.up.railway.app/v1</code></li>
+            <li>Isi <strong>API Key</strong> dengan key <code>hb-...</code> yang tadi disalin.</li>
+            <li>Pilih model dari daftar provider yang terikat key tersebut.</li>
+          </ol>
+          <div class="terminal-card">
+            <div class="term-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title">curl</span></div>
+<pre class="term-body" id="curl-example">curl /v1/chat/completions \
+  -H "Authorization: Bearer hb-xxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"model-id","messages":[{"role":"user","content":"Halo"}]}'</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PROVIDERS VIEW ===== -->
+    <section id="view-providers" class="view hidden">
+      <div class="page-head">
+        <div>
+          <h2>Providers</h2>
+          <p class="muted">Sambungkan AI provider yang kompatibel dengan OpenAI API.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Tambah Provider</h3></div>
+        <div class="card-body">
+          <form id="provider-form" class="form-grid">
+            <label>Nama
+              <input type="text" id="prov-name" placeholder="cth: Provider A" required>
+            </label>
+            <label>Base URL (OpenAI-compatible)
+              <input type="url" id="prov-base" placeholder="https://api.contoh.com/v1" required>
+            </label>
+            <label>API Key
+              <input type="password" id="prov-key" placeholder="sk-..." required>
+            </label>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Simpan &amp; Validasi</button>
+            </div>
+            <div id="prov-error" class="error hidden"></div>
+          </form>
+          <p class="muted small">Saat disimpan, Hestia Bridge akan memanggil <code>GET {baseUrl}/models</code> untuk memvalidasi koneksi.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Daftar Provider</h3></div>
+        <div class="table-wrap">
+          <table class="table" id="prov-table">
+            <thead><tr><th>Nama</th><th>Base URL</th><th>Model</th><th>Ditambah</th><th>Aksi</th></tr></thead>
+            <tbody id="prov-tbody"><tr><td colspan="5" class="muted">Memuat...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== USAGE VIEW ===== -->
+    <section id="view-usage" class="view hidden">
+      <div class="page-head">
+        <div>
+          <h2>Pemakaian</h2>
+          <p class="muted">Riwayat request per key. Angka token dari data asli provider, atau estimasi bila provider tidak melaporkannya.</p>
+        </div>
+        <select id="usage-filter" class="select"><option value="">Semua key</option></select>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>Waktu</th><th>Key</th><th>Model</th><th>Token masuk</th><th>Token keluar</th><th>Stream</th></tr></thead>
+            <tbody id="usage-tbody"><tr><td colspan="6" class="muted">Memuat...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============ NEW KEY MODAL ============ -->
+<div id="key-modal" class="modal-backdrop hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Buat API Key Baru</h3>
+      <button class="icon-btn" id="key-modal-close" aria-label="Tutup">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6.4 5L5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6 6.4 5z" fill="currentColor"/></svg>
+      </button>
+    </div>
+    <form id="key-form">
+      <label>Nama key
+        <input type="text" id="key-name" placeholder="cth: Key HP" required>
+      </label>
+      <label>Provider
+        <select id="key-provider" class="select" required></select>
+      </label>
+      <div id="key-error" class="error hidden"></div>
+      <button type="submit" class="btn btn-primary btn-block">Buat Key</button>
+    </form>
+    <div id="key-result" class="hidden">
+      <p class="muted small">Key hanya ditampilkan sekali. Salin sekarang.</p>
+      <div class="key-once"><code id="key-once-value"></code>
+        <button class="btn btn-ghost" id="key-once-copy">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 3h11a1 1 0 0 1 1 1v14h-2V5H8V3zM5 5h2v2H5v12h12v-2h2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" fill="currentColor"/></svg>
+          <span>Salin</span>
+        </button>
+      </div>
+      <button class="btn btn-primary btn-block" id="key-done">Selesai</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
