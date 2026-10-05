@@ -771,6 +771,21 @@ document.getElementById('wallpaper-btn').addEventListener('click', () => {
   }
   document.getElementById('wallpaper-input').click();
 });
+/* --------------------------- info modal -------------------------------- */
+document.getElementById('info-btn').addEventListener('click', () => {
+  document.getElementById('info-modal').classList.remove('hidden');
+  closeDrawer();
+});
+document.getElementById('info-modal-close').addEventListener('click', () => {
+  document.getElementById('info-modal').classList.add('hidden');
+});
+document.getElementById('info-ok').addEventListener('click', () => {
+  document.getElementById('info-modal').classList.add('hidden');
+});
+document.getElementById('info-modal').addEventListener('click', e => {
+  if (e.target.id === 'info-modal') e.target.classList.add('hidden');
+});
+
 document.getElementById('wallpaper-input').addEventListener('change', e => {
   const f = e.target.files && e.target.files[0];
   if (!f) return;
@@ -810,6 +825,13 @@ const I18N = {
     'nav.theme': 'Mode Gelap/Terang',
     'nav.wallpaper': 'Wallpaper',
     'wallpaper.remove': 'Hapus wallpaper?',
+    'nav.info': 'Informasi',
+    'info.title': 'Informasi',
+    'info.p1': 'Web ini masih dalam <strong>masa uji coba</strong>. Saya membangunnya dengan sepenuh hati, berharap bisa bermanfaat dan memudahkan kalian semua.',
+    'info.p2': 'Jika kalian menemukan <strong>error, bug, atau kendala apapun</strong> saat menggunakannya — dari lubuk hati yang paling dalam, saya memohon maaf yang sebesar-besarnya. Setiap masukan dari kalian adalah hadiah berharga yang akan saya perbaiki dengan secepat dan sebaik mungkin.',
+    'info.p3': 'Terima kasih atas <strong>pengertian, kesabaran, dan kepercayaan</strong> kalian. Kehadiran kalian adalah semangat terbesar saya untuk terus berkarya.',
+    'info.sign': '— Tim Hestia Bridge',
+    'btn.understand': 'Mengerti',
     'btn.createworker': 'Buat Worker',
     'btn.copy': 'Salin',
     'btn.copy.instructions': 'Salin instruksi',
@@ -980,6 +1002,13 @@ const I18N = {
     'nav.theme': 'Dark/Light Mode',
     'nav.wallpaper': 'Wallpaper',
     'wallpaper.remove': 'Remove wallpaper?',
+    'nav.info': 'Information',
+    'info.title': 'Information',
+    'info.p1': 'This web is still in its <strong>trial period</strong>. I built it wholeheartedly, hoping it will be useful and make things easier for all of you.',
+    'info.p2': 'If you encounter any <strong>errors, bugs, or issues</strong> while using it — from the bottom of my heart, I sincerely apologize. Every piece of feedback from you is a precious gift that I will address as quickly and as best I can.',
+    'info.p3': 'Thank you for your <strong>understanding, patience, and trust</strong>. Your presence is my greatest motivation to keep creating.',
+    'info.sign': '— Hestia Bridge Team',
+    'btn.understand': 'Understood',
     'btn.createworker': 'Create Worker',
     'btn.copy': 'Copy',
     'btn.copy.instructions': 'Copy instructions',
