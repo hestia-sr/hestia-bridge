@@ -123,7 +123,23 @@
     </div>
   </aside>
 
-  <!-- ===== ACCOUNT SIDEBAR ===== -->
+  <!-- ===== QRIS PAYMENT MODAL ===== -->
+  <div id="qris-modal" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="qris-title">Pembayaran</h3>
+        <button class="modal-x" id="qris-close" aria-label="Tutup">✕</button>
+      </div>
+      <div class="modal-body" style="text-align:center">
+        <div id="qris-amount" class="qris-amount"></div>
+        <img src="qris.png" alt="QRIS Hestia" class="qris-img">
+        <p class="qris-note" data-i18n="qris.note">Scan QRIS di atas sesuai nominal, lalu kirim bukti pembayaran ke Bot Telegram.</p>
+        <a id="qris-bot-btn" class="btn btn-primary btn-block" target="_blank" rel="noopener" style="margin-top:.8rem">
+          <span data-i18n="qris.sendProof">Kirim Bukti ke Bot</span>
+        </a>
+      </div>
+    </div>
+  </div>
   <div class="modal-backdrop" id="account-backdrop" hidden></div>
   <div class="account-panel" id="account-panel" hidden>
     <div class="account-head">
