@@ -224,12 +224,29 @@ body.has-wallpaper::before {
 body.has-wallpaper .section-head h2,
 body.has-wallpaper .guide-card h2 {
   font-weight: 800;
-  text-shadow: 0 1px 8px rgba(255,255,255,.9), 0 0 2px rgba(255,255,255,.9);
+  background: rgba(255,255,255,.85);
+  display: inline-block; padding: .15rem .7rem; border-radius: 10px;
 }
-body.has-wallpaper .page-sub,
-body.has-wallpaper .muted {
+body.has-wallpaper .section-head .muted {
+  background: rgba(255,255,255,.85);
+  padding: .15rem .6rem; border-radius: 8px; font-weight: 700;
+}
+body.has-wallpaper .page-sub {
+  font-weight: 600; color: var(--text);
+  background: rgba(255,255,255,.82);
+  padding: .6rem .85rem; border-radius: 12px;
+}
+body.has-wallpaper .foot-note {
+  background: rgba(255,255,255,.82);
+  display: inline-block; padding: .3rem .8rem; border-radius: 10px;
   font-weight: 600;
-  text-shadow: 0 1px 6px rgba(255,255,255,.85);
+}
+[data-theme="dark"] body.has-wallpaper .section-head h2,
+[data-theme="dark"] body.has-wallpaper .guide-card h2,
+[data-theme="dark"] body.has-wallpaper .section-head .muted,
+[data-theme="dark"] body.has-wallpaper .page-sub,
+[data-theme="dark"] body.has-wallpaper .foot-note {
+  background: rgba(30,20,45,.85); color: #f0eaf8;
 }
 body.has-wallpaper .key-card,
 body.has-wallpaper .card,
