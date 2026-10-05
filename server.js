@@ -322,10 +322,12 @@ app.get('/api/keys', requireAdmin, (req, res) => {
   res.json({
     keys: db.keys.map(k => {
       const p = db.providers.find(x => x.id === k.providerId);
+      const w = k.workerId ? db.workers.find(x => x.id === k.workerId) : null;
       return {
         id: k.id, name: k.name, masked: maskKey(k.token),
         mode: k.mode || 'provider',
         providerId: k.providerId, providerName: p ? p.name : '(deleted)',
+        workerId: k.workerId || null, workerName: w ? w.name : null,
         createdAt: k.createdAt, lastUsedAt: k.lastUsedAt || null,
         revoked: !!k.revoked, stats: keyStats(k.id)
       };
@@ -333,7 +335,7 @@ app.get('/api/keys', requireAdmin, (req, res) => {
   });
 });
 app.post('/api/keys', requireAdmin, (req, res) => {
-  const { name, providerId, mode } = req.body || {};
+  const { name, providerId, mode, workerId } = req.body || {};
   const m = mode === 'worker' ? 'worker' : 'provider';
   if (!name || !String(name).trim()) return res.status(400).json({ error: 'name is required' });
   let pid = providerId || null;
@@ -342,12 +344,20 @@ app.post('/api/keys', requireAdmin, (req, res) => {
     const p = db.providers.find(x => x.id === pid);
     if (!p) return res.status(404).json({ error: 'provider_not_found' });
   }
+  // Worker-mode keys can be bound to exactly one worker at creation.
+  let wid = null;
+  if (m === 'worker' && workerId) {
+    const w = db.workers.find(x => x.id === workerId);
+    if (!w) return res.status(400).json({ error: 'worker_not_found' });
+    wid = w.id;
+  }
   const k = {
     id: uid('key_'),
     token: 'hb-' + crypto.randomBytes(24).toString('hex'),
     name: String(name).trim(),
     mode: m,
     providerId: pid,
+    workerId: wid,
     createdAt: nowIso(),
     lastUsedAt: null,
     revoked: false
@@ -355,7 +365,7 @@ app.post('/api/keys', requireAdmin, (req, res) => {
   db.keys.push(k);
   saveDb();
   // Full token is returned exactly once, at creation.
-  res.json({ id: k.id, name: k.name, token: k.token, mode: m, providerId: pid, createdAt: k.createdAt });
+  res.json({ id: k.id, name: k.name, token: k.token, mode: m, providerId: pid, workerId: wid, createdAt: k.createdAt });
 });
 app.get('/api/keys/:id/reveal', requireAdmin, (req, res) => {
   const k = db.keys.find(x => x.id === req.params.id);
@@ -407,6 +417,25 @@ app.delete('/api/keys/:id', requireAdmin, (req, res) => {
   saveDb();
   res.json({ ok: true });
 });
+/* Bind (or rebind) a worker-mode key to exactly one worker.
+ * Requests through the key are then only answerable by that worker.
+ * Send { workerId: null } to unbind. */
+app.post('/api/keys/:id/bind', requireAdmin, (req, res) => {
+  const k = db.keys.find(x => x.id === req.params.id);
+  if (!k) return res.status(404).json({ error: 'key_not_found' });
+  if (k.mode !== 'worker') return res.status(400).json({ error: 'key_not_worker_mode' });
+  const { workerId } = req.body || {};
+  if (workerId) {
+    const w = db.workers.find(x => x.id === workerId);
+    if (!w) return res.status(400).json({ error: 'worker_not_found' });
+    k.workerId = w.id;
+  } else {
+    k.workerId = null;
+  }
+  saveDb();
+  const w = k.workerId ? db.workers.find(x => x.id === k.workerId) : null;
+  res.json({ ok: true, id: k.id, workerId: k.workerId, workerName: w ? w.name : null });
+});
 
 /* =========================== admin: workers ============================== */
 const WORKER_ONLINE_MS = 10 * 60 * 1000; // heartbeat considered fresh < 10 min
@@ -415,9 +444,6 @@ const WORKER_WAIT_MS = 55 * 1000;        // how long /v1/chat waits for an answe
 
 function workerOnline(w) {
   return !!w.lastHeartbeat && (Date.now() - new Date(w.lastHeartbeat).getTime() < WORKER_ONLINE_MS);
-}
-function anyWorkerOnline() {
-  return db.workers.some(workerOnline);
 }
 function expireOldQueueItems() {
   const cutoff = Date.now() - QUEUE_EXPIRE_MS;
@@ -463,6 +489,9 @@ app.get('/api/workers', requireAdmin, (req, res) => {
 app.delete('/api/workers/:id', requireAdmin, (req, res) => {
   const i = db.workers.findIndex(x => x.id === req.params.id);
   if (i < 0) return res.status(404).json({ error: 'worker_not_found' });
+  const wid = db.workers[i].id;
+  // unbind any keys bound to this worker
+  db.keys.forEach(k => { if (k.workerId === wid) k.workerId = null; });
   db.workers.splice(i, 1);
   saveDb();
   res.json({ ok: true });
@@ -486,8 +515,9 @@ app.post('/v1/worker/heartbeat', requireWorker, (req, res) => {
 });
 app.get('/v1/worker/pending', requireWorker, (req, res) => {
   expireOldQueueItems();
+  // Each worker only ever sees its OWN queue items (1 key = 1 worker).
   const pending = db.wqueue
-    .filter(q => q.status === 'pending')
+    .filter(q => q.status === 'pending' && q.workerId === req.worker.id)
     .map(q => ({ id: q.id, received_at: q.receivedAt }));
   res.json({ pending, worker_online: true });
 });
@@ -495,6 +525,7 @@ app.post('/v1/worker/claim', requireWorker, (req, res) => {
   const { id } = req.body || {};
   const q = db.wqueue.find(x => x.id === id);
   if (!q) return res.status(404).json({ error: 'queue_item_not_found' });
+  if (q.workerId !== req.worker.id) return res.status(403).json({ error: 'not_your_queue_item' });
   if (q.status !== 'pending') return res.status(409).json({ error: 'already_claimed' });
   q.status = 'claimed';
   q.claimedAt = nowIso();
@@ -505,6 +536,7 @@ app.post('/v1/worker/done', requireWorker, (req, res) => {
   const { id, content } = req.body || {};
   const q = db.wqueue.find(x => x.id === id);
   if (!q) return res.status(404).json({ error: 'queue_item_not_found' });
+  if (q.workerId !== req.worker.id) return res.status(403).json({ error: 'not_your_queue_item' });
   q.status = 'done';
   q.answer = String(content == null ? '' : content);
   saveDb();
@@ -555,17 +587,24 @@ app.get('/v1/models', requireBridgeKey, (req, res) => {
   res.json({ object: 'list', data: models });
 });
 
-/* Worker mode: queue the request and wait (max 55s) for a worker to answer.
- * Streaming is ignored in worker mode; the answer always comes back as one
- * non-streaming OpenAI-style chat completion object. */
+/* Worker mode: queue the request for the worker bound to this key and wait
+ * (max 55s) for that worker to answer. 1 key = 1 worker: no other worker can
+ * see or claim this request. Streaming is ignored in worker mode; the answer
+ * always comes back as one non-streaming OpenAI-style chat completion object. */
 async function handleWorkerChat(req, res) {
   const body = req.body || {};
-  if (!anyWorkerOnline()) {
+  const key = req.bridgeKey;
+  if (!key.workerId) {
+    return res.status(503).json({ error: { message: 'key belum di-bind ke worker mana pun', code: 'worker_unbound' } });
+  }
+  const worker = db.workers.find(w => w.id === key.workerId);
+  if (!worker || !workerOnline(worker)) {
     return res.status(503).json({ error: { message: 'worker offline', code: 'worker_offline' } });
   }
   const item = {
     id: uid('wq_'),
-    keyId: req.bridgeKey.id,
+    keyId: key.id,
+    workerId: key.workerId,
     model: body.model || 'worker',
     messages: Array.isArray(body.messages) ? body.messages : [],
     maxTokens: body.max_tokens != null ? body.max_tokens : null,
@@ -595,7 +634,7 @@ async function handleWorkerChat(req, res) {
   const answer = item.answer || '';
   const pt = estimateTokens(JSON.stringify(body.messages || []));
   const ct = estimateTokens(answer);
-  recordUsage(req.bridgeKey.id, body.model || 'worker', pt, ct, false, 'worker');
+  recordUsage(key.id, body.model || 'worker', pt, ct, false, 'worker');
   res.json({
     id: 'chatcmpl-w' + crypto.randomBytes(8).toString('hex'),
     object: 'chat.completion',
