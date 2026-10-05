@@ -47,13 +47,14 @@ function loadDb() {
         usage: Array.isArray(d.usage) ? d.usage : [],
         workers: Array.isArray(d.workers) ? d.workers : [],
         wqueue: Array.isArray(d.wqueue) ? d.wqueue : [],
-        users: Array.isArray(d.users) ? d.users : []
+        users: Array.isArray(d.users) ? d.users : [],
+        sessions: (d.sessions && typeof d.sessions === 'object') ? d.sessions : {}
       };
     }
   } catch (e) {
     console.error('[db] load failed, starting fresh:', e.message);
   }
-  return { providers: [], keys: [], usage: [], workers: [], wqueue: [], users: [] };
+  return { providers: [], keys: [], usage: [], workers: [], wqueue: [], users: [], sessions: {} };
 }
 const db = loadDb();
 let saveTimer = null;
@@ -62,6 +63,7 @@ function saveDb() {
   saveTimer = setTimeout(() => {
     try {
       ensureDataDir();
+      db.sessions = Object.fromEntries(sessions);
       fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
     } catch (e) {
       console.error('[db] save failed:', e.message);
@@ -101,10 +103,18 @@ function maskKey(k) {
 }
 
 /* ------------------------ sessions (admin + users) ----------------------- */
-const sessions = new Map(); // token -> { role, userId, email, expiresAt }
+// Sessions persist di db.json supaya tidak hangus tiap deploy/restart.
+const sessions = new Map();
+(function initSessions() {
+  const now = Date.now();
+  for (const [tok, s] of Object.entries(db.sessions || {})) {
+    if (s && s.expiresAt > now) sessions.set(tok, s);
+  }
+})();
 function createSessionObj(s) {
   const token = crypto.randomBytes(32).toString('hex');
   sessions.set(token, Object.assign({}, s, { expiresAt: Date.now() + SESSION_TTL_MS }));
+  saveDb();
   return token;
 }
 function setSessionCookie(res, token) {
@@ -116,7 +126,7 @@ function sessionOf(req) {
   if (!token) return null;
   const s = sessions.get(token);
   if (!s || s.expiresAt < Date.now()) {
-    sessions.delete(token);
+    if (sessions.delete(token)) saveDb();
     return null;
   }
   return s;
@@ -146,7 +156,9 @@ function requireUser(req, res, next) {
 }
 setInterval(() => {
   const t = Date.now();
-  for (const [k, s] of sessions) if (!s || s.expiresAt < t) sessions.delete(k);
+  let changed = false;
+  for (const [k, s] of sessions) if (!s || s.expiresAt < t) { sessions.delete(k); changed = true; }
+  if (changed) saveDb();
 }, 60 * 60 * 1000).unref();
 
 /* ------------------------- rate limit (bridge) --------------------------- */
@@ -334,7 +346,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 app.post('/api/auth/logout', (req, res) => {
   const token = parseCookies(req).hb_session;
-  if (token) sessions.delete(token);
+  if (token && sessions.delete(token)) saveDb();
   res.setHeader('Set-Cookie', 'hb_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0');
   res.json({ ok: true });
 });
