@@ -212,7 +212,9 @@ function keyCard(k, maxReq) {
     '<div class="key-info">' +
       '<div class="row"><span class="k">Provider</span><span class="v">' + esc(k.providerName) + '</span></div>' +
       '<div class="row"><span class="k">Request</span><span class="v">' + fmtNum(k.stats.requests) + '</span></div>' +
-      '<div class="row"><span class="k">Token</span><span class="v">' + fmtNum(k.stats.totalTokens) + '</span></div>' +
+      '<div class="row"><span class="k">Token masuk</span><span class="v">' + fmtNum(k.stats.promptTokens) + '</span></div>' +
+      '<div class="row"><span class="k">Token keluar</span><span class="v">' + fmtNum(k.stats.completionTokens) + '</span></div>' +
+      '<div class="row"><span class="k">Total token</span><span class="v">' + fmtNum(k.stats.totalTokens) + '</span></div>' +
       '<div class="usage-bar"><i style="width:' + pct + '%"></i></div>' +
     '</div>' +
     '<div class="key-actions">' +
@@ -483,7 +485,9 @@ function myKeyCard(k, maxReq) {
       '<div class="row"><span class="k">' + (k.mode === 'worker' ? 'Worker' : 'Provider') + '</span><span class="v">' + via + '</span></div>' +
       (k.mode === 'worker' ? '<div class="row"><span class="k">Status worker</span><span class="v">' + (k.workerOnline ? 'online' : 'offline') + '</span></div>' : '') +
       '<div class="row"><span class="k">Request</span><span class="v">' + fmtNum(k.stats.requests) + '</span></div>' +
-      '<div class="row"><span class="k">Token</span><span class="v">' + fmtNum(k.stats.totalTokens) + '</span></div>' +
+      '<div class="row"><span class="k">Token masuk</span><span class="v">' + fmtNum(k.stats.promptTokens) + '</span></div>' +
+      '<div class="row"><span class="k">Token keluar</span><span class="v">' + fmtNum(k.stats.completionTokens) + '</span></div>' +
+      '<div class="row"><span class="k">Total token</span><span class="v">' + fmtNum(k.stats.totalTokens) + '</span></div>' +
       '<div class="usage-bar"><i style="width:' + pct + '%"></i></div>' +
     '</div>' +
     '<div class="key-actions">' +
