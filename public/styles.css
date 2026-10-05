@@ -177,7 +177,13 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   background: var(--grad-soft); color: var(--purple-dark);
   margin: 0 .6rem; width: calc(100% - 1.2rem);
 }
-.drawer-foot { padding: .8rem; border-top: 1px solid var(--border); }
+.drawer-foot { padding: .9rem; border-top: 1px solid var(--border); }
+.drawer-foot .drawer-btn {
+  background: var(--red-soft); color: var(--red);
+  border-radius: 14px; justify-content: center;
+  font-weight: 700;
+}
+.drawer-foot .drawer-btn:hover { background: #fecdd3; }
 .drawer-sep { height: 1px; background: var(--border); margin: .5rem .9rem; }
 
 /* ---------- dark theme ---------- */
