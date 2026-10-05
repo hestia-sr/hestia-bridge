@@ -56,7 +56,33 @@ function loadDb() {
   }
   return { providers: [], keys: [], usage: [], workers: [], wqueue: [], users: [], sessions: {} };
 }
+const PLAN_DURATIONS = {
+  gratis: 24 * 3600 * 1000,
+  '1hari': 24 * 3600 * 1000,
+  '3hari': 3 * 24 * 3600 * 1000,
+  '1minggu': 7 * 24 * 3600 * 1000,
+};
+const PLAN_NAMES = {
+  gratis: 'Gratis',
+  '1hari': '1 Hari',
+  '3hari': '3 Hari',
+  '1minggu': '1 Minggu',
+};
 const db = loadDb();
+// Migrasi: user lama yang belum punya plan dapat Gratis 24 jam dari sekarang.
+(function migratePlans() {
+  let changed = false;
+  const now = Date.now();
+  for (const u of db.users) {
+    if (u.role === 'admin') continue;
+    if (!u.plan || !u.planExpiresAt) {
+      u.plan = u.plan || 'gratis';
+      u.planExpiresAt = now + PLAN_DURATIONS.gratis;
+      changed = true;
+    }
+  }
+  if (changed) saveDb();
+})();
 let saveTimer = null;
 function saveDb() {
   clearTimeout(saveTimer);
@@ -203,6 +229,7 @@ function requireBridgeKey(req, res, next) {
     const owner = db.users.find(u => u.id === key.userId);
     if (!owner) return bridgeError(res, 401, 'Key owner account no longer exists.');
     if (owner.suspended) return bridgeError(res, 403, 'Key owner account is suspended.');
+    if (planExpired(owner)) return bridgeError(res, 402, 'Durasi paket habis. Perpanjang dulu ya.');
   }
   if (rateLimited(key.id)) {
     limitedToday.set(key.id, todayStr());
@@ -271,7 +298,11 @@ async function fetchUpstreamModels(baseUrl, apiKey) {
 app.get('/api/health', (req, res) => res.json({ ok: true, service: 'hestia-bridge' }));
 
 /* ==================== auth: register + login (admin & user) ============ */
-const MAX_PER_DEVICE = 3; // maks akun per device, selebihnya auto-suspend
+const MAX_PER_DEVICE = 1; // 1 device = 1 Gmail, pendaftar ke-2 langsung ditolak
+function planExpired(u) {
+  if (!u || u.role === 'admin') return false;
+  return !u.planExpiresAt || u.planExpiresAt < Date.now();
+}
 const BLOCKED_DOMAINS = new Set(['hotmail.com', 'hotmail.co.id', 'outlook.com', 'outlook.co.id', 'live.com', 'live.co.id', 'msn.com']);
 const TEMP_DOMAINS = new Set(('tempmail.com temp-mail.org guerrillamail.com guerrillamail.org 10minutemail.com 10minutemail.net ' +
   'mailinator.com yopmail.com yopmail.fr trashmail.com throwawaymail.com getnada.com mohmal.com emailondeck.com ' +
@@ -307,9 +338,8 @@ app.post('/api/auth/register', async (req, res) => {
   let suspended = false;
   const sameDevice = usersOnDevice(fp);
   if (sameDevice.length >= MAX_PER_DEVICE) {
-    // Auto-suspend: akun baru + akun-akun lama di device yang sama.
-    suspended = true;
-    sameDevice.forEach(u => { u.suspended = true; });
+    // 1 device = 1 Gmail: tolak pendaftar baru dari device yang sudah punya akun.
+    return res.status(400).json({ error: 'Device ini sudah terdaftar. 1 device hanya untuk 1 Gmail.' });
   }
   const user = {
     id: uid('user_'),
@@ -318,6 +348,8 @@ app.post('/api/auth/register', async (req, res) => {
     role: (ADMIN_EMAIL && em === ADMIN_EMAIL) ? 'admin' : 'user',
     deviceFingerprint: fp || null,
     suspended,
+    plan: 'gratis',
+    planExpiresAt: Date.now() + PLAN_DURATIONS.gratis,
     createdAt: nowIso()
   };
   db.users.push(user);
@@ -706,6 +738,8 @@ app.get('/api/users', requireAdmin, (req, res) => {
     users: db.users.map(u => ({
       id: u.id, email: u.email, role: u.role,
       createdAt: u.createdAt, suspended: !!u.suspended,
+      plan: u.plan || 'gratis', planName: PLAN_NAMES[u.plan] || 'Gratis',
+      planExpiresAt: u.planExpiresAt || null,
       keyCount: db.keys.filter(k => k.userId === u.id).length
     }))
   });
@@ -723,6 +757,30 @@ app.post('/api/users/:id/unsuspend', requireAdmin, (req, res) => {
   u.suspended = false;
   saveDb();
   res.json({ ok: true });
+});
+/* Perpanjang durasi user: plan = gratis|1hari|3hari|1minggu. Dipakai admin/bot setelah pembayaran. */
+app.post('/api/users/:id/extend', requireAdmin, (req, res) => {
+  const u = db.users.find(x => x.id === req.params.id);
+  if (!u || u.role === 'admin') return res.status(400).json({ error: 'user_not_found' });
+  const plan = String((req.body || {}).plan || '');
+  if (!PLAN_DURATIONS[plan]) return res.status(400).json({ error: 'invalid_plan' });
+  const base = Math.max(Date.now(), u.planExpiresAt || 0);
+  u.plan = plan;
+  u.planExpiresAt = base + PLAN_DURATIONS[plan];
+  saveDb();
+  res.json({ ok: true, plan: u.plan, planExpiresAt: u.planExpiresAt });
+});
+/* Info paket user sendiri. */
+app.get('/api/my-plan', requireUser, (req, res) => {
+  if (!req.user) return res.json({ plan: 'admin', planName: 'Admin', planExpiresAt: null, remainingMs: null, expired: false });
+  const u = req.user;
+  res.json({
+    plan: u.plan || 'gratis',
+    planName: PLAN_NAMES[u.plan] || 'Gratis',
+    planExpiresAt: u.planExpiresAt || null,
+    remainingMs: Math.max(0, (u.planExpiresAt || 0) - Date.now()),
+    expired: planExpired(u),
+  });
 });
 app.delete('/api/users/:id', requireAdmin, (req, res) => {
   const i = db.users.findIndex(x => x.id === req.params.id);
