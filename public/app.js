@@ -15,10 +15,10 @@ const ICON = {
 
 async function api(path, opts) {
   const r = await fetch(path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts || {}));
-  if (r.status === 401) { showLogin(); throw new Error('auth'); }
+  if (r.status === 401) { showAuth(); throw new Error('auth'); }
   let j = null;
   try { j = await r.json(); } catch (e) { /* non-json */ }
-  if (!r.ok) throw new Error((j && (j.error || j.detail)) || ('HTTP ' + r.status));
+  if (!r.ok) throw new Error((j && (j.error || j.msg)) || ('HTTP ' + r.status));
   return j;
 }
 
@@ -51,40 +51,97 @@ function timeAgo(iso) {
   return Math.floor(s / 86400) + ' hari lalu';
 }
 
-function showLogin() {
+let myRole = 'admin';
+
+function showAuth() {
   $('#app-view').classList.add('hidden');
-  $('#login-view').classList.remove('hidden');
+  $('#auth-view').classList.remove('hidden');
   closeDrawer();
 }
-function showApp() {
-  $('#login-view').classList.add('hidden');
+/* Masuk ke dashboard sesuai peran: admin = dashboard penuh, user = Key Saya. */
+function enterApp(me) {
+  myRole = me.role || 'admin';
+  const isAdmin = myRole === 'admin';
+  $('#auth-view').classList.add('hidden');
   $('#app-view').classList.remove('hidden');
+  document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('hidden', !isAdmin));
+  document.querySelectorAll('.user-only').forEach(el => el.classList.toggle('hidden', isAdmin));
+  if (isAdmin) {
+    $('#foot-email').textContent = 'masuk sebagai ' + me.email + ' (admin)';
+    switchView('keys');
+    refreshAll();
+  } else {
+    $('#my-foot-email').textContent = 'masuk sebagai ' + me.email;
+    switchView('mykeys');
+    refreshMine();
+  }
 }
 
-/* ------------------------------- login ---------------------------------- */
+/* Fingerprint perangkat sederhana untuk batas 3 akun per device. */
+function deviceFingerprint() {
+  const s = [navigator.userAgent || '', (screen.width || 0) + 'x' + (screen.height || 0),
+    (Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || '', navigator.language || ''].join('|');
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+  return 'fp-' + h.toString(16);
+}
+
+/* ------------------------------- auth ----------------------------------- */
+document.querySelectorAll('.auth-tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.auth-tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    const isLogin = t.dataset.tab === 'login';
+    $('#login-form').classList.toggle('hidden', !isLogin);
+    $('#register-form').classList.toggle('hidden', isLogin);
+  });
+});
 $('#login-form').addEventListener('submit', async e => {
   e.preventDefault();
   const err = $('#login-error');
   err.classList.add('hidden');
   try {
-    await api('/api/auth/login', {
+    const j = await api('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email: $('#login-email').value, password: $('#login-password').value })
     });
     $('#login-password').value = '';
-    showApp();
-    await refreshAll();
+    enterApp(j);
   } catch (ex) {
     if (ex.message === 'auth') return;
-    err.textContent = ex.message === 'admin_not_configured'
-      ? 'Admin belum dikonfigurasi di server (ADMIN_EMAIL / ADMIN_PASSWORD_HASH).'
-      : 'Email atau password salah.';
+    err.textContent = 'Gagal: ' + ex.message;
+    err.classList.remove('hidden');
+  }
+});
+$('#register-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = $('#reg-error');
+  err.classList.add('hidden');
+  try {
+    const j = await api('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: $('#reg-email').value,
+        password: $('#reg-password').value,
+        fingerprint: deviceFingerprint()
+      })
+    });
+    $('#reg-password').value = '';
+    if (j.suspended) {
+      err.textContent = 'Akun dibuat, tapi langsung di-suspend (batas 3 akun per perangkat). Hubungi admin.';
+      err.classList.remove('hidden');
+      return;
+    }
+    enterApp(j);
+  } catch (ex) {
+    if (ex.message === 'auth') return;
+    err.textContent = 'Gagal: ' + ex.message;
     err.classList.remove('hidden');
   }
 });
 $('#logout-btn').addEventListener('click', async () => {
   try { await api('/api/auth/logout', { method: 'POST' }); } catch (e) {}
-  showLogin();
+  showAuth();
 });
 
 /* ------------------------------ drawer ---------------------------------- */
@@ -98,17 +155,22 @@ function closeDrawer() {
 }
 $('#drawer-btn').addEventListener('click', openDrawer);
 $('#drawer-backdrop').addEventListener('click', closeDrawer);
+const VIEW_TITLES = { keys: 'Kunci API', providers: 'Provider', users: 'Pengguna', mykeys: 'Key Saya' };
+function switchView(name) {
+  document.querySelectorAll('.drawer-btn[data-view]').forEach(b =>
+    b.classList.toggle('active', b.dataset.view === name));
+  document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+  $('#view-' + name).classList.remove('hidden');
+  $('.topbar-title').textContent = VIEW_TITLES[name] || '';
+  closeDrawer();
+  if (name === 'users') loadUsers();
+}
 document.querySelectorAll('.drawer-btn[data-view]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.drawer-btn[data-view]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-    $('#view-' + btn.dataset.view).classList.remove('hidden');
-    $('.topbar-title').textContent = btn.dataset.view === 'keys' ? 'Kunci API' : 'Provider';
-    closeDrawer();
-  });
+  btn.addEventListener('click', () => switchView(btn.dataset.view));
 });
 $('#refresh-btn').addEventListener('click', async () => { await refreshAll(); toast('Diperbarui.'); });
+$('#my-refresh-btn').addEventListener('click', async () => { await refreshMine(); toast('Diperbarui.'); });
+$('#users-refresh-btn').addEventListener('click', async () => { await loadUsers(); toast('Diperbarui.'); });
 
 /* -------------------------------- stats ---------------------------------- */
 async function loadStats() {
@@ -168,6 +230,19 @@ function keyCard(k, maxReq) {
 }
 
 let connectKeyId = null;
+async function openConnectModal(id, apiBase, name) {
+  connectKeyId = id;
+  const j = await api(apiBase + '/' + id + '/reveal');
+  $('#connect-base').textContent = BRIDGE_BASE;
+  $('#connect-key').textContent = j.token;
+  $('#connect-key-name').textContent = name || '';
+  $('#connect-curl').textContent =
+    'curl ' + BRIDGE_BASE + '/chat/completions \\\n' +
+    '  -H "Authorization: Bearer ' + j.token + '" \\\n' +
+    '  -H "Content-Type: application/json" \\\n' +
+    '  -d \'{"model":"model-id","messages":[{"role":"user","content":"Halo"}]}\'';
+  $('#connect-modal').classList.remove('hidden');
+}
 $('#key-list').addEventListener('click', async e => {
   const btn = e.target.closest('button[data-act]');
   if (!btn) return;
@@ -208,17 +283,7 @@ $('#key-list').addEventListener('click', async e => {
       toast('Statistik direset.');
       await refreshAll();
     } else if (act === 'connect') {
-      connectKeyId = id;
-      const j = await api('/api/keys/' + id + '/reveal');
-      $('#connect-base').textContent = BRIDGE_BASE;
-      $('#connect-key').textContent = j.token;
-      $('#connect-key-name').textContent = k ? k.name : '';
-      $('#connect-curl').textContent =
-        'curl ' + BRIDGE_BASE + '/chat/completions \\\n' +
-        '  -H "Authorization: Bearer ' + j.token + '" \\\n' +
-        '  -H "Content-Type: application/json" \\\n' +
-        '  -d \'{"model":"model-id","messages":[{"role":"user","content":"Halo"}]}\'';
-      $('#connect-modal').classList.remove('hidden');
+      await openConnectModal(id, '/api/keys', k ? k.name : '');
     }
   } catch (ex) { if (ex.message !== 'auth') toast('Gagal: ' + ex.message); }
 });
@@ -382,6 +447,256 @@ $('#provider-form').addEventListener('submit', async e => {
   }
 });
 
+/* ------------------------- my keys (pengguna) ---------------------------- */
+let myKeysCache = [];
+async function loadMyKeys() {
+  const j = await api('/api/my-keys');
+  myKeysCache = j.keys;
+  const box = $('#mykey-list');
+  if (!myKeysCache.length) {
+    box.innerHTML = '<div class="card"><div class="card-body empty muted">Belum ada key.<br>Klik <strong>Buat Key</strong> untuk membuat yang pertama.</div></div>';
+    return;
+  }
+  const maxReq = Math.max(1, ...myKeysCache.map(k => k.stats.requests));
+  box.innerHTML = myKeysCache.map(k => myKeyCard(k, maxReq)).join('');
+}
+function myKeyCard(k, maxReq) {
+  const pct = Math.min(100, Math.round((k.stats.requests / maxReq) * 100));
+  const via = k.mode === 'worker' ? esc(k.workerName || '-') : esc(k.providerName);
+  return '<div class="key-card">' +
+    '<div class="key-top">' +
+      '<span class="key-dot' + (k.revoked ? ' off' : '') + '"></span>' +
+      '<span class="key-name">' + esc(k.name) + '</span>' +
+      '<span class="badge ' + (k.mode === 'worker' ? 'on' : 'off') + '">' + (k.mode === 'worker' ? 'WORKER' : 'PROVIDER') + '</span>' +
+    '</div>' +
+    '<div><span class="key-masked">' + esc(k.masked) + '</span></div>' +
+    '<div class="key-info">' +
+      '<div class="row"><span class="k">' + (k.mode === 'worker' ? 'Worker' : 'Provider') + '</span><span class="v">' + via + '</span></div>' +
+      (k.mode === 'worker' ? '<div class="row"><span class="k">Status worker</span><span class="v">' + (k.workerOnline ? 'online' : 'offline') + '</span></div>' : '') +
+      '<div class="row"><span class="k">Request</span><span class="v">' + fmtNum(k.stats.requests) + '</span></div>' +
+      '<div class="row"><span class="k">Token</span><span class="v">' + fmtNum(k.stats.totalTokens) + '</span></div>' +
+      '<div class="usage-bar"><i style="width:' + pct + '%"></i></div>' +
+    '</div>' +
+    '<div class="key-actions">' +
+      '<button class="btn btn-sm btn-primary" data-act="connect" data-id="' + k.id + '">Cara sambung</button>' +
+      '<button class="btn btn-sm btn-danger" data-act="del" data-id="' + k.id + '">hapus</button>' +
+    '</div>' +
+    '<div class="key-meta">dibuat ' + fmtDate(k.createdAt) + ' · terakhir dipakai ' + timeAgo(k.lastUsedAt) + '</div>' +
+  '</div>';
+}
+$('#mykey-list').addEventListener('click', async e => {
+  const btn = e.target.closest('button[data-act]');
+  if (!btn) return;
+  const id = btn.dataset.id, act = btn.dataset.act;
+  const k = myKeysCache.find(x => x.id === id);
+  try {
+    if (act === 'del') {
+      if (!confirm('Hapus key "' + (k ? k.name : id) + '" permanen?')) return;
+      await api('/api/my-keys/' + id, { method: 'DELETE' });
+      toast('Key dihapus.');
+      await loadMyKeys();
+    } else if (act === 'connect') {
+      await openConnectModal(id, '/api/my-keys', k ? k.name : '');
+    }
+  } catch (ex) { if (ex.message !== 'auth') toast('Gagal: ' + ex.message); }
+});
+
+/* my key modal */
+$('#my-new-key-btn').addEventListener('click', async () => {
+  $('#mykey-form').classList.remove('hidden');
+  $('#mykey-result').classList.add('hidden');
+  $('#mykey-error').classList.add('hidden');
+  try {
+    const [p, w] = await Promise.all([api('/api/my-providers'), api('/api/my-workers/available')]);
+    $('#mykey-provider').innerHTML = p.providers.length
+      ? p.providers.map(x => '<option value="' + x.id + '">' + esc(x.name) + '</option>').join('')
+      : '<option value="">(belum ada provider)</option>';
+    $('#mykey-worker').innerHTML = w.workers.length
+      ? w.workers.map(x => '<option value="' + x.id + '">' + esc(x.name) + (x.online ? ' (online)' : ' (offline)') + '</option>').join('')
+      : '<option value="">(belum ada worker — buat dulu di Worker Saya)</option>';
+    $('#mykey-mode').value = 'provider';
+    $('#mykey-provider-wrap').classList.remove('hidden');
+    $('#mykey-worker-wrap').classList.add('hidden');
+    $('#mykey-modal').classList.remove('hidden');
+  } catch (ex) { if (ex.message !== 'auth') toast('Gagal: ' + ex.message); }
+});
+$('#mykey-mode').addEventListener('change', () => {
+  const isWorker = $('#mykey-mode').value === 'worker';
+  $('#mykey-provider-wrap').classList.toggle('hidden', isWorker);
+  $('#mykey-worker-wrap').classList.toggle('hidden', !isWorker);
+});
+$('#mykey-modal-close').addEventListener('click', () => $('#mykey-modal').classList.add('hidden'));
+$('#mykey-done').addEventListener('click', () => { $('#mykey-modal').classList.add('hidden'); loadMyKeys(); });
+$('#mykey-modal').addEventListener('click', e => {
+  if (e.target.id === 'mykey-modal') $('#mykey-modal').classList.add('hidden');
+});
+$('#mykey-once-copy').addEventListener('click', async () => {
+  await navigator.clipboard.writeText($('#mykey-once-value').textContent);
+  toast('Key disalin.');
+});
+$('#mykey-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = $('#mykey-error');
+  err.classList.add('hidden');
+  try {
+    const mode = $('#mykey-mode').value;
+    const body = { name: $('#mykey-name').value, mode };
+    if (mode === 'worker') body.workerId = $('#mykey-worker').value;
+    else body.providerId = $('#mykey-provider').value;
+    const j = await api('/api/my-keys', { method: 'POST', body: JSON.stringify(body) });
+    $('#mykey-once-value').textContent = j.token;
+    $('#mykey-form').classList.add('hidden');
+    $('#mykey-result').classList.remove('hidden');
+    $('#mykey-name').value = '';
+  } catch (ex) {
+    if (ex.message === 'auth') return;
+    err.textContent = 'Gagal: ' + ex.message;
+    err.classList.remove('hidden');
+  }
+});
+
+/* ------------------------ my workers (pengguna) -------------------------- */
+let myWorkersCache = [];
+async function loadMyWorkers() {
+  const j = await api('/api/my-workers');
+  myWorkersCache = j.workers;
+  $('#myworker-count').textContent = myWorkersCache.length + ' worker';
+  const box = $('#myworker-list');
+  if (!myWorkersCache.length) {
+    box.innerHTML = '<div class="card"><div class="card-body empty muted">Belum ada worker.<br>Klik <strong>Buat Worker</strong> untuk mendaftarkan worker dari akun AI milikmu.</div></div>';
+    return;
+  }
+  box.innerHTML = myWorkersCache.map(w =>
+    '<div class="key-card">' +
+      '<div class="key-top">' +
+        '<span class="key-dot' + (w.online ? '' : ' off') + '"></span>' +
+        '<span class="key-name">' + esc(w.name) + '</span>' +
+        (w.online ? '<span class="badge on">ONLINE</span>' : '<span class="badge off">OFFLINE</span>') +
+      '</div>' +
+      '<div class="key-info">' +
+        '<div class="row"><span class="k">Heartbeat terakhir</span><span class="v">' + timeAgo(w.lastHeartbeat) + '</span></div>' +
+        '<div class="row"><span class="k">Dibuat</span><span class="v">' + fmtDate(w.createdAt) + '</span></div>' +
+      '</div>' +
+      '<div class="key-actions">' +
+        '<button class="btn btn-sm btn-danger" data-act="del" data-id="' + w.id + '">hapus</button>' +
+      '</div>' +
+    '</div>'
+  ).join('');
+}
+$('#myworker-list').addEventListener('click', async e => {
+  const btn = e.target.closest('button[data-act="del"]');
+  if (!btn) return;
+  const id = btn.dataset.id;
+  const w = myWorkersCache.find(x => x.id === id);
+  if (!confirm('Hapus worker "' + (w ? w.name : id) + '"? Key yang terikat akan dilepas.')) return;
+  try {
+    await api('/api/my-workers/' + id, { method: 'DELETE' });
+    toast('Worker dihapus.');
+    await loadMyWorkers();
+  } catch (ex) { if (ex.message !== 'auth') toast('Gagal: ' + ex.message); }
+});
+$('#my-new-worker-btn').addEventListener('click', () => {
+  $('#myworker-form').classList.remove('hidden');
+  $('#myworker-result').classList.add('hidden');
+  $('#myworker-error').classList.add('hidden');
+  $('#myworker-name').value = '';
+  $('#myworker-modal').classList.remove('hidden');
+});
+$('#myworker-modal-close').addEventListener('click', () => $('#myworker-modal').classList.add('hidden'));
+$('#myworker-done').addEventListener('click', () => { $('#myworker-modal').classList.add('hidden'); loadMyWorkers(); loadMyKeys(); });
+$('#myworker-modal').addEventListener('click', e => {
+  if (e.target.id === 'myworker-modal') $('#myworker-modal').classList.add('hidden');
+});
+$('#myworker-once-copy').addEventListener('click', async () => {
+  await navigator.clipboard.writeText($('#myworker-once-value').textContent);
+  toast('Token disalin.');
+});
+$('#myworker-instructions-copy').addEventListener('click', async () => {
+  await navigator.clipboard.writeText($('#myworker-instructions').textContent);
+  toast('Instruksi disalin.');
+});
+$('#myworker-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = $('#myworker-error');
+  err.classList.add('hidden');
+  try {
+    const j = await api('/api/my-workers', {
+      method: 'POST',
+      body: JSON.stringify({ name: $('#myworker-name').value })
+    });
+    $('#myworker-once-value').textContent = j.token;
+    $('#myworker-instructions').textContent =
+      'Kamu adalah worker AI untuk Hestia Bridge. Setiap 5 menit lakukan ini tanpa henti:\n' +
+      '1. POST ke ' + BRIDGE_BASE.replace(/\/v1$/, '') + '/v1/worker/heartbeat\n' +
+      '   header: Authorization: Bearer ' + j.token + '\n' +
+      '2. GET ke ' + BRIDGE_BASE.replace(/\/v1$/, '') + '/v1/worker/pending dengan header yang sama\n' +
+      '   untuk mengambil daftar antrean (berisi id).\n' +
+      '3. Untuk tiap item: POST ke .../v1/worker/claim dengan body {"id": "..."}\n' +
+      '   untuk mengambil messages-nya, jawab dengan kemampuan AI-mu sendiri,\n' +
+      '   lalu POST ke .../v1/worker/done dengan body {"id": "...", "content": "jawabanmu"}.\n' +
+      '4. Kalau antrean kosong, cukup heartbeat lalu tunggu 5 menit berikutnya.\n' +
+      'Jangan pernah berhenti.';
+    $('#myworker-form').classList.add('hidden');
+    $('#myworker-result').classList.remove('hidden');
+  } catch (ex) {
+    if (ex.message === 'auth') return;
+    err.textContent = 'Gagal: ' + ex.message;
+    err.classList.remove('hidden');
+  }
+});
+
+/* --------------------------- users (admin) ------------------------------- */
+async function loadUsers() {
+  const j = await api('/api/users');
+  const box = $('#users-list');
+  if (!j.users.length) {
+    box.innerHTML = '<div class="card"><div class="card-body empty muted">Belum ada pengguna terdaftar.</div></div>';
+    return;
+  }
+  box.innerHTML = j.users.map(u =>
+    '<div class="key-card">' +
+      '<div class="key-top">' +
+        '<span class="key-dot' + (u.suspended ? ' off' : '') + '"></span>' +
+        '<span class="key-name">' + esc(u.email) + '</span>' +
+        (u.role === 'admin'
+          ? '<span class="badge on">ADMIN</span>'
+          : (u.suspended ? '<span class="badge off">SUSPENDED</span>' : '<span class="badge on">AKTIF</span>')) +
+      '</div>' +
+      '<div class="key-info">' +
+        '<div class="row"><span class="k">Key</span><span class="v">' + u.keyCount + '</span></div>' +
+        '<div class="row"><span class="k">Daftar</span><span class="v">' + fmtDate(u.createdAt) + '</span></div>' +
+      '</div>' +
+      (u.role === 'admin' ? '' :
+        '<div class="key-actions">' +
+          (u.suspended
+            ? '<button class="btn btn-sm" data-act="unsuspend" data-id="' + u.id + '">buka suspend</button>'
+            : '<button class="btn btn-sm" data-act="suspend" data-id="' + u.id + '">suspend</button>') +
+          '<button class="btn btn-sm btn-danger" data-act="del" data-id="' + u.id + '">hapus</button>' +
+        '</div>') +
+    '</div>'
+  ).join('');
+}
+$('#users-list').addEventListener('click', async e => {
+  const btn = e.target.closest('button[data-act]');
+  if (!btn) return;
+  const id = btn.dataset.id, act = btn.dataset.act;
+  try {
+    if (act === 'suspend') {
+      if (!confirm('Suspend pengguna ini? Key miliknya ikut ditolak.')) return;
+      await api('/api/users/' + id + '/suspend', { method: 'POST' });
+      toast('Pengguna di-suspend.');
+    } else if (act === 'unsuspend') {
+      await api('/api/users/' + id + '/unsuspend', { method: 'POST' });
+      toast('Suspend dibuka.');
+    } else if (act === 'del') {
+      if (!confirm('Hapus pengguna ini permanen? Semua key miliknya ikut terhapus.')) return;
+      await api('/api/users/' + id, { method: 'DELETE' });
+      toast('Pengguna dihapus.');
+    }
+    await loadUsers();
+  } catch (ex) { if (ex.message !== 'auth') toast('Gagal: ' + ex.message); }
+});
+
 /* --------------------------- export CSV ---------------------------------- */
 $('#export-btn').addEventListener('click', async () => {
   try {
@@ -408,16 +723,18 @@ async function refreshAll() {
   await loadKeys();
   await loadProviders();
 }
+async function refreshMine() {
+  await loadMyKeys();
+  await loadMyWorkers();
+}
 (function boot() {
   $('#guide-base-url').textContent = BRIDGE_BASE;
+  const guideEl = $('#my-guide-base-url');
+  if (guideEl) guideEl.textContent = BRIDGE_BASE;
   $('#login-curl').textContent =
     'curl ' + BRIDGE_BASE + '/chat/completions \\\n' +
     '  -H "Authorization: Bearer hb-xxxx" \\\n' +
     '  -H "Content-Type: application/json" \\\n' +
     '  -d \'{"model":"model-id","messages":[{"role":"user","content":"Halo"}]}\'';
-  api('/api/auth/me').then(me => {
-    $('#foot-email').textContent = 'masuk sebagai ' + me.email;
-    showApp();
-    refreshAll();
-  }).catch(() => showLogin());
+  api('/api/auth/me').then(enterApp).catch(() => showAuth());
 })();
