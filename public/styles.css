@@ -113,6 +113,7 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 .brand { display: flex; gap: .8rem; align-items: center; margin-bottom: 1.25rem; }
 .brand-name { font-weight: 800; font-size: 1.05rem; }
 .brand p { margin: .15rem 0 0; font-size: .9rem; }
+.logo-img { border-radius: 12px; object-fit: cover; }
 
 /* ---------- terminal card ---------- */
 .terminal-card {
