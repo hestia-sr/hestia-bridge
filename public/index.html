@@ -20,36 +20,36 @@
       </svg>
       <div>
         <h1>Hestia Bridge</h1>
-        <p class="muted">Kelola API key AI kamu dari satu dashboard.</p>
+        <p class="muted" data-i18n="auth.tagline">Kelola API key AI kamu dari satu dashboard.</p>
       </div>
     </div>
     <div class="auth-tabs">
-      <button class="auth-tab active" data-tab="login" type="button">Masuk</button>
-      <button class="auth-tab" data-tab="register" type="button">Daftar</button>
+      <button class="auth-tab active" data-tab="login" type="button" data-i18n="auth.tab.login">Masuk</button>
+      <button class="auth-tab" data-tab="register" type="button" data-i18n="auth.tab.register">Daftar</button>
     </div>
     <form id="login-form">
-      <label>Email
+      <label><span data-i18n="auth.email">Email</span>
         <input type="email" id="login-email" placeholder="nama@email.com" autocomplete="username" required>
       </label>
-      <label>Password
+      <label><span data-i18n="auth.password">Password</span>
         <input type="password" id="login-password" placeholder="Password" autocomplete="current-password" required>
       </label>
       <div id="login-error" class="error hidden"></div>
-      <button type="submit" class="btn btn-primary btn-block">Masuk</button>
+      <button type="submit" class="btn btn-primary btn-block" data-i18n="auth.login.submit">Masuk</button>
     </form>
     <form id="register-form" class="hidden">
-      <label>Email (Gmail)
+      <label><span data-i18n="auth.reg.email">Email (Gmail)</span>
         <input type="email" id="reg-email" placeholder="nama@gmail.com" autocomplete="username" required>
       </label>
-      <label>Password (min 6 karakter)
-        <input type="password" id="reg-password" placeholder="Min 6 karakter" autocomplete="new-password" minlength="6" required>
+      <label><span data-i18n="auth.reg.password">Password (min 6 karakter)</span>
+        <input type="password" id="reg-password" data-i18n-ph="auth.reg.password.ph" placeholder="Min 6 karakter" autocomplete="new-password" minlength="6" required>
       </label>
       <div id="reg-error" class="error hidden"></div>
-      <button type="submit" class="btn btn-primary btn-block">Daftar</button>
-      <p class="muted small note">Hanya Gmail yang bisa daftar. Satu perangkat maksimal 3 akun.</p>
+      <button type="submit" class="btn btn-primary btn-block" data-i18n="auth.reg.submit">Daftar</button>
+      <p class="muted small note" data-i18n="auth.reg.note">Hanya Gmail yang bisa daftar. Satu perangkat maksimal 3 akun.</p>
     </form>
     <div class="terminal-card">
-      <div class="term-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title">contoh pakai</span></div>
+      <div class="term-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title" data-i18n="auth.example">contoh pakai</span></div>
 <pre class="term-body" id="login-curl">curl /v1/chat/completions \
   -H "Authorization: Bearer hb-xxxx" \
   -H "Content-Type: application/json" \
@@ -66,7 +66,7 @@
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z" fill="currentColor"/></svg>
       </button>
       <span class="topbar-title" data-i18n="topbar.keys">Kunci API</span>
-      <button id="lang-btn" class="lang-btn" aria-label="Ganti bahasa">
+      <button id="lang-btn" class="lang-btn" data-i18n-aria="lang.switch" aria-label="Ganti bahasa">
         <span class="lang-globe">🌐</span><span id="lang-label">ID</span>
       </button>
     </div>
@@ -134,29 +134,29 @@
       <div class="stat-grid" id="stat-grid"></div>
 
       <div class="section-head">
-        <h2>Key saya</h2>
+        <h2 data-i18n="section.mykeys.title">Key saya</h2>
         <span class="muted small" id="key-count"></span>
       </div>
       <div id="key-list"></div>
 
       <div class="guide-card">
-        <h2>Cara pakai</h2>
+        <h2 data-i18n="guide.howto.title">Cara pakai</h2>
         <ol class="guide-steps">
           <li>
             <span class="step-num">1</span>
-            <p>Buka halaman <strong>Provider</strong> lewat menu, tempel <strong>Base URL</strong> + <strong>API key</strong> provider AI kamu, lalu simpan — koneksi langsung divalidasi.</p>
+            <p data-i18n-html="guide.howto.s1">Buka halaman <strong>Provider</strong> lewat menu, tempel <strong>Base URL</strong> + <strong>API key</strong> provider AI kamu, lalu simpan — koneksi langsung divalidasi.</p>
           </li>
           <li>
             <span class="step-num">2</span>
-            <p>Klik <strong>+ Tambah key</strong> di atas — satu API key <code>hb-...</code> langsung dibuat dan terikat ke satu provider.</p>
+            <p data-i18n-html="guide.howto.s2">Klik <strong>+ Tambah key</strong> di atas — satu API key <code>hb-...</code> langsung dibuat dan terikat ke satu provider.</p>
           </li>
           <li>
             <span class="step-num">3</span>
-            <p>Di aplikasi AI di HP yang mendukung custom endpoint OpenAI: isi <strong>Base URL</strong> dengan<br><code id="guide-base-url">https://hestia-bridge-production.up.railway.app/v1</code><br>dan <strong>API Key</strong> dengan key <code>hb-...</code> yang baru dibuat (klik <strong>Cara sambung</strong> di kartu key untuk salin cepat), lalu pakai seperti biasa lewat prompt.</p>
+            <p data-i18n-html="guide.howto.s3">Di aplikasi AI di HP yang mendukung custom endpoint OpenAI: isi <strong>Base URL</strong> dengan<br><code id="guide-base-url">https://hestia-bridge-production.up.railway.app/v1</code><br>dan <strong>API Key</strong> dengan key <code>hb-...</code> yang baru dibuat (klik <strong>Cara sambung</strong> di kartu key untuk salin cepat), lalu pakai seperti biasa lewat prompt.</p>
           </li>
           <li>
             <span class="step-num">4</span>
-            <p>Pantau pemakaian tiap key di dashboard ini — jumlah request dan token tercatat otomatis.</p>
+            <p data-i18n-html="guide.howto.s4">Pantau pemakaian tiap key di dashboard ini — jumlah request dan token tercatat otomatis.</p>
           </li>
         </ol>
       </div>
@@ -176,24 +176,24 @@
       <div class="card">
         <div class="card-body">
           <form id="provider-form">
-            <label>Nama
-              <input type="text" id="prov-name" placeholder="cth: Provider A" required>
+            <label><span data-i18n="form.name">Nama</span>
+              <input type="text" id="prov-name" data-i18n-ph="form.name.ph" placeholder="cth: Provider A" required>
             </label>
             <label>Base URL (OpenAI-compatible)
               <input type="url" id="prov-base" placeholder="https://api.contoh.com/v1" required>
             </label>
-            <label>API Key
+            <label><span data-i18n="form.apikey">API Key</span>
               <input type="password" id="prov-key" placeholder="sk-..." required>
             </label>
             <div id="prov-error" class="error hidden"></div>
-            <button type="submit" class="btn btn-primary btn-block">Simpan &amp; Validasi</button>
+            <button type="submit" id="prov-submit" class="btn btn-primary btn-block" data-i18n="form.provider.submit">Simpan &amp; Validasi</button>
           </form>
-          <p class="muted small note">Saat disimpan, Hestia Bridge memanggil <code>GET {baseUrl}/models</code> untuk memvalidasi koneksi.</p>
+          <p class="muted small note" data-i18n-html="form.provider.note">Saat disimpan, Hestia Bridge memanggil <code>GET {baseUrl}/models</code> untuk memvalidasi koneksi.</p>
         </div>
       </div>
 
       <div class="section-head">
-        <h2>Daftar provider</h2>
+        <h2 data-i18n="section.providers.title">Daftar provider</h2>
       </div>
       <div id="prov-list"></div>
       </div>
@@ -221,55 +221,55 @@
       <div id="mykey-list"></div>
 
       <div class="section-head">
-        <h2>Worker Saya</h2>
+        <h2 data-i18n="section.workers.title">Worker Saya</h2>
         <span class="muted small" id="myworker-count"></span>
       </div>
-      <p class="page-sub">Daftarkan worker dari akun AI milikmu — key mode worker milikmu dijawab worker ini secara otomatis.</p>
+      <p class="page-sub" data-i18n="page.workers.desc">Daftarkan worker dari akun AI milikmu — key mode worker milikmu dijawab worker ini secara otomatis.</p>
       <div class="action-row">
         <span></span>
         <button id="my-new-worker-btn" class="btn btn-primary">
           <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" fill="currentColor"/></svg>
-          <span>Buat Worker</span>
+          <span data-i18n="btn.createworker">Buat Worker</span>
         </button>
       </div>
       <div id="myworker-list"></div>
 
       <div class="guide-card">
-        <h2>Cara tes worker</h2>
+        <h2 data-i18n="guide.test.title">Cara tes worker</h2>
         <ol class="guide-steps">
           <li>
             <span class="step-num">1</span>
-            <p>Pastikan worker kamu <strong>online</strong> di bagian <strong>Worker Saya</strong> di atas.</p>
+            <p data-i18n-html="guide.test.s1">Pastikan worker kamu <strong>online</strong> di bagian <strong>Worker Saya</strong> di atas.</p>
           </li>
           <li>
             <span class="step-num">2</span>
-            <p>Klik <strong>Buat Key</strong>, pilih mode <strong>Worker</strong>, lalu <strong>Buat Key</strong>.</p>
+            <p data-i18n-html="guide.test.s2">Klik <strong>Buat Key</strong>, pilih mode <strong>Worker</strong>, lalu <strong>Buat Key</strong>.</p>
           </li>
           <li>
             <span class="step-num">3</span>
-            <p>Klik <strong>Cara sambung</strong> di kartu key, salin <strong>Base URL</strong> dan <strong>API Key</strong> ke aplikasi AI di HP, lalu chat seperti biasa.</p>
+            <p data-i18n-html="guide.test.s3">Klik <strong>Cara sambung</strong> di kartu key, salin <strong>Base URL</strong> dan <strong>API Key</strong> ke aplikasi AI di HP, lalu chat seperti biasa.</p>
           </li>
           <li>
             <span class="step-num">4</span>
-            <p>Kalau ada jawaban, berarti worker kamu jalan. Kalau tidak dijawab, cek lagi worker-nya online atau tidak.</p>
+            <p data-i18n-html="guide.test.s4">Kalau ada jawaban, berarti worker kamu jalan. Kalau tidak dijawab, cek lagi worker-nya online atau tidak.</p>
           </li>
         </ol>
       </div>
 
       <div class="guide-card">
-        <h2>Cara pakai</h2>
+        <h2 data-i18n="guide.howto.title">Cara pakai</h2>
         <ol class="guide-steps">
           <li>
             <span class="step-num">1</span>
-            <p>Klik <strong>Buat Key</strong> — pilih mode <strong>Provider</strong> (pakai provider yang tersedia) atau <strong>Worker</strong> (dijawab worker AI).</p>
+            <p data-i18n-html="guide.my.s1">Klik <strong>Buat Key</strong> — pilih mode <strong>Provider</strong> (pakai provider yang tersedia) atau <strong>Worker</strong> (dijawab worker AI).</p>
           </li>
           <li>
             <span class="step-num">2</span>
-            <p>Untuk mode Worker: buat dulu worker di bagian <strong>Worker Saya</strong>, salin tokennya, lalu tempel instruksi yang diberikan ke akun AI milikmu supaya ia bekerja otomatis tiap 5 menit.</p>
+            <p data-i18n-html="guide.my.s2">Untuk mode Worker: buat dulu worker di bagian <strong>Worker Saya</strong>, salin tokennya, lalu tempel instruksi yang diberikan ke akun AI milikmu supaya ia bekerja otomatis tiap 5 menit.</p>
           </li>
           <li>
             <span class="step-num">3</span>
-            <p>Di aplikasi AI di HP yang mendukung custom endpoint OpenAI: isi <strong>Base URL</strong> dengan<br><code id="my-guide-base-url">https://hestia-bridge-production.up.railway.app/v1</code><br>dan <strong>API Key</strong> dengan key <code>hb-...</code> milikmu (klik <strong>Cara sambung</strong> di kartu key untuk salin cepat), lalu pakai seperti biasa lewat prompt.</p>
+            <p data-i18n-html="guide.my.s3">Di aplikasi AI di HP yang mendukung custom endpoint OpenAI: isi <strong>Base URL</strong> dengan<br><code id="my-guide-base-url">https://hestia-bridge-production.up.railway.app/v1</code><br>dan <strong>API Key</strong> dengan key <code>hb-...</code> milikmu (klik <strong>Cara sambung</strong> di kartu key untuk salin cepat), lalu pakai seperti biasa lewat prompt.</p>
           </li>
         </ol>
       </div>
@@ -305,33 +305,33 @@
 <div id="key-modal" class="modal-backdrop hidden">
   <div class="modal">
     <div class="modal-head">
-      <h3>Buat API Key Baru</h3>
-      <button class="icon-btn" id="key-modal-close" aria-label="Tutup">
+      <h3 data-i18n="modal.key.title">Buat API Key Baru</h3>
+      <button class="icon-btn" id="key-modal-close" data-i18n-aria="aria.close" aria-label="Tutup">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6.4 5L5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6 6.4 5z" fill="currentColor"/></svg>
       </button>
     </div>
     <form id="key-form">
-      <label>Nama key
-        <input type="text" id="key-name" placeholder="cth: Key HP" required>
+      <label><span data-i18n="form.keyname">Nama key</span>
+        <input type="text" id="key-name" data-i18n-ph="form.keyname.ph" placeholder="cth: Key HP" required>
       </label>
-      <label>Provider
+      <label><span data-i18n="form.provider">Provider</span>
         <select id="key-provider" class="select" required></select>
       </label>
-      <label>Kuota token (opsional)
-        <input type="number" id="key-quota" placeholder="cth: 1000000 (kosongkan = tanpa batas)" min="1">
+      <label><span data-i18n="form.quota">Kuota token (opsional)</span>
+        <input type="number" id="key-quota" data-i18n-ph="form.quota.ph" placeholder="cth: 1000000 (kosongkan = tanpa batas)" min="1">
       </label>
       <div id="key-error" class="error hidden"></div>
-      <button type="submit" class="btn btn-primary btn-block">Buat Key</button>
+      <button type="submit" class="btn btn-primary btn-block" data-i18n="btn.createkey">Buat Key</button>
     </form>
     <div id="key-result" class="hidden">
-      <p class="muted small">Key hanya ditampilkan sekali. Salin sekarang.</p>
+      <p class="muted small" data-i18n="modal.key.once">Key hanya ditampilkan sekali. Salin sekarang.</p>
       <div class="key-once"><code id="key-once-value"></code>
         <button class="btn btn-ghost" id="key-once-copy">
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 3h11a1 1 0 0 1 1 1v14h-2V5H8V3zM5 5h2v2H5v12h12v-2h2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" fill="currentColor"/></svg>
-          <span>Salin</span>
+          <span data-i18n="btn.copy">Salin</span>
         </button>
       </div>
-      <button class="btn btn-primary btn-block" id="key-done">Selesai</button>
+      <button class="btn btn-primary btn-block" id="key-done" data-i18n="btn.done">Selesai</button>
     </div>
   </div>
 </div>
@@ -340,24 +340,24 @@
 <div id="connect-modal" class="modal-backdrop hidden">
   <div class="modal">
     <div class="modal-head">
-      <h3>Cara sambung</h3>
-      <button class="icon-btn" id="connect-modal-close" aria-label="Tutup">
+      <h3 data-i18n="modal.connect.title">Cara sambung</h3>
+      <button class="icon-btn" id="connect-modal-close" data-i18n-aria="aria.close" aria-label="Tutup">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6.4 5L5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6 6.4 5z" fill="currentColor"/></svg>
       </button>
     </div>
-    <p class="muted small">Isi dua kolom ini di aplikasi AI di HP, lalu pakai lewat prompt seperti biasa.</p>
-    <label>Base URL
+    <p class="muted small" data-i18n="modal.connect.desc">Isi dua kolom ini di aplikasi AI di HP, lalu pakai lewat prompt seperti biasa.</p>
+    <label><span data-i18n="form.baseurl">Base URL</span>
       <div class="copy-row"><code id="connect-base"></code>
-        <button class="btn btn-sm" id="connect-base-copy">Salin</button>
+        <button class="btn btn-sm" id="connect-base-copy" data-i18n="btn.copy">Salin</button>
       </div>
     </label>
-    <label>API Key (<span id="connect-key-name"></span>)
+    <label><span data-i18n="form.apikey">API Key</span> (<span id="connect-key-name"></span>)
       <div class="copy-row"><code id="connect-key"></code>
-        <button class="btn btn-sm" id="connect-key-copy">Salin</button>
+        <button class="btn btn-sm" id="connect-key-copy" data-i18n="btn.copy">Salin</button>
       </div>
     </label>
     <div class="terminal-card">
-      <div class="term-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title">curl</span><button class="btn btn-sm" id="connect-curl-copy" style="margin-left:auto">Salin</button></div>
+      <div class="term-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title">curl</span><button class="btn btn-sm" id="connect-curl-copy" style="margin-left:auto" data-i18n="btn.copy">Salin</button></div>
 <pre class="term-body" id="connect-curl"></pre>
     </div>
   </div>
@@ -367,20 +367,20 @@
 <div id="rename-modal" class="modal-backdrop hidden">
   <div class="modal">
     <div class="modal-head">
-      <h3>Ganti nama key</h3>
-      <button class="icon-btn" id="rename-modal-close" aria-label="Tutup">
+      <h3 data-i18n="modal.rename.title">Ganti nama key</h3>
+      <button class="icon-btn" id="rename-modal-close" data-i18n-aria="aria.close" aria-label="Tutup">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6.4 5L5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6 6.4 5z" fill="currentColor"/></svg>
       </button>
     </div>
     <form id="rename-form">
-      <label>Nama baru
+      <label><span data-i18n="form.newname">Nama baru</span>
         <input type="text" id="rename-name" maxlength="60" required>
       </label>
-      <label>Kuota token (opsional)
-        <input type="number" id="rename-quota" placeholder="cth: 1000000 (kosongkan = tanpa batas)" min="1">
+      <label><span data-i18n="form.quota">Kuota token (opsional)</span>
+        <input type="number" id="rename-quota" data-i18n-ph="form.quota.ph" placeholder="cth: 1000000 (kosongkan = tanpa batas)" min="1">
       </label>
       <div id="rename-error" class="error hidden"></div>
-      <button type="submit" class="btn btn-primary btn-block">Simpan</button>
+      <button type="submit" class="btn btn-primary btn-block" data-i18n="btn.save">Simpan</button>
     </form>
   </div>
 </div>
@@ -389,42 +389,42 @@
 <div id="mykey-modal" class="modal-backdrop hidden">
   <div class="modal">
     <div class="modal-head">
-      <h3>Buat API Key</h3>
-      <button class="icon-btn" id="mykey-modal-close" aria-label="Tutup">
+      <h3 data-i18n="modal.mykey.title">Buat API Key</h3>
+      <button class="icon-btn" id="mykey-modal-close" data-i18n-aria="aria.close" aria-label="Tutup">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6.4 5L5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6 6.4 5z" fill="currentColor"/></svg>
       </button>
     </div>
     <form id="mykey-form">
-      <label>Nama key
-        <input type="text" id="mykey-name" placeholder="cth: Key HP" required>
+      <label><span data-i18n="form.keyname">Nama key</span>
+        <input type="text" id="mykey-name" data-i18n-ph="form.keyname.ph" placeholder="cth: Key HP" required>
       </label>
-      <label>Mode
+      <label><span data-i18n="form.mode">Mode</span>
         <select id="mykey-mode" class="select">
-          <option value="provider">Provider — dijawab provider AI</option>
-          <option value="worker">Worker — dijawab worker milikmu</option>
+          <option value="provider" data-i18n="form.mode.provider">Provider — dijawab provider AI</option>
+          <option value="worker" data-i18n="form.mode.worker">Worker — dijawab worker milikmu</option>
         </select>
       </label>
-      <label id="mykey-provider-wrap">Provider
+      <label id="mykey-provider-wrap"><span data-i18n="form.provider">Provider</span>
         <select id="mykey-provider" class="select"></select>
       </label>
-      <label id="mykey-worker-wrap" class="hidden">Worker
+      <label id="mykey-worker-wrap" class="hidden"><span data-i18n="form.worker">Worker</span>
         <select id="mykey-worker" class="select"></select>
       </label>
-      <label>Kuota token (opsional)
-        <input type="number" id="mykey-quota" placeholder="cth: 1000000 (kosongkan = tanpa batas)" min="1">
+      <label><span data-i18n="form.quota">Kuota token (opsional)</span>
+        <input type="number" id="mykey-quota" data-i18n-ph="form.quota.ph" placeholder="cth: 1000000 (kosongkan = tanpa batas)" min="1">
       </label>
       <div id="mykey-error" class="error hidden"></div>
-      <button type="submit" class="btn btn-primary btn-block">Buat Key</button>
+      <button type="submit" class="btn btn-primary btn-block" data-i18n="btn.createkey">Buat Key</button>
     </form>
     <div id="mykey-result" class="hidden">
-      <p class="muted small">Key hanya ditampilkan sekali. Salin sekarang.</p>
+      <p class="muted small" data-i18n="modal.key.once">Key hanya ditampilkan sekali. Salin sekarang.</p>
       <div class="key-once"><code id="mykey-once-value"></code>
         <button class="btn btn-ghost" id="mykey-once-copy">
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 3h11a1 1 0 0 1 1 1v14h-2V5H8V3zM5 5h2v2H5v12h12v-2h2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" fill="currentColor"/></svg>
-          <span>Salin</span>
+          <span data-i18n="btn.copy">Salin</span>
         </button>
       </div>
-      <button class="btn btn-primary btn-block" id="mykey-done">Selesai</button>
+      <button class="btn btn-primary btn-block" id="mykey-done" data-i18n="btn.done">Selesai</button>
     </div>
   </div>
 </div>
@@ -433,32 +433,32 @@
 <div id="myworker-modal" class="modal-backdrop hidden">
   <div class="modal">
     <div class="modal-head">
-      <h3>Buat Worker</h3>
-      <button class="icon-btn" id="myworker-modal-close" aria-label="Tutup">
+      <h3 data-i18n="modal.myworker.title">Buat Worker</h3>
+      <button class="icon-btn" id="myworker-modal-close" data-i18n-aria="aria.close" aria-label="Tutup">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6.4 5L5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6 6.4 5z" fill="currentColor"/></svg>
       </button>
     </div>
     <form id="myworker-form">
-      <label>Nama worker
-        <input type="text" id="myworker-name" placeholder="cth: Worker HP" required>
+      <label><span data-i18n="form.workername">Nama worker</span>
+        <input type="text" id="myworker-name" data-i18n-ph="form.workername.ph" placeholder="cth: Worker HP" required>
       </label>
       <div id="myworker-error" class="error hidden"></div>
-      <button type="submit" class="btn btn-primary btn-block">Buat Worker</button>
+      <button type="submit" class="btn btn-primary btn-block" data-i18n="btn.createworker">Buat Worker</button>
     </form>
     <div id="myworker-result" class="hidden">
-      <p class="muted small">Token worker hanya ditampilkan sekali. Salin sekarang, lalu tempel instruksi di bawah ke akun AI milikmu.</p>
+      <p class="muted small" data-i18n="modal.myworker.once">Token worker hanya ditampilkan sekali. Salin sekarang, lalu tempel instruksi di bawah ke akun AI milikmu.</p>
       <div class="key-once"><code id="myworker-once-value"></code>
         <button class="btn btn-ghost" id="myworker-once-copy">
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 3h11a1 1 0 0 1 1 1v14h-2V5H8V3zM5 5h2v2H5v12h12v-2h2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" fill="currentColor"/></svg>
-          <span>Salin</span>
+          <span data-i18n="btn.copy">Salin</span>
         </button>
       </div>
       <div class="terminal-card">
-        <div class="term-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title">instruksi worker — tempel ke akun AI</span></div>
+        <div class="term-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title" data-i18n="modal.myworker.instr">instruksi worker — tempel ke akun AI</span></div>
 <pre class="term-body" id="myworker-instructions"></pre>
       </div>
-      <button class="btn btn-block" id="myworker-instructions-copy">Salin instruksi</button>
-      <button class="btn btn-primary btn-block" id="myworker-done">Selesai</button>
+      <button class="btn btn-block" id="myworker-instructions-copy" data-i18n="btn.copy.instructions">Salin instruksi</button>
+      <button class="btn btn-primary btn-block" id="myworker-done" data-i18n="btn.done">Selesai</button>
     </div>
   </div>
 </div>
