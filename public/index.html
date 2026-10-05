@@ -115,6 +115,11 @@
         <span data-i18n="nav.wallpaper">Wallpaper</span>
       </button>
       <input type="file" id="wallpaper-input" accept="image/*" class="hidden">
+      <div class="drawer-sep"></div>
+      <button class="drawer-btn" id="info-btn">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 15h-2v-6h2zm0-8h-2V7h2z" fill="currentColor"/></svg>
+        <span data-i18n="nav.info">Informasi</span>
+      </button>
     </nav>
     <div class="drawer-foot">
       <button id="logout-btn" class="drawer-btn">
@@ -478,6 +483,33 @@
 </div>
 
 <div id="toast" class="toast hidden"></div>
+
+<!-- ============ INFO MODAL ============ -->
+<div id="info-modal" class="modal-backdrop hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 data-i18n="info.title">Informasi</h3>
+      <button class="icon-btn" id="info-modal-close" aria-label="Tutup">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6.4 5L5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6 6.4 5z" fill="currentColor"/></svg>
+      </button>
+    </div>
+    <div class="info-body">
+      <div class="info-logo">
+        <svg viewBox="0 0 32 32" width="52" height="52" aria-hidden="true">
+          <defs><linearGradient id="hblogo3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f43f5e"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+          <rect x="2" y="2" width="28" height="28" rx="8" fill="url(#hblogo3)"/>
+          <path d="M10 21 L16 9 L22 21" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="16" cy="23.5" r="1.8" fill="#fff"/>
+        </svg>
+      </div>
+      <p data-i18n-html="info.p1"></p>
+      <p data-i18n-html="info.p2"></p>
+      <p data-i18n-html="info.p3"></p>
+      <p class="info-sign" data-i18n="info.sign">— Tim Hestia Bridge</p>
+    </div>
+    <button class="btn btn-primary btn-block" id="info-ok" data-i18n="btn.understand">Mengerti</button>
+  </div>
+</div>
 
 <script src="app.js"></script>
 </body>
