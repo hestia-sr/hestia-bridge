@@ -532,6 +532,41 @@
 </div>
 
 <!-- ============ MY WORKER MODAL (pengguna) ============ -->
+<!-- ===== RUN WORKER MODAL ===== -->
+<div id="runworker-modal" class="modal-backdrop hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 data-i18n="modal.runworker.title">Jalankan Worker</h3>
+      <button class="modal-x" id="runworker-close" aria-label="Tutup">✕</button>
+    </div>
+    <p class="muted small" data-i18n="modal.runworker.desc">Worker akan jalan dari browser ini selama halaman terbuka. Isi API AI dari akun lain untuk menjawab chat.</p>
+    <form id="runworker-form">
+      <label><span data-i18n="form.workertoken">Worker Token</span>
+        <input type="password" id="runworker-token" placeholder="wt-..." required>
+      </label>
+      <label><span data-i18n="form.aiurl">AI Base URL</span>
+        <input type="url" id="runworker-url" placeholder="https://api.contoh.com/v1" required>
+      </label>
+      <label><span data-i18n="form.aikey">AI API Key</span>
+        <input type="password" id="runworker-key" placeholder="sk-..." required>
+      </label>
+      <label><span data-i18n="form.aimodel">AI Model</span>
+        <input type="text" id="runworker-model" placeholder="nama-model" required>
+      </label>
+      <div id="runworker-error" class="error hidden"></div>
+      <button type="submit" class="btn btn-primary btn-block" data-i18n="btn.startWorker">Mulai</button>
+    </form>
+    <div id="runworker-status" class="hidden">
+      <div class="run-status-card">
+        <div class="row"><span class="k" data-i18n="runworker.status">Status</span><span class="v" id="runworker-status-text">—</span></div>
+        <div class="row"><span class="k" data-i18n="runworker.lastpoll">Poll terakhir</span><span class="v" id="runworker-lastpoll">—</span></div>
+        <div class="row"><span class="k" data-i18n="runworker.answered">Terjawab</span><span class="v" id="runworker-answered">0</span></div>
+      </div>
+      <button class="btn btn-danger btn-block" id="runworker-stop" data-i18n="btn.stopWorker">Berhenti</button>
+    </div>
+  </div>
+</div>
+
 <div id="myworker-modal" class="modal-backdrop hidden">
   <div class="modal">
     <div class="modal-head">
