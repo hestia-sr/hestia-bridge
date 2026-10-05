@@ -302,6 +302,11 @@ body.has-wallpaper .stat {
   display: flex; align-items: center; justify-content: center;
   font-weight: 800; font-size: 1.15rem;
 }
+.app-logo {
+  width: 46px; height: 46px; border-radius: 14px; margin: 0 auto .6rem;
+  display: block; object-fit: cover; background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,.1);
+}
 .app-name { font-weight: 800; font-size: .92rem; }
 .app-plat { font-size: .76rem; color: var(--muted); margin-top: .15rem; }
 .app-desc { font-size: .78rem; color: var(--muted); margin-top: .35rem; line-height: 1.45; }
