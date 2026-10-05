@@ -739,34 +739,34 @@ $('#myworker-form').addEventListener('submit', async e => {
     $('#myworker-once-value').textContent = j.token;
     const _base = BRIDGE_BASE.replace(/\/v1$/, '');
     $('#myworker-instructions').textContent = LANG === 'en'
-      ? 'You are a Hestia Bridge worker. Repeat every 30 seconds, do not stop:\n' +
+      ? 'You are the answering engine behind Hestia Bridge. Keep this loop running every 30 seconds:\n' +
       '\n' +
-      '1. Stay online — POST to ' + _base + '/v1/worker/heartbeat\n' +
+      '1. Report that you are alive — POST to ' + _base + '/v1/worker/heartbeat\n' +
       '   Header: Authorization: Bearer ' + j.token + '\n' +
       '\n' +
-      '2. Check the queue — GET ' + _base + '/v1/worker/pending\n' +
-      '   (same header as above)\n' +
+      '2. Look for waiting chats — GET ' + _base + '/v1/worker/pending\n' +
+      '   (use the same header)\n' +
       '\n' +
-      '3. If a chat arrives — for each id:\n' +
-      '   a. POST to .../v1/worker/claim with {"id": "..."} to fetch the message\n' +
-      '   b. Answer the message with your abilities\n' +
+      '3. When a chat is waiting — for each id:\n' +
+      '   a. POST to .../v1/worker/claim with {"id": "..."} to read it\n' +
+      '   b. Compose your best answer\n' +
       '   c. POST to .../v1/worker/done with {"id": "...", "content": "your answer"}\n' +
       '\n' +
-      '4. If the queue is empty — just relax, repeat again in 30 seconds.'
-      : 'Kamu adalah worker Hestia Bridge. Ulangi tiap 30 detik, jangan berhenti:\n' +
+      '4. Nothing waiting — take it easy and check again in 30 seconds.'
+      : 'Kamu adalah mesin penjawab di balik Hestia Bridge. Jalankan putaran ini tiap 30 detik:\n' +
       '\n' +
-      '1. Tanda online — POST ke ' + _base + '/v1/worker/heartbeat\n' +
+      '1. Kabari bahwa kamu hidup — POST ke ' + _base + '/v1/worker/heartbeat\n' +
       '   Header: Authorization: Bearer ' + j.token + '\n' +
       '\n' +
-      '2. Cek antrean — GET ke ' + _base + '/v1/worker/pending\n' +
-      '   (header sama seperti di atas)\n' +
+      '2. Intip chat yang menunggu — GET ke ' + _base + '/v1/worker/pending\n' +
+      '   (pakai header yang sama)\n' +
       '\n' +
-      '3. Kalau ada chat masuk — untuk tiap id:\n' +
-      '   a. POST ke .../v1/worker/claim dengan {"id": "..."} untuk ambil pesannya\n' +
-      '   b. Jawab pesannya dengan kemampuanmu\n' +
+      '3. Kalau ada chat menunggu — untuk tiap id:\n' +
+      '   a. POST ke .../v1/worker/claim dengan {"id": "..."} untuk membacanya\n' +
+      '   b. Susun jawaban terbaikmu\n' +
       '   c. POST ke .../v1/worker/done dengan {"id": "...", "content": "jawabanmu"}\n' +
       '\n' +
-      '4. Kalau antrean kosong — santai saja, ulangi lagi 30 detik kemudian.';
+      '4. Tidak ada yang menunggu — santai saja, intip lagi 30 detik kemudian.';
     $('#myworker-form').classList.add('hidden');
     $('#myworker-result').classList.remove('hidden');
   } catch (ex) {
