@@ -178,6 +178,36 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   margin: 0 .6rem; width: calc(100% - 1.2rem);
 }
 .drawer-foot { padding: .9rem; border-top: 1px solid var(--border); }
+
+/* ===== PLAN CARD (drawer) ===== */
+.plan-card {
+  background: var(--grad-soft);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: .7rem .8rem;
+  margin-bottom: .7rem;
+}
+.plan-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: .5rem;
+}
+.plan-badge {
+  background: var(--grad); color: #fff;
+  font-size: .75rem; font-weight: 800;
+  padding: .2rem .6rem; border-radius: 20px;
+}
+.plan-badge.expired { background: var(--red); }
+.plan-countdown {
+  font-size: .8rem; font-weight: 700; color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.plan-bar {
+  height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;
+}
+.plan-bar-fill {
+  height: 100%; background: var(--grad); border-radius: 3px;
+  transition: width 1s linear;
+}
 .drawer-foot .drawer-btn {
   background: var(--grad); color: #fff;
   border-radius: 14px; justify-content: center;
