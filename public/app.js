@@ -68,13 +68,15 @@ function enterApp(me) {
   document.querySelectorAll('.user-only').forEach(el => el.classList.toggle('hidden', isAdmin));
   if (isAdmin) {
     $('#foot-email').textContent = t('foot.signedin') + ' ' + me.email + ' (' + t('foot.admin') + ')';
-    switchView('keys');
+    switchView('home');
     refreshAll();
   } else {
     $('#my-foot-email').textContent = t('foot.signedin') + ' ' + me.email;
-    switchView('mykeys');
+    switchView('home');
     refreshMine();
   }
+  renderApps();
+  $('#home-cta').onclick = () => switchView(isAdmin ? 'keys' : 'mykeys');
 }
 
 /* Fingerprint perangkat sederhana untuk batas 3 akun per device. */
@@ -155,7 +157,7 @@ function closeDrawer() {
 }
 $('#drawer-btn').addEventListener('click', openDrawer);
 $('#drawer-backdrop').addEventListener('click', closeDrawer);
-const VIEW_TITLES = { keys: 'topbar.keys', providers: 'nav.providers', users: 'nav.users', mykeys: 'nav.mykeys' };
+const VIEW_TITLES = { home: 'nav.home', keys: 'topbar.keys', providers: 'nav.providers', users: 'nav.users', mykeys: 'nav.mykeys' };
 function switchView(name) {
   document.querySelectorAll('.drawer-btn[data-view]').forEach(b =>
     b.classList.toggle('active', b.dataset.view === name));
@@ -741,6 +743,28 @@ $('#users-list').addEventListener('click', async e => {
   } catch (ex) { if (ex.message !== 'auth') toast(t('toast.failed') + ex.message); }
 });
 
+/* --------------------------- home: apps grid --------------------------- */
+const SUPPORTED_APPS = [
+  { name: 'ChatBox', plat: 'Android · iOS · Desktop', desc_id: 'Paling mudah untuk pemula', desc_en: 'Easiest for beginners', initial: 'C' },
+  { name: 'Cherry Studio', plat: 'Android · iOS · Desktop', desc_id: 'Populer di Asia', desc_en: 'Popular in Asia', initial: 'S' },
+  { name: 'NextChat', plat: 'Web / PWA', desc_id: 'Ringan, install dari browser', desc_en: 'Lightweight, install from browser', initial: 'N' },
+  { name: 'OpenChat', plat: 'iOS', desc_id: 'Native iOS, kunci di Keychain', desc_en: 'Native iOS, keys in Keychain', initial: 'O' },
+  { name: 'LibreChat', plat: 'Web', desc_id: 'Self-hosted, mirip ChatGPT', desc_en: 'Self-hosted, ChatGPT-like', initial: 'L' },
+  { name: 'Open WebUI', plat: 'Web', desc_id: 'Self-hosted, fitur lengkap', desc_en: 'Self-hosted, full features', initial: 'W' },
+];
+function renderApps() {
+  const grid = document.getElementById('apps-grid');
+  if (!grid) return;
+  grid.innerHTML = SUPPORTED_APPS.map(a =>
+    '<div class="app-card">' +
+    '<div class="app-ico">' + a.initial + '</div>' +
+    '<div class="app-name">' + a.name + '</div>' +
+    '<div class="app-plat">' + a.plat + '</div>' +
+    '<div class="app-desc">' + (LANG === 'en' ? a.desc_en : a.desc_id) + '</div>' +
+    '</div>'
+  ).join('');
+}
+
 /* --------------------------- theme (dark/light) ------------------------ */
 function applyTheme() {
   const th = localStorage.getItem('hb-theme') || 'light';
@@ -832,6 +856,16 @@ const I18N = {
     'info.p3': 'Terima kasih atas <strong>pengertian, kesabaran, dan kepercayaan</strong> kalian. Kehadiran kalian adalah semangat terbesar saya untuk terus berkarya.',
     'info.sign': '— Tim Hestia Bridge',
     'btn.understand': 'Mengerti',
+    'nav.home': 'Beranda',
+    'home.title': 'Selamat datang di Hestia Bridge',
+    'home.sub': 'Sambungkan API key kamu ke aplikasi AI favoritmu. Satu key, banyak aplikasi.',
+    'home.cta': 'Lihat Key Saya',
+    'home.apps.title': 'Aplikasi yang support',
+    'home.apps.sub': 'Aplikasi-aplikasi ini bisa disambungkan ke Hestia Bridge lewat custom endpoint.',
+    'home.how.title': 'Cara menyambungkan',
+    'home.how.s1': 'Buat API key di halaman <strong>Key Saya</strong> atau <strong>Kunci API</strong>.',
+    'home.how.s2': 'Buka aplikasi AI pilihanmu, cari pengaturan <strong>custom endpoint</strong> / <strong>BYOK</strong>.',
+    'home.how.s3': 'Isi <strong>Base URL</strong> dengan alamat Bridge dan <strong>API Key</strong> dengan key <code>hb-...</code> milikmu.',
     'btn.createworker': 'Buat Worker',
     'btn.copy': 'Salin',
     'btn.copy.instructions': 'Salin instruksi',
@@ -1009,6 +1043,16 @@ const I18N = {
     'info.p3': 'Thank you for your <strong>understanding, patience, and trust</strong>. Your presence is my greatest motivation to keep creating.',
     'info.sign': '— Hestia Bridge Team',
     'btn.understand': 'Understood',
+    'nav.home': 'Home',
+    'home.title': 'Welcome to Hestia Bridge',
+    'home.sub': 'Connect your API key to your favorite AI apps. One key, many apps.',
+    'home.cta': 'View My Keys',
+    'home.apps.title': 'Supported apps',
+    'home.apps.sub': 'These apps can connect to Hestia Bridge via custom endpoint.',
+    'home.how.title': 'How to connect',
+    'home.how.s1': 'Create an API key on the <strong>My Keys</strong> or <strong>API Keys</strong> page.',
+    'home.how.s2': 'Open your chosen AI app, find <strong>custom endpoint</strong> / <strong>BYOK</strong> settings.',
+    'home.how.s3': 'Fill <strong>Base URL</strong> with the Bridge address and <strong>API Key</strong> with your <code>hb-...</code> key.',
     'btn.createworker': 'Create Worker',
     'btn.copy': 'Copy',
     'btn.copy.instructions': 'Copy instructions',
@@ -1189,6 +1233,7 @@ function applyLang() {
 document.getElementById('lang-btn').addEventListener('click', () => {
   LANG = LANG === 'id' ? 'en' : 'id';
   applyLang();
+  renderApps();
   const gb = $('#guide-base-url');
   if (gb) gb.textContent = BRIDGE_BASE;
   const mgb = $('#my-guide-base-url');
