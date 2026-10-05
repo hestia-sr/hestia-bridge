@@ -170,11 +170,26 @@ function closeAccount() {
 $('#account-btn').addEventListener('click', openAccount);
 $('#account-close').addEventListener('click', closeAccount);
 $('#account-backdrop').addEventListener('click', closeAccount);
+const DURATIONS = {
+  '1': { id: '1 Hari', en: '1 Day', price: 'Rp 5.000' },
+  '3': { id: '3 Hari', en: '3 Days', price: 'Rp 10.000' },
+  '7': { id: '1 Minggu', en: '1 Week', price: 'Rp 15.000' },
+};
+function openQris(dur) {
+  const d = DURATIONS[dur];
+  if (!d) return;
+  $('#qris-title').textContent = (LANG === 'en' ? 'Payment - ' : 'Pembayaran - ') + (LANG === 'en' ? d.en : d.id);
+  $('#qris-amount').textContent = d.price;
+  $('#qris-bot-btn').href = BOT_URL + '?start=durasi_' + dur;
+  $('#qris-modal').classList.remove('hidden');
+  closeAccount();
+}
+$('#qris-close').addEventListener('click', () => $('#qris-modal').classList.add('hidden'));
+$('#qris-modal').addEventListener('click', e => {
+  if (e.target.id === 'qris-modal') $('#qris-modal').classList.add('hidden');
+});
 document.querySelectorAll('.duration-card').forEach(card => {
-  card.addEventListener('click', () => {
-    const d = card.dataset.dur;
-    window.open(BOT_URL + '?start=durasi_' + d, '_blank');
-  });
+  card.addEventListener('click', () => openQris(card.dataset.dur));
 });
 
 /* ------------------------------ drawer ---------------------------------- */
@@ -874,6 +889,8 @@ const I18N = {
     'account.title': 'Akun',
     'account.duration': 'Tambahan Durasi',
     'account.viaBot': 'Pembayaran melalui Bot Telegram',
+    'qris.note': 'Scan QRIS di atas sesuai nominal, lalu kirim bukti pembayaran ke Bot Telegram.',
+    'qris.sendProof': 'Kirim Bukti ke Bot',
     'hero.keys': 'Kunci API',
     'hero.keys.sub': 'Satu provider = satu API key. Kuota mengikuti provider masing-masing.',
     'hero.providers': 'Provider',
@@ -1065,6 +1082,8 @@ const I18N = {
     'account.title': 'Account',
     'account.duration': 'Add Duration',
     'account.viaBot': 'Payment via Telegram Bot',
+    'qris.note': 'Scan the QRIS above for the exact amount, then send payment proof to the Telegram Bot.',
+    'qris.sendProof': 'Send Proof to Bot',
     'hero.keys': 'API Keys',
     'hero.keys.sub': 'One provider = one API key. Quota follows each provider.',
     'hero.providers': 'Providers',
