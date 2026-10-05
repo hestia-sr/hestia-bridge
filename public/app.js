@@ -745,24 +745,27 @@ $('#users-list').addEventListener('click', async e => {
 
 /* --------------------------- home: apps grid --------------------------- */
 const SUPPORTED_APPS = [
-  { name: 'ChatBox', plat: 'Android · iOS · Desktop', desc_id: 'Paling mudah untuk pemula', desc_en: 'Easiest for beginners', initial: 'C' },
-  { name: 'Cherry Studio', plat: 'Android · iOS · Desktop', desc_id: 'Populer di Asia', desc_en: 'Popular in Asia', initial: 'S' },
-  { name: 'NextChat', plat: 'Web / PWA', desc_id: 'Ringan, install dari browser', desc_en: 'Lightweight, install from browser', initial: 'N' },
-  { name: 'OpenChat', plat: 'iOS', desc_id: 'Native iOS, kunci di Keychain', desc_en: 'Native iOS, keys in Keychain', initial: 'O' },
-  { name: 'LibreChat', plat: 'Web', desc_id: 'Self-hosted, mirip ChatGPT', desc_en: 'Self-hosted, ChatGPT-like', initial: 'L' },
-  { name: 'Open WebUI', plat: 'Web', desc_id: 'Self-hosted, fitur lengkap', desc_en: 'Self-hosted, full features', initial: 'W' },
+  { name: 'Muse AI', plat: 'Android · iOS · Web', desc_id: 'Didukung penuh oleh Bridge', desc_en: 'Fully supported by Bridge', logo: null, icon: '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2l2.4 7.2H22l-6 4.6 2.3 7.2-6.3-4.5-6.3 4.5L8 13.8 2 9.2h7.6z" fill="currentColor"/></svg>' },
+  { name: 'ChatBox', plat: 'Android · iOS · Desktop', desc_id: 'Paling mudah untuk pemula', desc_en: 'Easiest for beginners', logo: 'logos/chatbox.png', icon: null },
+  { name: 'Cherry Studio', plat: 'Android · iOS · Desktop', desc_id: 'Populer di Asia', desc_en: 'Popular in Asia', logo: 'logos/cherry.png', icon: null },
+  { name: 'NextChat', plat: 'Web / PWA', desc_id: 'Ringan, install dari browser', desc_en: 'Lightweight, install from browser', logo: null, icon: '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M5 12h12l-4-4 1.5-1.5L21 12l-6.5 5.5L13 16l4-4H5z" fill="currentColor"/></svg>' },
+  { name: 'OpenChat', plat: 'iOS', desc_id: 'Native iOS, kunci di Keychain', desc_en: 'Native iOS, keys in Keychain', logo: null, icon: '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 3C6.5 3 2 6.9 2 11.7c0 2.7 1.4 5.1 3.7 6.6-.1 1-.8 3.3-2.7 4.7 2.9-.3 5.3-1.7 6.6-2.8 1.1.3 2.2.4 3.4.4 5.5 0 10-3.9 10-8.7S17.5 3 12 3z" fill="currentColor"/></svg>' },
+  { name: 'LibreChat', plat: 'Web', desc_id: 'Self-hosted, mirip ChatGPT', desc_en: 'Self-hosted, ChatGPT-like', logo: 'logos/librechat.svg', icon: null },
+  { name: 'Open WebUI', plat: 'Web', desc_id: 'Self-hosted, fitur lengkap', desc_en: 'Self-hosted, full features', logo: 'logos/openwebui.png', icon: null },
 ];
 function renderApps() {
   const grid = document.getElementById('apps-grid');
   if (!grid) return;
-  grid.innerHTML = SUPPORTED_APPS.map(a =>
-    '<div class="app-card">' +
-    '<div class="app-ico">' + a.initial + '</div>' +
+  grid.innerHTML = SUPPORTED_APPS.map(a => {
+    const ico = a.logo
+      ? '<img src="' + a.logo + '" alt="' + a.name + '" class="app-logo">'
+      : '<div class="app-ico">' + a.icon + '</div>';
+    return '<div class="app-card">' + ico +
     '<div class="app-name">' + a.name + '</div>' +
     '<div class="app-plat">' + a.plat + '</div>' +
     '<div class="app-desc">' + (LANG === 'en' ? a.desc_en : a.desc_id) + '</div>' +
-    '</div>'
-  ).join('');
+    '</div>';
+  }).join('');
 }
 
 /* --------------------------- theme (dark/light) ------------------------ */
