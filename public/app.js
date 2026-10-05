@@ -215,6 +215,8 @@ function keyCard(k, maxReq) {
       '<div class="row"><span class="k">Token masuk</span><span class="v">' + fmtNum(k.stats.promptTokens) + '</span></div>' +
       '<div class="row"><span class="k">Token keluar</span><span class="v">' + fmtNum(k.stats.completionTokens) + '</span></div>' +
       '<div class="row"><span class="k">Total token</span><span class="v">' + fmtNum(k.stats.totalTokens) + '</span></div>' +
+      (k.tokenQuota ? '<div class="row"><span class="k">Kuota</span><span class="v">' + fmtNum(k.tokenQuota) + '</span></div>' +
+      '<div class="row"><span class="k">Sisa</span><span class="v">' + fmtNum(Math.max(0, k.tokenQuota - k.stats.totalTokens)) + '</span></div>' : '') +
       '<div class="usage-bar"><i style="width:' + pct + '%"></i></div>' +
     '</div>' +
     '<div class="key-actions">' +
@@ -272,6 +274,7 @@ $('#key-list').addEventListener('click', async e => {
       await refreshAll();
     } else if (act === 'edit') {
       $('#rename-name').value = k ? k.name : '';
+      $('#rename-quota').value = k && k.tokenQuota ? k.tokenQuota : '';
       $('#rename-error').classList.add('hidden');
       $('#rename-modal').dataset.id = id;
       $('#rename-modal').classList.remove('hidden');
@@ -321,13 +324,14 @@ $('#rename-form').addEventListener('submit', async e => {
   const id = $('#rename-modal').dataset.id;
   const err = $('#rename-error');
   err.classList.add('hidden');
+  const qv = parseInt($('#rename-quota').value, 10);
   try {
     await api('/api/keys/' + id, {
       method: 'PATCH',
-      body: JSON.stringify({ name: $('#rename-name').value })
+      body: JSON.stringify({ name: $('#rename-name').value, tokenQuota: qv > 0 ? qv : null })
     });
     $('#rename-modal').classList.add('hidden');
-    toast('Nama diubah.');
+    toast('Disimpan.');
     await refreshAll();
   } catch (ex) {
     if (ex.message === 'auth') return;
@@ -362,15 +366,17 @@ $('#key-form').addEventListener('submit', async e => {
   e.preventDefault();
   const err = $('#key-error');
   err.classList.add('hidden');
+  const qv = parseInt($('#key-quota').value, 10);
   try {
     const j = await api('/api/keys', {
       method: 'POST',
-      body: JSON.stringify({ name: $('#key-name').value, providerId: $('#key-provider').value })
+      body: JSON.stringify({ name: $('#key-name').value, providerId: $('#key-provider').value, tokenQuota: qv > 0 ? qv : null })
     });
     $('#key-once-value').textContent = j.token;
     $('#key-form').classList.add('hidden');
     $('#key-result').classList.remove('hidden');
     $('#key-name').value = '';
+    $('#key-quota').value = '';
   } catch (ex) {
     if (ex.message === 'auth') return;
     err.textContent = 'Gagal: ' + ex.message;
@@ -488,6 +494,8 @@ function myKeyCard(k, maxReq) {
       '<div class="row"><span class="k">Token masuk</span><span class="v">' + fmtNum(k.stats.promptTokens) + '</span></div>' +
       '<div class="row"><span class="k">Token keluar</span><span class="v">' + fmtNum(k.stats.completionTokens) + '</span></div>' +
       '<div class="row"><span class="k">Total token</span><span class="v">' + fmtNum(k.stats.totalTokens) + '</span></div>' +
+      (k.tokenQuota ? '<div class="row"><span class="k">Kuota</span><span class="v">' + fmtNum(k.tokenQuota) + '</span></div>' +
+      '<div class="row"><span class="k">Sisa</span><span class="v">' + fmtNum(Math.max(0, k.tokenQuota - k.stats.totalTokens)) + '</span></div>' : '') +
       '<div class="usage-bar"><i style="width:' + pct + '%"></i></div>' +
     '</div>' +
     '<div class="key-actions">' +
@@ -557,11 +565,14 @@ $('#mykey-form').addEventListener('submit', async e => {
     const body = { name: $('#mykey-name').value, mode };
     if (mode === 'worker') body.workerId = $('#mykey-worker').value;
     else body.providerId = $('#mykey-provider').value;
+    const qv = parseInt($('#mykey-quota').value, 10);
+    if (qv > 0) body.tokenQuota = qv;
     const j = await api('/api/my-keys', { method: 'POST', body: JSON.stringify(body) });
     $('#mykey-once-value').textContent = j.token;
     $('#mykey-form').classList.add('hidden');
     $('#mykey-result').classList.remove('hidden');
     $('#mykey-name').value = '';
+    $('#mykey-quota').value = '';
   } catch (ex) {
     if (ex.message === 'auth') return;
     err.textContent = 'Gagal: ' + ex.message;
