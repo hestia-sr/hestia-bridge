@@ -236,11 +236,16 @@ async function openConnectModal(id, apiBase, name) {
   $('#connect-base').textContent = BRIDGE_BASE;
   $('#connect-key').textContent = j.token;
   $('#connect-key-name').textContent = name || '';
+  let modelId = 'model-id';
+  try {
+    const mj = await (await fetch(BRIDGE_BASE + '/models', { headers: { 'Authorization': 'Bearer ' + j.token } })).json();
+    if (mj && mj.data && mj.data.length && mj.data[0].id) modelId = mj.data[0].id;
+  } catch (e) { /* pakai default */ }
   $('#connect-curl').textContent =
     'curl ' + BRIDGE_BASE + '/chat/completions \\\n' +
     '  -H "Authorization: Bearer ' + j.token + '" \\\n' +
     '  -H "Content-Type: application/json" \\\n' +
-    '  -d \'{"model":"model-id","messages":[{"role":"user","content":"Halo"}]}\'';
+    '  -d \'{"model":"' + modelId + '","messages":[{"role":"user","content":"Halo"}]}\'';
   $('#connect-modal').classList.remove('hidden');
 }
 $('#key-list').addEventListener('click', async e => {
