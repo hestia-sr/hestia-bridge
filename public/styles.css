@@ -268,6 +268,18 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   box-shadow: 0 4px 20px rgba(0,0,0,.12);
 }
 .qris-note { font-size: .9rem; color: var(--muted); margin: .8rem 0 0; }
+
+/* ===== RUN WORKER ===== */
+.run-status-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: .9rem 1rem; margin-bottom: .8rem;
+}
+.run-status-card .row {
+  display: flex; justify-content: space-between;
+  padding: .3rem 0; font-size: .9rem;
+}
+.run-status-card .k { color: var(--muted); }
+.run-status-card .v { font-weight: 700; color: var(--text); }
 .drawer-sep { height: 1px; background: var(--border); margin: .5rem .9rem; }
 
 /* ---------- dark theme ---------- */
