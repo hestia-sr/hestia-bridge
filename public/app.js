@@ -741,6 +741,53 @@ $('#users-list').addEventListener('click', async e => {
   } catch (ex) { if (ex.message !== 'auth') toast(t('toast.failed') + ex.message); }
 });
 
+/* --------------------------- theme (dark/light) ------------------------ */
+function applyTheme() {
+  const th = localStorage.getItem('hb-theme') || 'light';
+  document.documentElement.setAttribute('data-theme', th);
+}
+document.getElementById('theme-btn').addEventListener('click', () => {
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('hb-theme', next);
+});
+
+/* --------------------------- wallpaper --------------------------------- */
+function applyWallpaper() {
+  const wp = localStorage.getItem('hb-wallpaper');
+  if (wp) {
+    document.body.style.backgroundImage = 'url(' + wp + ')';
+    document.body.classList.add('has-wallpaper');
+  }
+}
+document.getElementById('wallpaper-btn').addEventListener('click', () => {
+  const cur = localStorage.getItem('hb-wallpaper');
+  if (cur && confirm(t('wallpaper.remove') || 'Hapus wallpaper?')) {
+    localStorage.removeItem('hb-wallpaper');
+    document.body.style.backgroundImage = '';
+    document.body.classList.remove('has-wallpaper');
+    return;
+  }
+  document.getElementById('wallpaper-input').click();
+});
+document.getElementById('wallpaper-input').addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      localStorage.setItem('hb-wallpaper', r.result);
+    } catch (ex) {
+      // storage penuh — pakai sesi ini saja
+    }
+    document.body.style.backgroundImage = 'url(' + r.result + ')';
+    document.body.classList.add('has-wallpaper');
+  };
+  r.readAsDataURL(f);
+  e.target.value = '';
+});
+
 /* --------------------------- language toggle ID/EN --------------------- */
 const I18N = {
   id: {
@@ -760,6 +807,9 @@ const I18N = {
     'hero.users.sub': 'Akun pengguna yang mendaftar sendiri lewat halaman Daftar.',
     'btn.addkey': 'Tambah key',
     'btn.createkey': 'Buat Key',
+    'nav.theme': 'Mode Gelap/Terang',
+    'nav.wallpaper': 'Wallpaper',
+    'wallpaper.remove': 'Hapus wallpaper?',
     'btn.createworker': 'Buat Worker',
     'btn.copy': 'Salin',
     'btn.copy.instructions': 'Salin instruksi',
@@ -927,6 +977,9 @@ const I18N = {
     'hero.users.sub': 'User accounts registered via the Sign Up page.',
     'btn.addkey': 'Add key',
     'btn.createkey': 'Create Key',
+    'nav.theme': 'Dark/Light Mode',
+    'nav.wallpaper': 'Wallpaper',
+    'wallpaper.remove': 'Remove wallpaper?',
     'btn.createworker': 'Create Worker',
     'btn.copy': 'Copy',
     'btn.copy.instructions': 'Copy instructions',
@@ -1126,6 +1179,8 @@ async function refreshMine() {
 }
 (function boot() {
   applyLang();
+  applyTheme();
+  applyWallpaper();
   $('#guide-base-url').textContent = BRIDGE_BASE;
   const guideEl = $('#my-guide-base-url');
   if (guideEl) guideEl.textContent = BRIDGE_BASE;
