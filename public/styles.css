@@ -155,9 +155,58 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 .drawer-btn.active { background: var(--grad-soft); color: var(--purple-dark); }
 .drawer-foot { padding: .8rem; border-top: 1px solid var(--border); }
 
+/* ---------- hero header (gaya khas: gradien penuh) ---------- */
+.hero {
+  background: var(--grad);
+  margin: -1.1rem -1rem 0;
+  padding: 1.6rem 1.2rem 2.2rem;
+  border-radius: 0 0 28px 28px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: ""; position: absolute; right: -40px; top: -40px;
+  width: 160px; height: 160px; border-radius: 50%;
+  background: rgba(255,255,255,.12);
+}
+.hero::before {
+  content: ""; position: absolute; right: 60px; bottom: -60px;
+  width: 110px; height: 110px; border-radius: 50%;
+  background: rgba(255,255,255,.08);
+}
+.hero-top {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: .8rem; position: relative; z-index: 1;
+}
+.hero-title {
+  font-size: 1.7rem; font-weight: 800; color: #fff; margin: 0;
+  letter-spacing: -.01em;
+}
+.hero-sub {
+  color: rgba(255,255,255,.85); font-size: .9rem; margin: .3rem 0 0;
+}
+.hero-refresh {
+  border: none; background: rgba(255,255,255,.2); color: #fff;
+  width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; flex: none;
+}
+.hero-refresh:hover { background: rgba(255,255,255,.3); }
+.btn-hero {
+  background: #fff; color: var(--purple-dark); border: none;
+  border-radius: 999px; padding: .7rem 1.4rem; font-weight: 800;
+  margin-top: 1.1rem; position: relative; z-index: 1;
+  box-shadow: 0 4px 14px rgba(0,0,0,.15);
+  display: inline-flex; align-items: center; gap: .45rem;
+  cursor: pointer; font-size: .92rem;
+}
+.btn-hero:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,.2); }
+.hero-body { padding-top: 1.1rem; }
+
 /* ---------- layout ---------- */
-.container { max-width: 640px; margin: 0 auto; padding: 1.1rem 1rem 3rem; }
+.container { max-width: 640px; margin: 0 auto; padding: 0 1rem 3rem; }
 .view { animation: fade .2s ease; }
+.view .hero-body { padding-left: 0; padding-right: 0; }
 @keyframes fade { from { opacity: 0; transform: translateY(4px);} to { opacity: 1; transform: none;} }
 .page-title {
   font-size: 1.6rem; font-weight: 800;
