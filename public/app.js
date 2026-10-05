@@ -667,6 +667,102 @@ $('#mykey-form').addEventListener('submit', async e => {
   }
 });
 
+/* ------------------------ browser worker runner ------------------------- */
+let bwTimer = null;
+let bwRunning = false;
+let bwAnswered = 0;
+let bwToken = null;
+function bwLog(msg) {
+  const el = $('#runworker-status-text');
+  if (el) el.textContent = msg;
+}
+async function bwTick() {
+  if (!bwRunning || !bwToken) return;
+  const H = { 'Authorization': 'Bearer ' + bwToken, 'Content-Type': 'application/json' };
+  try {
+    await fetch(BRIDGE_BASE.replace(/\/v1$/, '') + '/v1/worker/heartbeat', { method: 'POST', headers: H });
+    const pr = await fetch(BRIDGE_BASE.replace(/\/v1$/, '') + '/v1/worker/pending', { headers: H });
+    const pj = await pr.json();
+    $('#runworker-lastpoll').textContent = new Date().toLocaleTimeString();
+    const pending = (pj && pj.pending) || [];
+    bwLog(pending.length ? 'Ada ' + pending.length + ' chat' : 'Menunggu...');
+    for (const item of pending) {
+      const cr = await fetch(BRIDGE_BASE.replace(/\/v1$/, '') + '/v1/worker/claim', {
+        method: 'POST', headers: H, body: JSON.stringify({ id: item.id })
+      });
+      if (!cr.ok) continue;
+      const cj = await cr.json();
+      const messages = cj.messages || [];
+      // Tanya ke AI akun lain
+      const aiUrl = localStorage.getItem('bw-ai-url');
+      const aiKey = localStorage.getItem('bw-ai-key');
+      const aiModel = localStorage.getItem('bw-ai-model');
+      let answer = 'Maaf, saya sedang tidak bisa menjawab.';
+      try {
+        const ar = await fetch(aiUrl.replace(/\/+$/, '') + '/chat/completions', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + aiKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: aiModel, messages: messages })
+        });
+        const aj = await ar.json();
+        if (aj.choices && aj.choices[0]) answer = aj.choices[0].message.content;
+      } catch (e) {}
+      await fetch(BRIDGE_BASE.replace(/\/v1$/, '') + '/v1/worker/done', {
+        method: 'POST', headers: H,
+        body: JSON.stringify({ id: item.id, content: answer })
+      });
+      bwAnswered++;
+      $('#runworker-answered').textContent = bwAnswered;
+    }
+  } catch (e) {
+    bwLog('Error: ' + e.message);
+  }
+}
+function bwStart(token) {
+  bwToken = token;
+  bwRunning = true;
+  bwAnswered = 0;
+  $('#runworker-answered').textContent = '0';
+  $('#runworker-form').classList.add('hidden');
+  $('#runworker-status').classList.remove('hidden');
+  bwLog('Mulai...');
+  bwTick();
+  bwTimer = setInterval(bwTick, 30000);
+}
+function bwStop() {
+  bwRunning = false;
+  bwToken = null;
+  if (bwTimer) clearInterval(bwTimer);
+  bwTimer = null;
+  $('#runworker-modal').classList.add('hidden');
+  loadMyWorkers();
+}
+$('#runworker-close').addEventListener('click', () => {
+  if (!bwRunning) $('#runworker-modal').classList.add('hidden');
+});
+$('#runworker-stop').addEventListener('click', bwStop);
+$('#runworker-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const token = $('#runworker-token').value.trim();
+  const url = $('#runworker-url').value.trim();
+  const key = $('#runworker-key').value.trim();
+  const model = $('#runworker-model').value.trim();
+  if (!token || !url || !key || !model) return;
+  localStorage.setItem('bw-ai-url', url);
+  localStorage.setItem('bw-ai-key', key);
+  localStorage.setItem('bw-ai-model', model);
+  bwStart(token);
+});
+// Isi form dari simpanan
+(function bwFill() {
+  const u = localStorage.getItem('bw-ai-url');
+  const k = localStorage.getItem('bw-ai-key');
+  const m = localStorage.getItem('bw-ai-model');
+  if (u) $('#runworker-url').value = u;
+  if (k) $('#runworker-key').value = k;
+  if (m) $('#runworker-model').value = m;
+})();
+
 /* ------------------------ my workers (pengguna) -------------------------- */
 let myWorkersCache = [];
 async function loadMyWorkers() {
@@ -690,15 +786,25 @@ async function loadMyWorkers() {
         '<div class="row"><span class="k">' + t('card.added') + '</span><span class="v">' + fmtDate(w.createdAt) + '</span></div>' +
       '</div>' +
       '<div class="key-actions">' +
+        '<button class="btn btn-sm btn-primary" data-act="run" data-id="' + w.id + '">' + t('btn.runWorker') + '</button>' +
         '<button class="btn btn-sm btn-danger" data-act="del" data-id="' + w.id + '">' + t('btn.delete') + '</button>' +
       '</div>' +
     '</div>'
   ).join('');
 }
 $('#myworker-list').addEventListener('click', async e => {
-  const btn = e.target.closest('button[data-act="del"]');
+  const btn = e.target.closest('button[data-act]');
   if (!btn) return;
   const id = btn.dataset.id;
+  const act = btn.dataset.act;
+  if (act === 'run') {
+    if (bwRunning) { toast('Worker sudah jalan.'); return; }
+    $('#runworker-form').classList.remove('hidden');
+    $('#runworker-status').classList.add('hidden');
+    $('#runworker-modal').classList.remove('hidden');
+    return;
+  }
+  if (act !== 'del') return;
   const w = myWorkersCache.find(x => x.id === id);
   if (!confirm(t('confirm.worker.delete').replace('{name}', w ? w.name : id))) return;
   try {
@@ -991,6 +1097,18 @@ const I18N = {
     'btn.createworker': 'Buat Worker',
     'btn.copy': 'Salin',
     'btn.copy.instructions': 'Salin instruksi',
+    'btn.runWorker': 'Jalankan',
+    'btn.startWorker': 'Mulai',
+    'btn.stopWorker': 'Berhenti',
+    'modal.runworker.title': 'Jalankan Worker',
+    'modal.runworker.desc': 'Worker akan jalan dari browser ini selama halaman terbuka. Isi API AI dari akun lain untuk menjawab chat.',
+    'form.workertoken': 'Worker Token',
+    'form.aiurl': 'AI Base URL',
+    'form.aikey': 'AI API Key',
+    'form.aimodel': 'AI Model',
+    'runworker.status': 'Status',
+    'runworker.lastpoll': 'Poll terakhir',
+    'runworker.answered': 'Terjawab',
     'btn.done': 'Selesai',
     'btn.save': 'Simpan',
     'lang.switch': 'Ganti bahasa',
@@ -1184,6 +1302,18 @@ const I18N = {
     'btn.createworker': 'Create Worker',
     'btn.copy': 'Copy',
     'btn.copy.instructions': 'Copy instructions',
+    'btn.runWorker': 'Run',
+    'btn.startWorker': 'Start',
+    'btn.stopWorker': 'Stop',
+    'modal.runworker.title': 'Run Worker',
+    'modal.runworker.desc': 'Worker will run from this browser while the page stays open. Fill in AI API from another account to answer chats.',
+    'form.workertoken': 'Worker Token',
+    'form.aiurl': 'AI Base URL',
+    'form.aikey': 'AI API Key',
+    'form.aimodel': 'AI Model',
+    'runworker.status': 'Status',
+    'runworker.lastpoll': 'Last poll',
+    'runworker.answered': 'Answered',
     'btn.done': 'Done',
     'btn.save': 'Save',
     'lang.switch': 'Switch language',
