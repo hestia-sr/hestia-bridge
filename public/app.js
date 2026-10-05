@@ -739,34 +739,62 @@ $('#myworker-form').addEventListener('submit', async e => {
     $('#myworker-once-value').textContent = j.token;
     const _base = BRIDGE_BASE.replace(/\/v1$/, '');
     $('#myworker-instructions').textContent = LANG === 'en'
-      ? 'You are the answering engine behind Hestia Bridge. Keep this loop running every 30 seconds:\n' +
+      ? 'You are a Hestia Bridge Worker. Your task is real, not a simulation. Follow these steps exactly, repeat every 30 seconds without stopping:\n' +
       '\n' +
-      '1. Report that you are alive — POST to ' + _base + '/v1/worker/heartbeat\n' +
-      '   Header: Authorization: Bearer ' + j.token + '\n' +
+      'MANDATORY RULES:\n' +
+      '- You MUST send real HTTP requests for every step. Making up results is forbidden.\n' +
+      '- After each step, report the actual HTTP status code you received (e.g. 200, 404, 503).\n' +
+      '- If you cannot send HTTP requests, say honestly "I cannot send HTTP requests" — do not pretend.\n' +
+      '- Do not invent stories about revoked tokens, quotas, or anything you did not verify via a real request.\n' +
       '\n' +
-      '2. Look for waiting chats — GET ' + _base + '/v1/worker/pending\n' +
-      '   (use the same header)\n' +
+      'STEP 1 — HEARTBEAT (sign you are alive):\n' +
+      'POST to ' + _base + '/v1/worker/heartbeat\n' +
+      'Header: Authorization: Bearer ' + j.token + '\n' +
+      'Report the status you received.\n' +
       '\n' +
-      '3. When a chat is waiting — for each id:\n' +
-      '   a. POST to .../v1/worker/claim with {"id": "..."} to read it\n' +
-      '   b. Compose your best answer\n' +
-      '   c. POST to .../v1/worker/done with {"id": "...", "content": "your answer"}\n' +
+      'STEP 2 — CHECK QUEUE:\n' +
+      'GET ' + _base + '/v1/worker/pending\n' +
+      '(same header as above)\n' +
+      'Report the queue contents you received.\n' +
       '\n' +
-      '4. Nothing waiting — take it easy and check again in 30 seconds.'
-      : 'Kamu adalah mesin penjawab di balik Hestia Bridge. Jalankan putaran ini tiap 30 detik:\n' +
+      'STEP 3 — IF A CHAT IS WAITING, for each id:\n' +
+      'a. POST to ' + _base + '/v1/worker/claim with {"id": "THE_ID"} to read it\n' +
+      'b. Read the message, compose your best answer\n' +
+      'c. POST to ' + _base + '/v1/worker/done with {"id": "THE_ID", "content": "YOUR_ANSWER"}\n' +
+      'Report every status.\n' +
       '\n' +
-      '1. Kabari bahwa kamu hidup — POST ke ' + _base + '/v1/worker/heartbeat\n' +
-      '   Header: Authorization: Bearer ' + j.token + '\n' +
+      'STEP 4 — IF QUEUE IS EMPTY:\n' +
+      'Wait 30 seconds, repeat from STEP 1.\n' +
       '\n' +
-      '2. Intip chat yang menunggu — GET ke ' + _base + '/v1/worker/pending\n' +
-      '   (pakai header yang sama)\n' +
+      'Start now. Do STEP 1 first and report the result.'
+      : 'Kamu adalah Worker Hestia Bridge. Tugasmu nyata, bukan simulasi. Ikuti persis langkah ini, ulangi tiap 30 detik tanpa henti:\n' +
       '\n' +
-      '3. Kalau ada chat menunggu — untuk tiap id:\n' +
-      '   a. POST ke .../v1/worker/claim dengan {"id": "..."} untuk membacanya\n' +
-      '   b. Susun jawaban terbaikmu\n' +
-      '   c. POST ke .../v1/worker/done dengan {"id": "...", "content": "jawabanmu"}\n' +
+      'ATURAN WAJIB:\n' +
+      '- Kamu HARUS benar-benar mengirim HTTP request sungguhan setiap langkah. Dilarang mengarang hasil.\n' +
+      '- Setiap selesai satu langkah, laporkan kode status HTTP yang sebenarnya kamu terima (contoh: 200, 404, 503).\n' +
+      '- Kalau kamu tidak punya kemampuan kirim HTTP request, katakan jujur "saya tidak bisa kirim HTTP request" — jangan pura-pura berhasil.\n' +
+      '- Jangan membuat cerita tentang token dicabut, kuota, atau hal lain yang tidak kamu verifikasi lewat request sungguhan.\n' +
       '\n' +
-      '4. Tidak ada yang menunggu — santai saja, intip lagi 30 detik kemudian.';
+      'LANGKAH 1 — HEARTBEAT (tanda kamu hidup):\n' +
+      'POST ke ' + _base + '/v1/worker/heartbeat\n' +
+      'Header: Authorization: Bearer ' + j.token + '\n' +
+      'Laporkan status yang kamu terima.\n' +
+      '\n' +
+      'LANGKAH 2 — CEK ANTREAN:\n' +
+      'GET ke ' + _base + '/v1/worker/pending\n' +
+      '(header sama seperti di atas)\n' +
+      'Laporkan isi antrean yang kamu terima.\n' +
+      '\n' +
+      'LANGKAH 3 — KALAU ADA CHAT MENUNGGU, untuk tiap id:\n' +
+      'a. POST ke ' + _base + '/v1/worker/claim dengan {"id": "ID_TSB"} untuk ambil pesannya\n' +
+      'b. Baca pesannya, susun jawaban terbaikmu\n' +
+      'c. POST ke ' + _base + '/v1/worker/done dengan {"id": "ID_TSB", "content": "JAWABANMU"}\n' +
+      'Laporkan setiap status.\n' +
+      '\n' +
+      'LANGKAH 4 — KALAU ANTREAN KOSONG:\n' +
+      'Tunggu 30 detik, ulangi dari LANGKAH 1.\n' +
+      '\n' +
+      'Mulai sekarang. Kerjakan LANGKAH 1 dulu dan laporkan hasilnya.';
     $('#myworker-form').classList.add('hidden');
     $('#myworker-result').classList.remove('hidden');
   } catch (ex) {
