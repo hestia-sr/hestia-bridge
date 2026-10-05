@@ -87,6 +87,10 @@ function saveDb() {
 function uid(prefix) {
   return prefix + crypto.randomBytes(9).toString('hex');
 }
+function genKeyToken(mode) {
+  const prefix = mode === 'worker' ? 'sr-' : 'hesti-';
+  return prefix + crypto.randomBytes(32).toString('hex');
+}
 // Migrasi: user lama yang belum punya plan dapat Gratis 24 jam dari sekarang.
 (function migratePlans() {
   let changed = false;
@@ -502,7 +506,7 @@ app.post('/api/keys', requireAdmin, (req, res) => {
   }
   const k = {
     id: uid('key_'),
-    token: 'hb-' + crypto.randomBytes(24).toString('hex'),
+    token: genKeyToken(m),
     name: String(name).trim(),
     mode: m,
     providerId: pid,
@@ -550,7 +554,7 @@ app.patch('/api/keys/:id', requireAdmin, (req, res) => {
 app.post('/api/keys/:id/rotate', requireAdmin, (req, res) => {
   const k = db.keys.find(x => x.id === req.params.id);
   if (!k) return res.status(404).json({ error: 'key_not_found' });
-  k.token = 'hb-' + crypto.randomBytes(24).toString('hex');
+  k.token = genKeyToken(k.mode);
   saveDb();
   res.json({ id: k.id, token: k.token, masked: maskKey(k.token) });
 });
@@ -638,7 +642,7 @@ app.post('/api/my-keys', requireUser, (req, res) => {
   // No limits on how many keys a user may create (Hestia's decision).
   const k = {
     id: uid('key_'),
-    token: 'hb-' + crypto.randomBytes(24).toString('hex'),
+    token: genKeyToken(m),
     name: String(name).trim().slice(0, 60),
     mode: m,
     providerId: pid,
