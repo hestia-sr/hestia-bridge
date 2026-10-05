@@ -69,20 +69,6 @@ const PLAN_NAMES = {
   '1minggu': '1 Minggu',
 };
 const db = loadDb();
-// Migrasi: user lama yang belum punya plan dapat Gratis 24 jam dari sekarang.
-(function migratePlans() {
-  let changed = false;
-  const now = Date.now();
-  for (const u of db.users) {
-    if (u.role === 'admin') continue;
-    if (!u.plan || !u.planExpiresAt) {
-      u.plan = u.plan || 'gratis';
-      u.planExpiresAt = now + PLAN_DURATIONS.gratis;
-      changed = true;
-    }
-  }
-  if (changed) saveDb();
-})();
 let saveTimer = null;
 function saveDb() {
   clearTimeout(saveTimer);
@@ -101,6 +87,20 @@ function saveDb() {
 function uid(prefix) {
   return prefix + crypto.randomBytes(9).toString('hex');
 }
+// Migrasi: user lama yang belum punya plan dapat Gratis 24 jam dari sekarang.
+(function migratePlans() {
+  let changed = false;
+  const now = Date.now();
+  for (const u of db.users) {
+    if (u.role === 'admin') continue;
+    if (!u.plan || !u.planExpiresAt) {
+      u.plan = u.plan || 'gratis';
+      u.planExpiresAt = now + PLAN_DURATIONS.gratis;
+      changed = true;
+    }
+  }
+  if (changed) saveDb();
+})();
 function nowIso() {
   return new Date().toISOString();
 }
