@@ -159,7 +159,12 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 .container { max-width: 640px; margin: 0 auto; padding: 1.1rem 1rem 3rem; }
 .view { animation: fade .2s ease; }
 @keyframes fade { from { opacity: 0; transform: translateY(4px);} to { opacity: 1; transform: none;} }
-.page-title { font-size: 1.6rem; font-weight: 800; }
+.page-title {
+  font-size: 1.6rem; font-weight: 800;
+  background: var(--grad); -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  display: inline-block;
+}
 .page-sub { color: var(--muted); font-size: .92rem; margin: .25rem 0 1rem; }
 .action-row {
   display: flex; align-items: center; justify-content: space-between; margin-bottom: .9rem;
@@ -169,29 +174,37 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 }
 .section-head h2 { font-size: 1.15rem; font-weight: 800; }
 
-/* ---------- stat cards ---------- */
+/* ---------- stat strip (bukan kartu grid) ---------- */
 .stat-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: .8rem; margin-bottom: .4rem;
+  display: flex; gap: .6rem; overflow-x: auto; margin-bottom: 1.1rem;
+  padding: .2rem .1rem .4rem; scrollbar-width: none;
 }
+.stat-grid::-webkit-scrollbar { display: none; }
 .stat {
-  background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
-  padding: .9rem 1rem; display: flex; align-items: center; gap: .8rem;
+  background: var(--grad); border-radius: 16px; box-shadow: var(--shadow);
+  padding: .8rem 1rem; display: flex; align-items: center; gap: .7rem;
+  flex: none; min-width: 148px; color: #fff;
 }
 .stat-ico {
-  width: 42px; height: 42px; border-radius: 12px; flex: none;
+  width: 38px; height: 38px; border-radius: 12px; flex: none;
   display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.22); color: #fff;
 }
-.stat-ico.rose { background: #ffe4e6; color: #e11d48; }
-.stat-ico.purple { background: #ede9fe; color: #7c3aed; }
-.stat-ico.green { background: #dcfce7; color: #16a34a; }
-.stat-ico.red { background: #fee2e2; color: #dc2626; }
-.stat .num { font-size: 1.35rem; font-weight: 800; line-height: 1.2; }
-.stat .lbl { font-size: .78rem; color: var(--muted); }
+.stat-ico.rose, .stat-ico.purple, .stat-ico.green, .stat-ico.red {
+  background: rgba(255,255,255,.22); color: #fff;
+}
+.stat .num { font-size: 1.25rem; font-weight: 800; line-height: 1.2; }
+.stat .lbl { font-size: .75rem; opacity: .85; }
 
-/* ---------- key cards ---------- */
+/* ---------- key cards (gaya sendiri: aksen kiri gradien) ---------- */
 .key-card {
   background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
-  padding: 1.1rem 1.15rem; margin-bottom: .9rem;
+  padding: 1.1rem 1.15rem 1.1rem 1.35rem; margin-bottom: .9rem;
+  position: relative; overflow: hidden;
+}
+.key-card::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+  background: var(--grad);
 }
 .key-top { display: flex; align-items: center; gap: .55rem; }
 .key-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); flex: none; }
@@ -273,5 +286,5 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 .empty { text-align: center; padding: 2rem 1rem; }
 
 @media (min-width: 720px) {
-  .stat-grid { grid-template-columns: repeat(4, 1fr); }
+  .stat { min-width: 170px; }
 }
