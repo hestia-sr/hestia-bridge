@@ -65,9 +65,9 @@
       <button id="drawer-btn" class="icon-btn" aria-label="Menu">
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z" fill="currentColor"/></svg>
       </button>
-      <span class="topbar-title">Kunci API</span>
-      <button id="export-btn" class="icon-btn" aria-label="Unduh data pemakaian" title="Unduh data pemakaian (CSV)">
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 3v12.2l-4.6-4.6L6 12l6 6 6-6-1.4-1.4L12 15.2V3h-2zM5 19h14v2H5v-2z" fill="currentColor"/></svg>
+      <span class="topbar-title" data-i18n="topbar.keys">Kunci API</span>
+      <button id="lang-btn" class="lang-btn" aria-label="Ganti bahasa">
+        <span class="lang-globe">🌐</span><span id="lang-label">ID</span>
       </button>
     </div>
   </header>
@@ -87,25 +87,25 @@
     <nav class="drawer-nav">
       <button class="drawer-btn admin-only" data-view="keys">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M14 3a7 7 0 0 0-6.9 8.2L3 15.3V21h5.7l4.1-4.1A7 7 0 1 0 14 3zm1.4 4.6a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z" fill="currentColor"/></svg>
-        <span>Kunci API</span>
+        <span data-i18n="nav.keys">Kunci API</span>
       </button>
       <button class="drawer-btn admin-only" data-view="providers">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm1 2v2h4V7H5zm12 0v2h-4V7h4zM5 12v4h14v-4H5z" fill="currentColor"/></svg>
-        <span>Provider</span>
+        <span data-i18n="nav.providers">Provider</span>
       </button>
       <button class="drawer-btn admin-only" data-view="users">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-4 0-7 2-7 5v1h14v-1c0-3-3-5-7-5z" fill="currentColor"/></svg>
-        <span>Pengguna</span>
+        <span data-i18n="nav.users">Pengguna</span>
       </button>
       <button class="drawer-btn user-only" data-view="mykeys">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M14 3a7 7 0 0 0-6.9 8.2L3 15.3V21h5.7l4.1-4.1A7 7 0 1 0 14 3zm1.4 4.6a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z" fill="currentColor"/></svg>
-        <span>Key Saya</span>
+        <span data-i18n="nav.mykeys">Key Saya</span>
       </button>
     </nav>
     <div class="drawer-foot">
       <button id="logout-btn" class="drawer-btn">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4v2H5v14h4v2zm7-16l-4 4h6v2H8l4 4 1.4-1.4L10.8 11H20v-2h-9.2l2.6-2.6L12 5z" fill="currentColor"/></svg>
-        <span>Keluar</span>
+        <span data-i18n="nav.logout">Keluar</span>
       </button>
     </div>
   </aside>
@@ -117,8 +117,8 @@
       <div class="hero">
         <div class="hero-top">
           <div>
-            <h1 class="hero-title">Kunci API</h1>
-            <p class="hero-sub">Satu provider = satu API key. Kuota mengikuti provider masing-masing.</p>
+            <h1 class="hero-title" data-i18n="hero.keys">Kunci API</h1>
+            <p class="hero-sub" data-i18n="hero.keys.sub">Satu provider = satu API key. Kuota mengikuti provider masing-masing.</p>
           </div>
           <button id="refresh-btn" class="hero-refresh" aria-label="Refresh">
             <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5V1L6 7l6 6V9a8 8 0 1 1-8 8H2a10 10 0 1 0 10-12z" fill="currentColor"/></svg>
@@ -126,7 +126,7 @@
         </div>
         <button id="new-key-btn" class="btn btn-hero">
           <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" fill="currentColor"/></svg>
-          <span>Tambah key</span>
+          <span data-i18n="btn.addkey">Tambah key</span>
         </button>
       </div>
 
@@ -168,8 +168,8 @@
     <!-- ===== PROVIDERS VIEW ===== -->
     <section id="view-providers" class="view hidden">
       <div class="hero">
-        <h1 class="hero-title">Provider</h1>
-        <p class="hero-sub">Sambungkan AI provider yang kompatibel dengan OpenAI API.</p>
+        <h1 class="hero-title" data-i18n="hero.providers">Provider</h1>
+        <p class="hero-sub" data-i18n="hero.providers.sub">Sambungkan AI provider yang kompatibel dengan OpenAI API.</p>
       </div>
 
       <div class="hero-body">
@@ -204,8 +204,8 @@
       <div class="hero">
         <div class="hero-top">
           <div>
-            <h1 class="hero-title">Key Saya</h1>
-            <p class="hero-sub">Buat API key sendiri, tanpa batasan jumlah.</p>
+            <h1 class="hero-title" data-i18n="hero.mykeys">Key Saya</h1>
+            <p class="hero-sub" data-i18n="hero.mykeys.sub">Buat API key sendiri, tanpa batasan jumlah.</p>
           </div>
           <button id="my-refresh-btn" class="hero-refresh" aria-label="Refresh">
             <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5V1L6 7l6 6V9a8 8 0 1 1-8 8H2a10 10 0 1 0 10-12z" fill="currentColor"/></svg>
@@ -213,7 +213,7 @@
         </div>
         <button id="my-new-key-btn" class="btn btn-hero">
           <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" fill="currentColor"/></svg>
-          <span>Buat Key</span>
+          <span data-i18n="btn.createkey">Buat Key</span>
         </button>
       </div>
 
@@ -283,8 +283,8 @@
       <div class="hero">
         <div class="hero-top">
           <div>
-            <h1 class="hero-title">Pengguna</h1>
-            <p class="hero-sub">Akun pengguna yang mendaftar sendiri lewat halaman Daftar.</p>
+            <h1 class="hero-title" data-i18n="hero.users">Pengguna</h1>
+            <p class="hero-sub" data-i18n="hero.users.sub">Akun pengguna yang mendaftar sendiri lewat halaman Daftar.</p>
           </div>
           <button id="users-refresh-btn" class="hero-refresh" aria-label="Refresh">
             <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5V1L6 7l6 6V9a8 8 0 1 1-8 8H2a10 10 0 1 0 10-12z" fill="currentColor"/></svg>
