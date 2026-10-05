@@ -209,6 +209,12 @@ function requireBridgeKey(req, res, next) {
     res.set('Retry-After', '60');
     return bridgeError(res, 429, 'Rate limit exceeded: max 60 requests per minute for this key.');
   }
+  if (key.tokenQuota > 0) {
+    const st = keyStats(key.id);
+    if (st.totalTokens >= key.tokenQuota) {
+      return bridgeError(res, 429, 'Kuota token key ini sudah habis (' + key.tokenQuota.toLocaleString('id-ID') + ' token).');
+    }
+  }
   const provider = db.providers.find(p => p.id === key.providerId);
   if (key.mode === 'worker') {
     // Worker-mode keys are answered by a connected worker, not a provider.
@@ -440,13 +446,13 @@ app.get('/api/keys', requireAdmin, (req, res) => {
         workerId: k.workerId || null, workerName: w ? w.name : null,
         userId: k.userId || null, ownerEmail: owner ? owner.email : 'admin',
         createdAt: k.createdAt, lastUsedAt: k.lastUsedAt || null,
-        revoked: !!k.revoked, stats: keyStats(k.id)
+        revoked: !!k.revoked, tokenQuota: k.tokenQuota || null, stats: keyStats(k.id)
       };
     })
   });
 });
 app.post('/api/keys', requireAdmin, (req, res) => {
-  const { name, providerId, mode, workerId } = req.body || {};
+  const { name, providerId, mode, workerId, tokenQuota } = req.body || {};
   const m = mode === 'worker' ? 'worker' : 'provider';
   if (!name || !String(name).trim()) return res.status(400).json({ error: 'name is required' });
   let pid = providerId || null;
@@ -470,6 +476,7 @@ app.post('/api/keys', requireAdmin, (req, res) => {
     providerId: pid,
     workerId: wid,
     userId: null, // admin-owned
+    tokenQuota: tokenQuota > 0 ? Math.floor(tokenQuota) : null,
     createdAt: nowIso(),
     lastUsedAt: null,
     revoked: false
@@ -501,11 +508,12 @@ app.post('/api/keys/:id/restore', requireAdmin, (req, res) => {
 app.patch('/api/keys/:id', requireAdmin, (req, res) => {
   const k = db.keys.find(x => x.id === req.params.id);
   if (!k) return res.status(404).json({ error: 'key_not_found' });
-  const { name } = req.body || {};
+  const { name, tokenQuota } = req.body || {};
   if (!name || !String(name).trim()) return res.status(400).json({ error: 'name required' });
   k.name = String(name).trim().slice(0, 60);
+  k.tokenQuota = tokenQuota > 0 ? Math.floor(tokenQuota) : null;
   saveDb();
-  res.json({ ok: true, id: k.id, name: k.name });
+  res.json({ ok: true, id: k.id, name: k.name, tokenQuota: k.tokenQuota });
 });
 app.post('/api/keys/:id/rotate', requireAdmin, (req, res) => {
   const k = db.keys.find(x => x.id === req.params.id);
@@ -560,7 +568,7 @@ function userKeyShape(k) {
     workerId: k.workerId || null, workerName: w ? w.name : null,
     workerOnline: w ? workerOnline(w) : null,
     createdAt: k.createdAt, lastUsedAt: k.lastUsedAt || null,
-    revoked: !!k.revoked, stats: keyStats(k.id)
+    revoked: !!k.revoked, tokenQuota: k.tokenQuota || null, stats: keyStats(k.id)
   };
 }
 /* Ownership check for /api/my-keys/:id. Returns the key or sends 404/403. */
@@ -576,7 +584,7 @@ app.get('/api/my-keys', requireUser, (req, res) => {
   res.json({ keys: db.keys.filter(k => (k.userId || null) === myId).map(userKeyShape) });
 });
 app.post('/api/my-keys', requireUser, (req, res) => {
-  const { name, mode, providerId, workerId } = req.body || {};
+  const { name, mode, providerId, workerId, tokenQuota } = req.body || {};
   const m = mode === 'worker' ? 'worker' : 'provider';
   if (!name || !String(name).trim()) return res.status(400).json({ error: 'name is required' });
   let pid = null, wid = null;
@@ -604,6 +612,7 @@ app.post('/api/my-keys', requireUser, (req, res) => {
     providerId: pid,
     workerId: wid,
     userId: req.user ? req.user.id : null,
+    tokenQuota: tokenQuota > 0 ? Math.floor(tokenQuota) : null,
     createdAt: nowIso(),
     lastUsedAt: null,
     revoked: false
