@@ -8,8 +8,8 @@
 </head>
 <body>
 
-<!-- ============ LOGIN VIEW ============ -->
-<div id="login-view" class="center-wrap hidden">
+<!-- ============ AUTH VIEW ============ -->
+<div id="auth-view" class="center-wrap hidden">
   <div class="login-card">
     <div class="brand">
       <svg class="logo" viewBox="0 0 32 32" width="40" height="40" aria-hidden="true">
@@ -22,15 +22,30 @@
         <p class="muted">Kelola API key AI kamu dari satu dashboard.</p>
       </div>
     </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-tab="login" type="button">Masuk</button>
+      <button class="auth-tab" data-tab="register" type="button">Daftar</button>
+    </div>
     <form id="login-form">
       <label>Email
         <input type="email" id="login-email" placeholder="nama@email.com" autocomplete="username" required>
       </label>
       <label>Password
-        <input type="password" id="login-password" placeholder="Password admin" autocomplete="current-password" required>
+        <input type="password" id="login-password" placeholder="Password" autocomplete="current-password" required>
       </label>
       <div id="login-error" class="error hidden"></div>
       <button type="submit" class="btn btn-primary btn-block">Masuk</button>
+    </form>
+    <form id="register-form" class="hidden">
+      <label>Email (Gmail)
+        <input type="email" id="reg-email" placeholder="nama@gmail.com" autocomplete="username" required>
+      </label>
+      <label>Password (min 6 karakter)
+        <input type="password" id="reg-password" placeholder="Min 6 karakter" autocomplete="new-password" minlength="6" required>
+      </label>
+      <div id="reg-error" class="error hidden"></div>
+      <button type="submit" class="btn btn-primary btn-block">Daftar</button>
+      <p class="muted small note">Hanya Gmail yang bisa daftar. Satu perangkat maksimal 3 akun.</p>
     </form>
     <div class="terminal-card">
       <div class="term-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title">contoh pakai</span></div>
@@ -68,13 +83,21 @@
       <span class="brand-name">Hestia Bridge</span>
     </div>
     <nav class="drawer-nav">
-      <button class="drawer-btn active" data-view="keys">
+      <button class="drawer-btn admin-only" data-view="keys">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M14 3a7 7 0 0 0-6.9 8.2L3 15.3V21h5.7l4.1-4.1A7 7 0 1 0 14 3zm1.4 4.6a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z" fill="currentColor"/></svg>
         <span>Kunci API</span>
       </button>
-      <button class="drawer-btn" data-view="providers">
+      <button class="drawer-btn admin-only" data-view="providers">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm1 2v2h4V7H5zm12 0v2h-4V7h4zM5 12v4h14v-4H5z" fill="currentColor"/></svg>
         <span>Provider</span>
+      </button>
+      <button class="drawer-btn admin-only" data-view="users">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-4 0-7 2-7 5v1h14v-1c0-3-3-5-7-5z" fill="currentColor"/></svg>
+        <span>Pengguna</span>
+      </button>
+      <button class="drawer-btn user-only" data-view="mykeys">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M14 3a7 7 0 0 0-6.9 8.2L3 15.3V21h5.7l4.1-4.1A7 7 0 1 0 14 3zm1.4 4.6a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z" fill="currentColor"/></svg>
+        <span>Key Saya</span>
       </button>
     </nav>
     <div class="drawer-foot">
@@ -166,6 +189,74 @@
       <div id="prov-list"></div>
     </section>
 
+    <!-- ===== MY KEYS VIEW (pengguna) ===== -->
+    <section id="view-mykeys" class="view hidden">
+      <h1 class="page-title">Key Saya</h1>
+      <p class="page-sub">Buat API key sendiri, tanpa batasan jumlah.</p>
+
+      <div class="action-row">
+        <button id="my-refresh-btn" class="link-btn">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 5V1L6 7l6 6V9a8 8 0 1 1-8 8H2a10 10 0 1 0 10-12z" fill="currentColor"/></svg>
+          <span>Refresh</span>
+        </button>
+        <button id="my-new-key-btn" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" fill="currentColor"/></svg>
+          <span>Buat Key</span>
+        </button>
+      </div>
+
+      <div id="mykey-list"></div>
+
+      <div class="section-head">
+        <h2>Worker Saya</h2>
+        <span class="muted small" id="myworker-count"></span>
+      </div>
+      <p class="page-sub">Daftarkan worker dari akun AI milikmu — key mode worker milikmu dijawab worker ini secara otomatis.</p>
+      <div class="action-row">
+        <span></span>
+        <button id="my-new-worker-btn" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" fill="currentColor"/></svg>
+          <span>Buat Worker</span>
+        </button>
+      </div>
+      <div id="myworker-list"></div>
+
+      <div class="guide-card">
+        <h2>Cara pakai</h2>
+        <ol class="guide-steps">
+          <li>
+            <span class="step-num">1</span>
+            <p>Klik <strong>Buat Key</strong> — pilih mode <strong>Provider</strong> (pakai provider yang tersedia) atau <strong>Worker</strong> (dijawab worker AI).</p>
+          </li>
+          <li>
+            <span class="step-num">2</span>
+            <p>Untuk mode Worker: buat dulu worker di bagian <strong>Worker Saya</strong>, salin tokennya, lalu tempel instruksi yang diberikan ke akun AI milikmu supaya ia bekerja otomatis tiap 5 menit.</p>
+          </li>
+          <li>
+            <span class="step-num">3</span>
+            <p>Di aplikasi AI di HP yang mendukung custom endpoint OpenAI: isi <strong>Base URL</strong> dengan<br><code id="my-guide-base-url">https://hestia-bridge-production.up.railway.app/v1</code><br>dan <strong>API Key</strong> dengan key <code>hb-...</code> milikmu (klik <strong>Cara sambung</strong> di kartu key untuk salin cepat), lalu pakai seperti biasa lewat prompt.</p>
+          </li>
+        </ol>
+      </div>
+
+      <p class="foot-note muted">Hestia Bridge · <span id="my-foot-email"></span></p>
+    </section>
+
+    <!-- ===== USERS VIEW (admin) ===== -->
+    <section id="view-users" class="view hidden">
+      <h1 class="page-title">Pengguna</h1>
+      <p class="page-sub">Akun pengguna yang mendaftar sendiri lewat halaman Daftar.</p>
+
+      <div class="action-row">
+        <button id="users-refresh-btn" class="link-btn">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 5V1L6 7l6 6V9a8 8 0 1 1-8 8H2a10 10 0 1 0 10-12z" fill="currentColor"/></svg>
+          <span>Refresh</span>
+        </button>
+      </div>
+
+      <div id="users-list"></div>
+    </section>
+
   </main>
 </div>
 
@@ -244,6 +335,81 @@
       <div id="rename-error" class="error hidden"></div>
       <button type="submit" class="btn btn-primary btn-block">Simpan</button>
     </form>
+  </div>
+</div>
+
+<!-- ============ MY KEY MODAL (pengguna) ============ -->
+<div id="mykey-modal" class="modal-backdrop hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Buat API Key</h3>
+      <button class="icon-btn" id="mykey-modal-close" aria-label="Tutup">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6.4 5L5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6 6.4 5z" fill="currentColor"/></svg>
+      </button>
+    </div>
+    <form id="mykey-form">
+      <label>Nama key
+        <input type="text" id="mykey-name" placeholder="cth: Key HP" required>
+      </label>
+      <label>Mode
+        <select id="mykey-mode" class="select">
+          <option value="provider">Provider — dijawab provider AI</option>
+          <option value="worker">Worker — dijawab worker milikmu</option>
+        </select>
+      </label>
+      <label id="mykey-provider-wrap">Provider
+        <select id="mykey-provider" class="select"></select>
+      </label>
+      <label id="mykey-worker-wrap" class="hidden">Worker
+        <select id="mykey-worker" class="select"></select>
+      </label>
+      <div id="mykey-error" class="error hidden"></div>
+      <button type="submit" class="btn btn-primary btn-block">Buat Key</button>
+    </form>
+    <div id="mykey-result" class="hidden">
+      <p class="muted small">Key hanya ditampilkan sekali. Salin sekarang.</p>
+      <div class="key-once"><code id="mykey-once-value"></code>
+        <button class="btn btn-ghost" id="mykey-once-copy">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 3h11a1 1 0 0 1 1 1v14h-2V5H8V3zM5 5h2v2H5v12h12v-2h2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" fill="currentColor"/></svg>
+          <span>Salin</span>
+        </button>
+      </div>
+      <button class="btn btn-primary btn-block" id="mykey-done">Selesai</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MY WORKER MODAL (pengguna) ============ -->
+<div id="myworker-modal" class="modal-backdrop hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Buat Worker</h3>
+      <button class="icon-btn" id="myworker-modal-close" aria-label="Tutup">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6.4 5L5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6 6.4 5z" fill="currentColor"/></svg>
+      </button>
+    </div>
+    <form id="myworker-form">
+      <label>Nama worker
+        <input type="text" id="myworker-name" placeholder="cth: Worker HP" required>
+      </label>
+      <div id="myworker-error" class="error hidden"></div>
+      <button type="submit" class="btn btn-primary btn-block">Buat Worker</button>
+    </form>
+    <div id="myworker-result" class="hidden">
+      <p class="muted small">Token worker hanya ditampilkan sekali. Salin sekarang, lalu tempel instruksi di bawah ke akun AI milikmu.</p>
+      <div class="key-once"><code id="myworker-once-value"></code>
+        <button class="btn btn-ghost" id="myworker-once-copy">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 3h11a1 1 0 0 1 1 1v14h-2V5H8V3zM5 5h2v2H5v12h12v-2h2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" fill="currentColor"/></svg>
+          <span>Salin</span>
+        </button>
+      </div>
+      <div class="terminal-card">
+        <div class="term-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title">instruksi worker — tempel ke akun AI</span></div>
+<pre class="term-body" id="myworker-instructions"></pre>
+      </div>
+      <button class="btn btn-block" id="myworker-instructions-copy">Salin instruksi</button>
+      <button class="btn btn-primary btn-block" id="myworker-done">Selesai</button>
+    </div>
   </div>
 </div>
 
