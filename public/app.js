@@ -78,6 +78,7 @@ function enterApp(me) {
   }
   renderApps();
   $('#home-cta').onclick = () => switchView(isAdmin ? 'keys' : 'mykeys');
+  if (!isAdmin) loadPlan(); else { $('#plan-card').hidden = true; if (planTimer) clearInterval(planTimer); }
 }
 
 /* Fingerprint perangkat sederhana untuk batas 3 akun per device. */
@@ -148,7 +149,45 @@ async function doLogout() {
 }
 $('#logout-btn2').addEventListener('click', doLogout);
 
-/* --------------------------- account panel ------------------------------ */
+/* --------------------------- plan countdown ----------------------------- */
+let planTimer = null;
+let planData = null;
+function fmtCountdown(ms) {
+  if (ms <= 0) return LANG === 'en' ? 'Expired' : 'Habis';
+  const s = Math.floor(ms / 1000);
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  if (d > 0) return d + 'h ' + h + 'j ' + m + 'm';
+  if (h > 0) return h + 'j ' + m + 'm ' + sec + 'd';
+  return m + 'm ' + sec + 'd';
+}
+function renderPlan() {
+  const card = $('#plan-card');
+  if (!planData || !card) return;
+  card.hidden = false;
+  const badge = $('#plan-badge');
+  badge.textContent = planData.planName || 'Gratis';
+  badge.classList.toggle('expired', !!planData.expired);
+  const now = Date.now();
+  const remain = Math.max(0, (planData.planExpiresAt || 0) - now);
+  $('#plan-countdown').textContent = fmtCountdown(remain);
+  // progress bar: sisa dibanding total durasi paket
+  const totals = { gratis: 864e5, '1hari': 864e5, '3hari': 3 * 864e5, '1minggu': 7 * 864e5 };
+  const total = totals[planData.plan] || 864e5;
+  const pct = Math.min(100, Math.max(0, (remain / total) * 100));
+  $('#plan-bar-fill').style.width = pct + '%';
+}
+async function loadPlan() {
+  try {
+    const p = await api('/api/my-plan');
+    planData = p;
+    renderPlan();
+    if (planTimer) clearInterval(planTimer);
+    planTimer = setInterval(renderPlan, 1000);
+  } catch (e) { /* abaikan */ }
+}
 const BOT_URL = 'https://t.me/Hestia_gateway_bot';
 function openAccount() {
   const email = (window.currentUser && window.currentUser.email) || '';
