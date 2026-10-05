@@ -44,13 +44,15 @@ function loadDb() {
       return {
         providers: Array.isArray(d.providers) ? d.providers : [],
         keys: Array.isArray(d.keys) ? d.keys : [],
-        usage: Array.isArray(d.usage) ? d.usage : []
+        usage: Array.isArray(d.usage) ? d.usage : [],
+        workers: Array.isArray(d.workers) ? d.workers : [],
+        wqueue: Array.isArray(d.wqueue) ? d.wqueue : []
       };
     }
   } catch (e) {
     console.error('[db] load failed, starting fresh:', e.message);
   }
-  return { providers: [], keys: [], usage: [] };
+  return { providers: [], keys: [], usage: [], workers: [], wqueue: [] };
 }
 const db = loadDb();
 let saveTimer = null;
@@ -167,21 +169,29 @@ function requireBridgeKey(req, res, next) {
     return bridgeError(res, 429, 'Rate limit exceeded: max 60 requests per minute for this key.');
   }
   const provider = db.providers.find(p => p.id === key.providerId);
+  if (key.mode === 'worker') {
+    // Worker-mode keys are answered by a connected worker, not a provider.
+    req.bridgeKey = key;
+    req.provider = null;
+    return next();
+  }
   if (!provider) return bridgeError(res, 401, 'The provider bound to this key no longer exists.');
   req.bridgeKey = key;
   req.provider = provider;
   next();
 }
 
-function recordUsage(keyId, model, promptTokens, completionTokens, streamed) {
-  db.usage.push({
+function recordUsage(keyId, model, promptTokens, completionTokens, streamed, via) {
+  const entry = {
     keyId,
     ts: nowIso(),
     model: model || 'unknown',
     promptTokens: promptTokens || 0,
     completionTokens: completionTokens || 0,
     streamed: !!streamed
-  });
+  };
+  if (via) entry.via = via;
+  db.usage.push(entry);
   // keep the log bounded: last 50k entries
   if (db.usage.length > 50000) db.usage.splice(0, db.usage.length - 50000);
   const k = db.keys.find(x => x.id === keyId);
@@ -314,6 +324,7 @@ app.get('/api/keys', requireAdmin, (req, res) => {
       const p = db.providers.find(x => x.id === k.providerId);
       return {
         id: k.id, name: k.name, masked: maskKey(k.token),
+        mode: k.mode || 'provider',
         providerId: k.providerId, providerName: p ? p.name : '(deleted)',
         createdAt: k.createdAt, lastUsedAt: k.lastUsedAt || null,
         revoked: !!k.revoked, stats: keyStats(k.id)
@@ -322,15 +333,21 @@ app.get('/api/keys', requireAdmin, (req, res) => {
   });
 });
 app.post('/api/keys', requireAdmin, (req, res) => {
-  const { name, providerId } = req.body || {};
-  if (!name || !providerId) return res.status(400).json({ error: 'name and providerId are required' });
-  const p = db.providers.find(x => x.id === providerId);
-  if (!p) return res.status(404).json({ error: 'provider_not_found' });
+  const { name, providerId, mode } = req.body || {};
+  const m = mode === 'worker' ? 'worker' : 'provider';
+  if (!name || !String(name).trim()) return res.status(400).json({ error: 'name is required' });
+  let pid = providerId || null;
+  if (m === 'provider') {
+    if (!pid) return res.status(400).json({ error: 'name and providerId are required' });
+    const p = db.providers.find(x => x.id === pid);
+    if (!p) return res.status(404).json({ error: 'provider_not_found' });
+  }
   const k = {
     id: uid('key_'),
     token: 'hb-' + crypto.randomBytes(24).toString('hex'),
     name: String(name).trim(),
-    providerId,
+    mode: m,
+    providerId: pid,
     createdAt: nowIso(),
     lastUsedAt: null,
     revoked: false
@@ -338,7 +355,7 @@ app.post('/api/keys', requireAdmin, (req, res) => {
   db.keys.push(k);
   saveDb();
   // Full token is returned exactly once, at creation.
-  res.json({ id: k.id, name: k.name, token: k.token, providerId, createdAt: k.createdAt });
+  res.json({ id: k.id, name: k.name, token: k.token, mode: m, providerId: pid, createdAt: k.createdAt });
 });
 app.get('/api/keys/:id/reveal', requireAdmin, (req, res) => {
   const k = db.keys.find(x => x.id === req.params.id);
@@ -391,6 +408,109 @@ app.delete('/api/keys/:id', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+/* =========================== admin: workers ============================== */
+const WORKER_ONLINE_MS = 10 * 60 * 1000; // heartbeat considered fresh < 10 min
+const QUEUE_EXPIRE_MS = 220 * 1000;      // pending items older than this expire
+const WORKER_WAIT_MS = 55 * 1000;        // how long /v1/chat waits for an answer
+
+function workerOnline(w) {
+  return !!w.lastHeartbeat && (Date.now() - new Date(w.lastHeartbeat).getTime() < WORKER_ONLINE_MS);
+}
+function anyWorkerOnline() {
+  return db.workers.some(workerOnline);
+}
+function expireOldQueueItems() {
+  const cutoff = Date.now() - QUEUE_EXPIRE_MS;
+  let changed = false;
+  for (const q of db.wqueue) {
+    if (q.status === 'pending' && new Date(q.receivedAt).getTime() < cutoff) {
+      q.status = 'expired';
+      changed = true;
+    }
+  }
+  // Keep the queue bounded: drop done/expired items older than 1 hour.
+  const pruneCut = Date.now() - 60 * 60 * 1000;
+  const before = db.wqueue.length;
+  db.wqueue = db.wqueue.filter(q =>
+    !((q.status === 'done' || q.status === 'expired') &&
+      new Date(q.receivedAt).getTime() < pruneCut));
+  if (changed || db.wqueue.length !== before) saveDb();
+}
+
+app.post('/api/workers', requireAdmin, (req, res) => {
+  const { name } = req.body || {};
+  if (!name || !String(name).trim()) return res.status(400).json({ error: 'name required' });
+  const w = {
+    id: uid('worker_'),
+    name: String(name).trim().slice(0, 60),
+    token: 'wt-' + crypto.randomBytes(16).toString('hex'),
+    createdAt: nowIso(),
+    lastHeartbeat: null
+  };
+  db.workers.push(w);
+  saveDb();
+  // Full worker token is returned exactly once, at creation.
+  res.json({ id: w.id, name: w.name, token: w.token, createdAt: w.createdAt });
+});
+app.get('/api/workers', requireAdmin, (req, res) => {
+  res.json({
+    workers: db.workers.map(w => ({
+      id: w.id, name: w.name, createdAt: w.createdAt,
+      lastHeartbeat: w.lastHeartbeat, online: workerOnline(w)
+    }))
+  });
+});
+app.delete('/api/workers/:id', requireAdmin, (req, res) => {
+  const i = db.workers.findIndex(x => x.id === req.params.id);
+  if (i < 0) return res.status(404).json({ error: 'worker_not_found' });
+  db.workers.splice(i, 1);
+  saveDb();
+  res.json({ ok: true });
+});
+
+/* ========================= worker API (wt- token) ========================= */
+function requireWorker(req, res, next) {
+  const auth = req.headers.authorization || '';
+  const m = auth.match(/^Bearer\s+(.+)$/i);
+  if (!m) return bridgeError(res, 401, 'Missing Authorization: Bearer wt-... header.');
+  const token = m[1].trim();
+  const w = db.workers.find(x => x.token === token);
+  if (!w) return bridgeError(res, 401, 'Invalid worker token.');
+  req.worker = w;
+  next();
+}
+app.post('/v1/worker/heartbeat', requireWorker, (req, res) => {
+  req.worker.lastHeartbeat = nowIso();
+  saveDb();
+  res.json({ ok: true });
+});
+app.get('/v1/worker/pending', requireWorker, (req, res) => {
+  expireOldQueueItems();
+  const pending = db.wqueue
+    .filter(q => q.status === 'pending')
+    .map(q => ({ id: q.id, received_at: q.receivedAt }));
+  res.json({ pending, worker_online: true });
+});
+app.post('/v1/worker/claim', requireWorker, (req, res) => {
+  const { id } = req.body || {};
+  const q = db.wqueue.find(x => x.id === id);
+  if (!q) return res.status(404).json({ error: 'queue_item_not_found' });
+  if (q.status !== 'pending') return res.status(409).json({ error: 'already_claimed' });
+  q.status = 'claimed';
+  q.claimedAt = nowIso();
+  saveDb();
+  res.json({ request: { messages: q.messages, max_tokens: q.maxTokens, model: q.model } });
+});
+app.post('/v1/worker/done', requireWorker, (req, res) => {
+  const { id, content } = req.body || {};
+  const q = db.wqueue.find(x => x.id === id);
+  if (!q) return res.status(404).json({ error: 'queue_item_not_found' });
+  q.status = 'done';
+  q.answer = String(content == null ? '' : content);
+  saveDb();
+  res.json({ ok: true });
+});
+
 /* ============================ admin: usage ================================ */
 app.get('/api/usage', requireAdmin, (req, res) => {
   const { keyId, days } = req.query;
@@ -425,13 +545,71 @@ app.get('/api/stats', requireAdmin, (req, res) => {
 
 /* ================== OpenAI-compatible bridge endpoints =================== */
 app.get('/v1/models', requireBridgeKey, (req, res) => {
+  if (req.bridgeKey.mode === 'worker' || !req.provider) {
+    // Worker-mode keys have no fixed model list; the worker decides.
+    return res.json({ object: 'list', data: [] });
+  }
   const models = (req.provider.models || []).map(id => ({
     id, object: 'model', created: Math.floor(Date.now() / 1000), owned_by: req.provider.name
   }));
   res.json({ object: 'list', data: models });
 });
 
+/* Worker mode: queue the request and wait (max 55s) for a worker to answer.
+ * Streaming is ignored in worker mode; the answer always comes back as one
+ * non-streaming OpenAI-style chat completion object. */
+async function handleWorkerChat(req, res) {
+  const body = req.body || {};
+  if (!anyWorkerOnline()) {
+    return res.status(503).json({ error: { message: 'worker offline', code: 'worker_offline' } });
+  }
+  const item = {
+    id: uid('wq_'),
+    keyId: req.bridgeKey.id,
+    model: body.model || 'worker',
+    messages: Array.isArray(body.messages) ? body.messages : [],
+    maxTokens: body.max_tokens != null ? body.max_tokens : null,
+    receivedAt: nowIso(),
+    status: 'pending',
+    answer: null,
+    claimedAt: null
+  };
+  db.wqueue.push(item);
+  saveDb();
+
+  let cancelled = false;
+  res.on('close', () => { if (!res.writableEnded) cancelled = true; });
+
+  const start = Date.now();
+  await new Promise(resolve => {
+    (function check() {
+      if (cancelled || item.status === 'done' || Date.now() - start >= WORKER_WAIT_MS) return resolve();
+      setTimeout(check, 1000);
+    })();
+  });
+
+  if (cancelled) return; // client went away; leave the item for the worker/expiry
+  if (item.status !== 'done') {
+    return res.status(503).json({ error: { message: 'worker tidak menjawab tepat waktu', code: 'worker_timeout' } });
+  }
+  const answer = item.answer || '';
+  const pt = estimateTokens(JSON.stringify(body.messages || []));
+  const ct = estimateTokens(answer);
+  recordUsage(req.bridgeKey.id, body.model || 'worker', pt, ct, false, 'worker');
+  res.json({
+    id: 'chatcmpl-w' + crypto.randomBytes(8).toString('hex'),
+    object: 'chat.completion',
+    created: Math.floor(Date.now() / 1000),
+    model: body.model || 'worker',
+    choices: [{ index: 0, message: { role: 'assistant', content: answer }, finish_reason: 'stop' }],
+    usage: { prompt_tokens: pt, completion_tokens: ct, total_tokens: pt + ct }
+  });
+}
+
 app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
+  if (req.bridgeKey.mode === 'worker') {
+    return handleWorkerChat(req, res);
+  }
   const body = req.body || {};
   const wantStream = body.stream === true;
   const target = req.provider.baseUrl + '/chat/completions';
