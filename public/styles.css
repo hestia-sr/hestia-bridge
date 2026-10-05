@@ -1,21 +1,26 @@
-/* Hestia Bridge — light theme ala 1Mister, plain CSS, no frameworks */
+/* Hestia Bridge — rose & purple theme, plain CSS, no frameworks */
 :root {
-  --bg: #f7f8fa;
+  --bg: #faf7fb;
   --card: #ffffff;
-  --text: #1f2937;
-  --muted: #8a8f98;
-  --border: #e8eaee;
-  --accent: #f97316;
-  --accent-dark: #ea580c;
-  --accent-soft: #fff3e8;
+  --text: #2a2138;
+  --muted: #938aa5;
+  --border: #ece7f3;
+  --accent: #e11d48;
+  --accent-dark: #be123c;
+  --accent-soft: #ffe4e6;
+  --purple: #8b5cf6;
+  --purple-dark: #7c3aed;
+  --purple-soft: #ede9fe;
+  --grad: linear-gradient(135deg, #f43f5e 0%, #8b5cf6 100%);
+  --grad-soft: linear-gradient(135deg, #ffe4e6 0%, #ede9fe 100%);
   --green: #16a34a;
   --green-soft: #dcfce7;
   --red: #dc2626;
   --red-soft: #fee2e2;
-  --chip: #f1f2f5;
-  --term-bg: #0f172a;
-  --radius: 18px;
-  --shadow: 0 1px 2px rgba(16,24,40,.05), 0 8px 24px rgba(16,24,40,.06);
+  --chip: #f4f1f8;
+  --term-bg: #1e1430;
+  --radius: 20px;
+  --shadow: 0 1px 2px rgba(124,58,237,.06), 0 10px 28px rgba(124,58,237,.08);
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
@@ -42,8 +47,8 @@ code {
 }
 .btn:hover { box-shadow: var(--shadow); }
 .btn:active { transform: scale(.98); }
-.btn-primary { background: var(--accent); border: none; color: #fff; }
-.btn-primary:hover { background: var(--accent-dark); color: #fff; }
+.btn-primary { background: var(--grad); border: none; color: #fff; }
+.btn-primary:hover { filter: brightness(1.05); color: #fff; }
 .btn-danger { color: var(--red); }
 .btn-ghost { background: transparent; border-color: transparent; color: var(--muted); }
 .btn-ghost:hover { background: var(--chip); box-shadow: none; color: var(--text); }
@@ -65,7 +70,7 @@ input[type="text"], input[type="email"], input[type="password"], input[type="url
   width: 100%; border: 1px solid var(--border); border-radius: 12px;
   padding: .65rem .8rem; font-size: .95rem; font-family: inherit; background: #fff; color: var(--text);
 }
-input:focus, select:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+input:focus, select:focus { outline: 2px solid var(--purple); border-color: var(--purple); }
 label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: .8rem; }
 label input, label select { margin-top: .3rem; font-weight: 400; }
 .error {
@@ -118,6 +123,9 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   background: #fff; border-bottom: 1px solid var(--border);
   position: sticky; top: 0; z-index: 20;
 }
+.topbar::before {
+  content: ""; display: block; height: 3px; background: var(--grad);
+}
 .topbar-inner {
   max-width: 640px; margin: 0 auto; padding: .45rem .8rem;
   display: flex; align-items: center; gap: .5rem;
@@ -144,7 +152,7 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   padding: .75rem .9rem; border-radius: 12px; font-size: .95rem; font-weight: 600; color: var(--text);
 }
 .drawer-btn:hover { background: var(--chip); }
-.drawer-btn.active { background: var(--accent-soft); color: var(--accent-dark); }
+.drawer-btn.active { background: var(--grad-soft); color: var(--purple-dark); }
 .drawer-foot { padding: .8rem; border-top: 1px solid var(--border); }
 
 /* ---------- layout ---------- */
@@ -173,9 +181,9 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   width: 42px; height: 42px; border-radius: 12px; flex: none;
   display: flex; align-items: center; justify-content: center;
 }
-.stat-ico.orange { background: #fff3e8; color: #f97316; }
+.stat-ico.rose { background: #ffe4e6; color: #e11d48; }
+.stat-ico.purple { background: #ede9fe; color: #7c3aed; }
 .stat-ico.green { background: #dcfce7; color: #16a34a; }
-.stat-ico.blue { background: #e0f2fe; color: #0284c7; }
 .stat-ico.red { background: #fee2e2; color: #dc2626; }
 .stat .num { font-size: 1.35rem; font-weight: 800; line-height: 1.2; }
 .stat .lbl { font-size: .78rem; color: var(--muted); }
@@ -200,7 +208,7 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   font-family: var(--mono); font-size: .82rem; border-radius: 8px; padding: .35rem .7rem;
 }
 .key-info {
-  background: #f8f9fb; border-radius: 12px; margin-top: .8rem; padding: .85rem 1rem;
+  background: #faf7fd; border: 1px solid var(--border); border-radius: 12px; margin-top: .8rem; padding: .85rem 1rem;
 }
 .key-info .row {
   display: flex; justify-content: space-between; gap: .8rem;
@@ -209,7 +217,7 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 .key-info .row .k { color: var(--muted); }
 .key-info .row .v { font-weight: 600; text-align: right; }
 .usage-bar { height: 6px; border-radius: 999px; background: #e9ebef; margin-top: .45rem; overflow: hidden; }
-.usage-bar i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+.usage-bar i { display: block; height: 100%; background: var(--grad); border-radius: 999px; }
 .key-actions { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .95rem; }
 .key-actions .btn { font-size: .8rem; padding: .42rem .8rem; border-radius: 10px; }
 .key-meta { margin-top: .8rem; font-size: .76rem; color: var(--muted); }
@@ -226,7 +234,7 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 .guide-steps li { display: flex; gap: .8rem; margin-bottom: 1rem; }
 .step-num {
   flex: none; width: 26px; height: 26px; border-radius: 50%;
-  background: var(--accent); color: #fff; font-size: .82rem; font-weight: 800;
+  background: var(--grad); color: #fff; font-size: .82rem; font-weight: 800;
   display: flex; align-items: center; justify-content: center; margin-top: .1rem;
 }
 .guide-steps p { margin: 0; font-size: .9rem; }
@@ -247,7 +255,7 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   background: var(--term-bg); border-radius: 12px; padding: .9rem;
   display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin: .8rem 0;
 }
-.key-once code { background: transparent; color: #fdba74; font-size: .78rem; padding: 0; }
+.key-once code { background: transparent; color: #fda4af; font-size: .78rem; padding: 0; }
 .key-once .btn { color: #e2e8f0; }
 .copy-row {
   display: flex; align-items: center; justify-content: space-between; gap: .6rem;
