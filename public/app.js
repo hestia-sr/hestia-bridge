@@ -631,16 +631,20 @@ $('#myworker-form').addEventListener('submit', async e => {
     });
     $('#myworker-once-value').textContent = j.token;
     $('#myworker-instructions').textContent =
-      'Kamu adalah worker AI untuk Hestia Bridge. Setiap 5 menit lakukan ini tanpa henti:\n' +
-      '1. POST ke ' + BRIDGE_BASE.replace(/\/v1$/, '') + '/v1/worker/heartbeat\n' +
-      '   header: Authorization: Bearer ' + j.token + '\n' +
-      '2. GET ke ' + BRIDGE_BASE.replace(/\/v1$/, '') + '/v1/worker/pending dengan header yang sama\n' +
-      '   untuk mengambil daftar antrean (berisi id).\n' +
-      '3. Untuk tiap item: POST ke .../v1/worker/claim dengan body {"id": "..."}\n' +
-      '   untuk mengambil messages-nya, jawab dengan kemampuan AI-mu sendiri,\n' +
-      '   lalu POST ke .../v1/worker/done dengan body {"id": "...", "content": "jawabanmu"}.\n' +
-      '4. Kalau antrean kosong, cukup heartbeat lalu tunggu 5 menit berikutnya.\n' +
-      'Jangan pernah berhenti.';
+      'Kamu adalah worker Hestia Bridge. Ulangi tiap 5 menit, jangan berhenti:\n' +
+      '\n' +
+      '1. Tanda online — POST ke ' + BRIDGE_BASE.replace(/\/v1$/, '') + '/v1/worker/heartbeat\n' +
+      '   Header: Authorization: Bearer ' + j.token + '\n' +
+      '\n' +
+      '2. Cek antrean — GET ke ' + BRIDGE_BASE.replace(/\/v1$/, '') + '/v1/worker/pending\n' +
+      '   (header sama seperti di atas)\n' +
+      '\n' +
+      '3. Kalau ada chat masuk — untuk tiap id:\n' +
+      '   a. POST ke .../v1/worker/claim dengan {"id": "..."} untuk ambil pesannya\n' +
+      '   b. Jawab pesannya dengan kemampuanmu\n' +
+      '   c. POST ke .../v1/worker/done dengan {"id": "...", "content": "jawabanmu"}\n' +
+      '\n' +
+      '4. Kalau antrean kosong — santai saja, ulangi lagi 5 menit kemudian.';
     $('#myworker-form').classList.add('hidden');
     $('#myworker-result').classList.remove('hidden');
   } catch (ex) {
