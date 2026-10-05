@@ -299,6 +299,10 @@ $('#connect-key-copy').addEventListener('click', async () => {
   await navigator.clipboard.writeText($('#connect-key').textContent);
   toast('API key disalin.');
 });
+$('#connect-curl-copy').addEventListener('click', async () => {
+  await navigator.clipboard.writeText($('#connect-curl').textContent);
+  toast('Perintah curl disalin.');
+});
 
 /* rename modal */
 $('#rename-modal-close').addEventListener('click', () => $('#rename-modal').classList.add('hidden'));
