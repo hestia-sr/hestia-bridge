@@ -256,6 +256,57 @@ body.has-wallpaper .stat {
   box-shadow: 0 4px 20px rgba(0,0,0,.18);
 }
 
+/* ---------- home: animasi ---------- */
+.hero-home { text-align: center; padding: 2.5rem 1.25rem 2.8rem; }
+.hero-home .hero-title { font-size: 1.9rem; position: relative; z-index: 1; }
+.hero-home .hero-sub { max-width: 420px; margin: .5rem auto 0; position: relative; z-index: 1; }
+.orb {
+  position: absolute; border-radius: 50%; filter: blur(2px);
+  background: rgba(255,255,255,.15);
+  animation: float 7s ease-in-out infinite;
+}
+.orb1 { width: 90px; height: 90px; left: 8%; top: 18%; }
+.orb2 { width: 56px; height: 56px; right: 12%; top: 32%; animation-delay: -2.5s; }
+.orb3 { width: 38px; height: 38px; left: 22%; bottom: 18%; animation-delay: -4.5s; }
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); opacity: .7; }
+  50% { transform: translateY(-18px) scale(1.08); opacity: 1; }
+}
+.anim-fade-up { animation: fadeUp .7s ease both; }
+.anim-fade-up.d1 { animation-delay: .12s; }
+.anim-fade-up.d2 { animation-delay: .24s; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- apps grid ---------- */
+.apps-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: .7rem;
+  margin-bottom: .5rem;
+}
+.app-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1rem .9rem; text-align: center;
+  box-shadow: var(--shadow);
+  animation: fadeUp .6s ease both;
+}
+.app-card:nth-child(2) { animation-delay: .08s; }
+.app-card:nth-child(3) { animation-delay: .16s; }
+.app-card:nth-child(4) { animation-delay: .24s; }
+.app-card:nth-child(5) { animation-delay: .32s; }
+.app-card:nth-child(6) { animation-delay: .4s; }
+.app-ico {
+  width: 46px; height: 46px; border-radius: 14px; margin: 0 auto .6rem;
+  background: var(--grad); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1.15rem;
+}
+.app-name { font-weight: 800; font-size: .92rem; }
+.app-plat { font-size: .76rem; color: var(--muted); margin-top: .15rem; }
+.app-desc { font-size: .78rem; color: var(--muted); margin-top: .35rem; line-height: 1.45; }
+@media (min-width: 720px) { .apps-grid { grid-template-columns: repeat(3, 1fr); } }
+
 /* ---------- hero header (gaya khas: gradien penuh) ---------- */
 .hero {
   background: var(--grad);
