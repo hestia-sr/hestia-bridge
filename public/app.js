@@ -511,14 +511,10 @@ $('#my-new-key-btn').addEventListener('click', async () => {
     $('#mykey-provider').innerHTML = p.providers.length
       ? p.providers.map(x => '<option value="' + x.id + '">' + esc(x.name) + '</option>').join('')
       : '<option value="">(belum ada provider)</option>';
-    const wsorted = [...w.workers].sort((a, b) => (b.online ? 1 : 0) - (a.online ? 1 : 0));
-    let pickedOnline = false;
-    $('#mykey-worker').innerHTML = wsorted.length
-      ? wsorted.map(x => {
-          const sel = x.online && !pickedOnline ? (pickedOnline = true, ' selected') : '';
-          return '<option value="' + x.id + '"' + sel + '>' + esc(x.name) + (x.online ? ' (online)' : ' (offline)') + '</option>';
-        }).join('')
-      : '<option value="">(belum ada worker — buat dulu di Worker Saya)</option>';
+    const wonline = w.workers.filter(x => x.online);
+    $('#mykey-worker').innerHTML = wonline.length
+      ? wonline.map(x => '<option value="' + x.id + '">' + esc(x.name) + ' (online)</option>').join('')
+      : '<option value="">(tidak ada worker online)</option>';
     $('#mykey-mode').value = 'provider';
     $('#mykey-provider-wrap').classList.remove('hidden');
     $('#mykey-worker-wrap').classList.add('hidden');
