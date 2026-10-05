@@ -226,15 +226,19 @@
         <ol class="guide-steps">
           <li>
             <span class="step-num">1</span>
-            <p><strong>Pahami dulu 2 token yang berbeda:</strong> token <code>wt-...</code> itu cuma buat worker konek ke Bridge (ditempel ke akun AI). Untuk chat, kamu butuh <strong>key <code>hb-...</code> mode Worker</strong> — buat di <strong>Key Saya</strong> → <strong>Buat Key</strong> → pilih mode <strong>Worker</strong> → pilih worker kamu.</p>
+            <p>Pastikan worker kamu <strong>online</strong> di bagian <strong>Worker Saya</strong> di atas.</p>
           </li>
           <li>
             <span class="step-num">2</span>
-            <p>Buka <strong>Termux / Linux / router</strong>, lalu tes chat lewat Bridge pakai curl (ganti <code>hb-...</code> dengan key milikmu):<br><code>curl -s https://hestia-bridge-production.up.railway.app/v1/chat/completions -H "Authorization: Bearer hb-..." -H "Content-Type: application/json" -d '{"model":"muse","messages":[{"role":"user","content":"halo, apakah kamu aktif"}],"max_tokens":500}'</code></p>
+            <p>Klik <strong>Buat Key</strong>, pilih mode <strong>Worker</strong>, lalu <strong>Buat Key</strong>.</p>
           </li>
           <li>
             <span class="step-num">3</span>
-            <p>Kalau worker kamu online, ia langsung menjawab. Kalau tidak ada jawaban, cek worker di bagian <strong>Worker Saya</strong> — pastikan tokennya sudah ditempel ke akun AI dan statusnya aktif.</p>
+            <p>Klik <strong>Cara sambung</strong> di kartu key, salin <strong>Base URL</strong> dan <strong>API Key</strong> ke aplikasi AI di HP, lalu chat seperti biasa.</p>
+          </li>
+          <li>
+            <span class="step-num">4</span>
+            <p>Kalau ada jawaban, berarti worker kamu jalan. Kalau tidak dijawab, cek lagi worker-nya online atau tidak.</p>
           </li>
         </ol>
       </div>
