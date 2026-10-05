@@ -172,7 +172,10 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   padding: .75rem .9rem; border-radius: 12px; font-size: .95rem; font-weight: 600; color: var(--text);
 }
 .drawer-btn:hover { background: var(--chip); }
-.drawer-btn.active { background: var(--grad-soft); color: var(--purple-dark); }
+.drawer-btn.active {
+  background: var(--grad-soft); color: var(--purple-dark);
+  margin: 0 .6rem; width: calc(100% - 1.2rem);
+}
 .drawer-foot { padding: .8rem; border-top: 1px solid var(--border); }
 .drawer-sep { height: 1px; background: var(--border); margin: .5rem .9rem; }
 
