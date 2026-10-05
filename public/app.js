@@ -627,7 +627,7 @@ $('#myworker-form').addEventListener('submit', async e => {
     });
     $('#myworker-once-value').textContent = j.token;
     $('#myworker-instructions').textContent =
-      'Kamu adalah worker Hestia Bridge. Ulangi tiap 5 menit, jangan berhenti:\n' +
+      'Kamu adalah worker Hestia Bridge. Ulangi tiap 30 detik, jangan berhenti:\n' +
       '\n' +
       '1. Tanda online — POST ke ' + BRIDGE_BASE.replace(/\/v1$/, '') + '/v1/worker/heartbeat\n' +
       '   Header: Authorization: Bearer ' + j.token + '\n' +
@@ -640,7 +640,7 @@ $('#myworker-form').addEventListener('submit', async e => {
       '   b. Jawab pesannya dengan kemampuanmu\n' +
       '   c. POST ke .../v1/worker/done dengan {"id": "...", "content": "jawabanmu"}\n' +
       '\n' +
-      '4. Kalau antrean kosong — santai saja, ulangi lagi 5 menit kemudian.';
+      '4. Kalau antrean kosong — santai saja, ulangi lagi 30 detik kemudian.';
     $('#myworker-form').classList.add('hidden');
     $('#myworker-result').classList.remove('hidden');
   } catch (ex) {
