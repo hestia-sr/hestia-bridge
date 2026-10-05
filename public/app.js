@@ -726,24 +726,62 @@ $('#users-list').addEventListener('click', async e => {
   } catch (ex) { if (ex.message !== 'auth') toast('Gagal: ' + ex.message); }
 });
 
-/* --------------------------- export CSV ---------------------------------- */
-$('#export-btn').addEventListener('click', async () => {
-  try {
-    const j = await api('/api/usage?days=30');
-    const nameOf = id => {
-      const k = keysCache.find(x => x.id === id);
-      return k ? k.name : id;
-    };
-    const rows = [['waktu', 'key', 'model', 'token_masuk', 'token_keluar', 'stream']]
-      .concat(j.rows.map(u => [u.ts, nameOf(u.keyId), u.model, u.promptTokens, u.completionTokens, u.streamed ? 'ya' : 'tidak']));
-    const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-    a.download = 'hestia-bridge-usage.csv';
-    a.click();
-    URL.revokeObjectURL(a.href);
-    toast('Data pemakaian diunduh.');
-  } catch (ex) { if (ex.message !== 'auth') toast('Gagal: ' + ex.message); }
+/* --------------------------- language toggle ID/EN --------------------- */
+const I18N = {
+  id: {
+    'topbar.keys': 'Kunci API',
+    'nav.keys': 'Kunci API',
+    'nav.providers': 'Provider',
+    'nav.users': 'Pengguna',
+    'nav.mykeys': 'Key Saya',
+    'nav.logout': 'Keluar',
+    'hero.keys': 'Kunci API',
+    'hero.keys.sub': 'Satu provider = satu API key. Kuota mengikuti provider masing-masing.',
+    'hero.providers': 'Provider',
+    'hero.providers.sub': 'Sambungkan AI provider yang kompatibel dengan OpenAI API.',
+    'hero.mykeys': 'Key Saya',
+    'hero.mykeys.sub': 'Buat API key sendiri, tanpa batasan jumlah.',
+    'hero.users': 'Pengguna',
+    'hero.users.sub': 'Akun pengguna yang mendaftar sendiri lewat halaman Daftar.',
+    'btn.addkey': 'Tambah key',
+    'btn.createkey': 'Buat Key',
+  },
+  en: {
+    'topbar.keys': 'API Keys',
+    'nav.keys': 'API Keys',
+    'nav.providers': 'Providers',
+    'nav.users': 'Users',
+    'nav.mykeys': 'My Keys',
+    'nav.logout': 'Logout',
+    'hero.keys': 'API Keys',
+    'hero.keys.sub': 'One provider = one API key. Quota follows each provider.',
+    'hero.providers': 'Providers',
+    'hero.providers.sub': 'Connect AI providers compatible with OpenAI API.',
+    'hero.mykeys': 'My Keys',
+    'hero.mykeys.sub': 'Create your own API keys, no limit.',
+    'hero.users': 'Users',
+    'hero.users.sub': 'User accounts registered via the Sign Up page.',
+    'btn.addkey': 'Add key',
+    'btn.createkey': 'Create Key',
+  }
+};
+let LANG = localStorage.getItem('hb-lang') || 'id';
+function t(key) {
+  return (I18N[LANG] && I18N[LANG][key]) || I18N.id[key] || key;
+}
+function applyLang() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    el.textContent = t(k);
+  });
+  const lbl = document.getElementById('lang-label');
+  if (lbl) lbl.textContent = LANG.toUpperCase();
+  localStorage.setItem('hb-lang', LANG);
+}
+document.getElementById('lang-btn').addEventListener('click', () => {
+  LANG = LANG === 'id' ? 'en' : 'id';
+  applyLang();
+  if (typeof refreshAll === 'function') refreshAll();
 });
 
 /* --------------------------------- boot ----------------------------------- */
@@ -757,6 +795,7 @@ async function refreshMine() {
   await loadMyWorkers();
 }
 (function boot() {
+  applyLang();
   $('#guide-base-url').textContent = BRIDGE_BASE;
   const guideEl = $('#my-guide-base-url');
   if (guideEl) guideEl.textContent = BRIDGE_BASE;
