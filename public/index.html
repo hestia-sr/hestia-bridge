@@ -114,20 +114,23 @@
 
     <!-- ===== KEYS VIEW ===== -->
     <section id="view-keys" class="view">
-      <h1 class="page-title">Kunci API</h1>
-      <p class="page-sub">Satu provider = satu API key. Kuota mengikuti provider masing-masing.</p>
-
-      <div class="action-row">
-        <button id="refresh-btn" class="link-btn">
-          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 5V1L6 7l6 6V9a8 8 0 1 1-8 8H2a10 10 0 1 0 10-12z" fill="currentColor"/></svg>
-          <span>Refresh</span>
-        </button>
-        <button id="new-key-btn" class="btn btn-primary">
+      <div class="hero">
+        <div class="hero-top">
+          <div>
+            <h1 class="hero-title">Kunci API</h1>
+            <p class="hero-sub">Satu provider = satu API key. Kuota mengikuti provider masing-masing.</p>
+          </div>
+          <button id="refresh-btn" class="hero-refresh" aria-label="Refresh">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5V1L6 7l6 6V9a8 8 0 1 1-8 8H2a10 10 0 1 0 10-12z" fill="currentColor"/></svg>
+          </button>
+        </div>
+        <button id="new-key-btn" class="btn btn-hero">
           <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" fill="currentColor"/></svg>
           <span>Tambah key</span>
         </button>
       </div>
 
+      <div class="hero-body">
       <div class="stat-grid" id="stat-grid"></div>
 
       <div class="section-head">
@@ -159,13 +162,17 @@
       </div>
 
       <p class="foot-note muted">Hestia Bridge · <span id="foot-email"></span></p>
+      </div>
     </section>
 
     <!-- ===== PROVIDERS VIEW ===== -->
     <section id="view-providers" class="view hidden">
-      <h1 class="page-title">Provider</h1>
-      <p class="page-sub">Sambungkan AI provider yang kompatibel dengan OpenAI API.</p>
+      <div class="hero">
+        <h1 class="hero-title">Provider</h1>
+        <p class="hero-sub">Sambungkan AI provider yang kompatibel dengan OpenAI API.</p>
+      </div>
 
+      <div class="hero-body">
       <div class="card">
         <div class="card-body">
           <form id="provider-form">
@@ -189,24 +196,28 @@
         <h2>Daftar provider</h2>
       </div>
       <div id="prov-list"></div>
+      </div>
     </section>
 
     <!-- ===== MY KEYS VIEW (pengguna) ===== -->
     <section id="view-mykeys" class="view hidden">
-      <h1 class="page-title">Key Saya</h1>
-      <p class="page-sub">Buat API key sendiri, tanpa batasan jumlah.</p>
-
-      <div class="action-row">
-        <button id="my-refresh-btn" class="link-btn">
-          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 5V1L6 7l6 6V9a8 8 0 1 1-8 8H2a10 10 0 1 0 10-12z" fill="currentColor"/></svg>
-          <span>Refresh</span>
-        </button>
-        <button id="my-new-key-btn" class="btn btn-primary">
+      <div class="hero">
+        <div class="hero-top">
+          <div>
+            <h1 class="hero-title">Key Saya</h1>
+            <p class="hero-sub">Buat API key sendiri, tanpa batasan jumlah.</p>
+          </div>
+          <button id="my-refresh-btn" class="hero-refresh" aria-label="Refresh">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5V1L6 7l6 6V9a8 8 0 1 1-8 8H2a10 10 0 1 0 10-12z" fill="currentColor"/></svg>
+          </button>
+        </div>
+        <button id="my-new-key-btn" class="btn btn-hero">
           <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" fill="currentColor"/></svg>
           <span>Buat Key</span>
         </button>
       </div>
 
+      <div class="hero-body">
       <div id="mykey-list"></div>
 
       <div class="section-head">
@@ -264,21 +275,27 @@
       </div>
 
       <p class="foot-note muted">Hestia Bridge · <span id="my-foot-email"></span></p>
+      </div>
     </section>
 
     <!-- ===== USERS VIEW (admin) ===== -->
     <section id="view-users" class="view hidden">
-      <h1 class="page-title">Pengguna</h1>
-      <p class="page-sub">Akun pengguna yang mendaftar sendiri lewat halaman Daftar.</p>
-
-      <div class="action-row">
-        <button id="users-refresh-btn" class="link-btn">
-          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 5V1L6 7l6 6V9a8 8 0 1 1-8 8H2a10 10 0 1 0 10-12z" fill="currentColor"/></svg>
-          <span>Refresh</span>
-        </button>
+      <div class="hero">
+        <div class="hero-top">
+          <div>
+            <h1 class="hero-title">Pengguna</h1>
+            <p class="hero-sub">Akun pengguna yang mendaftar sendiri lewat halaman Daftar.</p>
+          </div>
+          <button id="users-refresh-btn" class="hero-refresh" aria-label="Refresh">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5V1L6 7l6 6V9a8 8 0 1 1-8 8H2a10 10 0 1 0 10-12z" fill="currentColor"/></svg>
+          </button>
+        </div>
       </div>
 
+      <div class="hero-body">
+
       <div id="users-list"></div>
+      </div>
     </section>
 
   </main>
