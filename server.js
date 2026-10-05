@@ -125,6 +125,11 @@ setInterval(() => {
 
 /* ------------------------- rate limit (bridge) --------------------------- */
 const rateHits = new Map(); // keyId -> [timestamps]
+const limitedToday = new Map(); // keyId -> 'YYYY-MM-DD' of last 429 (honest "limit habis" metric)
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
 function rateLimited(keyId) {
   const t = Date.now();
   let arr = rateHits.get(keyId) || [];
@@ -157,6 +162,7 @@ function requireBridgeKey(req, res, next) {
   if (!key) return bridgeError(res, 401, 'Invalid API key.');
   if (key.revoked) return bridgeError(res, 401, 'This API key has been revoked.');
   if (rateLimited(key.id)) {
+    limitedToday.set(key.id, todayStr());
     res.set('Retry-After', '60');
     return bridgeError(res, 429, 'Rate limit exceeded: max 60 requests per minute for this key.');
   }
@@ -353,6 +359,30 @@ app.post('/api/keys/:id/restore', requireAdmin, (req, res) => {
   saveDb();
   res.json({ ok: true });
 });
+app.patch('/api/keys/:id', requireAdmin, (req, res) => {
+  const k = db.keys.find(x => x.id === req.params.id);
+  if (!k) return res.status(404).json({ error: 'key_not_found' });
+  const { name } = req.body || {};
+  if (!name || !String(name).trim()) return res.status(400).json({ error: 'name required' });
+  k.name = String(name).trim().slice(0, 60);
+  saveDb();
+  res.json({ ok: true, id: k.id, name: k.name });
+});
+app.post('/api/keys/:id/rotate', requireAdmin, (req, res) => {
+  const k = db.keys.find(x => x.id === req.params.id);
+  if (!k) return res.status(404).json({ error: 'key_not_found' });
+  k.token = 'hb-' + crypto.randomBytes(24).toString('hex');
+  saveDb();
+  res.json({ id: k.id, token: k.token, masked: maskKey(k.token) });
+});
+app.post('/api/keys/:id/reset-usage', requireAdmin, (req, res) => {
+  const k = db.keys.find(x => x.id === req.params.id);
+  if (!k) return res.status(404).json({ error: 'key_not_found' });
+  db.usage = db.usage.filter(u => u.keyId !== k.id);
+  k.lastUsedAt = null;
+  saveDb();
+  res.json({ ok: true });
+});
 app.delete('/api/keys/:id', requireAdmin, (req, res) => {
   const i = db.keys.findIndex(x => x.id === req.params.id);
   if (i < 0) return res.status(404).json({ error: 'key_not_found' });
@@ -388,7 +418,8 @@ app.get('/api/stats', requireAdmin, (req, res) => {
     requests24h: req24,
     tokens24h: tok24,
     totalTokens: tokAll,
-    totalRequests: db.usage.length
+    totalRequests: db.usage.length,
+    limitedKeysToday: db.keys.filter(k => limitedToday.get(k.id) === todayStr()).length
   });
 });
 
