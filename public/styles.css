@@ -202,6 +202,12 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 [data-theme="dark"] .guide-card { background: var(--card); }
 [data-theme="dark"] .toast { background: #f0eaf8; color: #17121f; }
 
+/* ---------- info modal ---------- */
+.info-body { text-align: center; }
+.info-logo { margin: .2rem 0 1rem; }
+.info-body p { font-size: .92rem; line-height: 1.75; color: var(--text); margin: 0 0 1rem; text-align: left; }
+.info-sign { text-align: right !important; font-weight: 700; color: var(--purple-dark) !important; margin-bottom: 0 !important; }
+
 /* ---------- wallpaper ---------- */
 body.has-wallpaper {
   background-size: cover; background-position: center; background-attachment: fixed;
