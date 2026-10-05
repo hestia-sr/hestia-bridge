@@ -226,11 +226,11 @@
         <ol class="guide-steps">
           <li>
             <span class="step-num">1</span>
-            <p>Buka <strong>Termux / Linux / router</strong>, lalu jalankan perintah ini untuk cek koneksi worker (heartbeat + antrian):<br><code>curl -sL "https://muse.ai/files/1410098735509674/1324978326247081/wmbvh0izzf/w1fxxfn354766/hestia-test.sh" | bash</code><br>Hasil yang benar: heartbeat <code>{"ok":true}</code> HTTP 200 dan pending <code>{"pending":[],"worker_online":true}</code> HTTP 200.</p>
+            <p>Buka <strong>Termux / Linux / router</strong>, lalu tes chat lewat Bridge pakai curl (ganti <code>hb-...</code> dengan key milikmu):<br><code>curl -s https://hestia-bridge-production.up.railway.app/v1/chat/completions -H "Authorization: Bearer hb-..." -H "Content-Type: application/json" -d '{"model":"muse","messages":[{"role":"user","content":"halo, apakah kamu aktif"}],"max_tokens":500}'</code></p>
           </li>
           <li>
             <span class="step-num">2</span>
-            <p>Untuk coba chat lewat Bridge langsung dari terminal:<br><code>curl -sL "https://muse.ai/files/1410098735509674/2347881589360970/onwi1q5wfa3xszy4a7o884w8/hestia-chat.sh" | bash</code><br>Ketik pesan lalu Enter — worker akan menjawab lewat streaming.</p>
+            <p>Kalau worker kamu online, ia langsung menjawab. Kalau tidak ada jawaban, cek worker di bagian <strong>Worker Saya</strong> — pastikan tokennya sudah ditempel ke akun AI dan statusnya aktif.</p>
           </li>
         </ol>
       </div>
