@@ -874,12 +874,9 @@ app.get('/api/stats', requireAdmin, (req, res) => {
 /* ================== OpenAI-compatible bridge endpoints =================== */
 app.get('/v1/models', requireBridgeKey, (req, res) => {
   if (req.bridgeKey.mode === 'worker' || !req.provider) {
-    // Worker-mode: tampilkan 1 model sesuai nama worker supaya aplikasi AI
-    // yang wajib pilih model dari daftar langsung bisa dipakai.
-    const w = req.bridgeKey.workerId ? db.workers.find(x => x.id === req.bridgeKey.workerId) : null;
-    const mid = (w && w.name ? w.name : 'worker').toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    // Worker-mode: khusus Muse — 1 model tetap supaya konsisten di semua aplikasi.
     return res.json({ object: 'list', data: [{
-      id: mid, object: 'model', created: Math.floor(Date.now() / 1000), owned_by: 'worker'
+      id: 'muse-spark', object: 'model', created: Math.floor(Date.now() / 1000), owned_by: 'muse'
     }] });
   }
   const models = (req.provider.models || []).map(id => ({
@@ -935,12 +932,12 @@ async function handleWorkerChat(req, res) {
   const answer = item.answer || '';
   const pt = estimateTokens(JSON.stringify(body.messages || []));
   const ct = estimateTokens(answer);
-  recordUsage(key.id, body.model || 'worker', pt, ct, false, 'worker');
+  recordUsage(key.id, 'muse-spark', pt, ct, false, 'worker');
   res.json({
     id: 'chatcmpl-w' + crypto.randomBytes(8).toString('hex'),
     object: 'chat.completion',
     created: Math.floor(Date.now() / 1000),
-    model: body.model || 'worker',
+    model: 'muse-spark',
     choices: [{ index: 0, message: { role: 'assistant', content: answer }, finish_reason: 'stop' }],
     usage: { prompt_tokens: pt, completion_tokens: ct, total_tokens: pt + ct }
   });
