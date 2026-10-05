@@ -874,8 +874,13 @@ app.get('/api/stats', requireAdmin, (req, res) => {
 /* ================== OpenAI-compatible bridge endpoints =================== */
 app.get('/v1/models', requireBridgeKey, (req, res) => {
   if (req.bridgeKey.mode === 'worker' || !req.provider) {
-    // Worker-mode keys have no fixed model list; the worker decides.
-    return res.json({ object: 'list', data: [] });
+    // Worker-mode: tampilkan 1 model sesuai nama worker supaya aplikasi AI
+    // yang wajib pilih model dari daftar langsung bisa dipakai.
+    const w = req.bridgeKey.workerId ? db.workers.find(x => x.id === req.bridgeKey.workerId) : null;
+    const mid = (w && w.name ? w.name : 'worker').toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    return res.json({ object: 'list', data: [{
+      id: mid, object: 'model', created: Math.floor(Date.now() / 1000), owned_by: 'worker'
+    }] });
   }
   const models = (req.provider.models || []).map(id => ({
     id, object: 'model', created: Math.floor(Date.now() / 1000), owned_by: req.provider.name
