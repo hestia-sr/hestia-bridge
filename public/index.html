@@ -300,6 +300,9 @@
       <label>Provider
         <select id="key-provider" class="select" required></select>
       </label>
+      <label>Kuota token (opsional)
+        <input type="number" id="key-quota" placeholder="cth: 1000000 (kosongkan = tanpa batas)" min="1">
+      </label>
       <div id="key-error" class="error hidden"></div>
       <button type="submit" class="btn btn-primary btn-block">Buat Key</button>
     </form>
@@ -356,6 +359,9 @@
       <label>Nama baru
         <input type="text" id="rename-name" maxlength="60" required>
       </label>
+      <label>Kuota token (opsional)
+        <input type="number" id="rename-quota" placeholder="cth: 1000000 (kosongkan = tanpa batas)" min="1">
+      </label>
       <div id="rename-error" class="error hidden"></div>
       <button type="submit" class="btn btn-primary btn-block">Simpan</button>
     </form>
@@ -386,6 +392,9 @@
       </label>
       <label id="mykey-worker-wrap" class="hidden">Worker
         <select id="mykey-worker" class="select"></select>
+      </label>
+      <label>Kuota token (opsional)
+        <input type="number" id="mykey-quota" placeholder="cth: 1000000 (kosongkan = tanpa batas)" min="1">
       </label>
       <div id="mykey-error" class="error hidden"></div>
       <button type="submit" class="btn btn-primary btn-block">Buat Key</button>
