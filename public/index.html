@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hestia Bridge — Kunci API</title>
 <link rel="stylesheet" href="styles.css?v=11">
+<style>
+/* Inline critical: page loader harus jalan walau CSS eksternal masih cache lama */
+#page-loader{position:fixed;inset:0;z-index:200;background:linear-gradient(135deg,#a855f7,#ec4899);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;transition:opacity .4s ease}
+#page-loader.hide{opacity:0;pointer-events:none}
+#page-loader .spin{width:48px;height:48px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:plspin .8s linear infinite}
+#page-loader p{color:#fff;font-weight:600;font-size:.95rem;margin:0}
+@keyframes plspin{to{transform:rotate(360deg)}}
+</style>
 </head>
 <body>
 <div id="page-loader">
