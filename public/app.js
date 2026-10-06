@@ -26,6 +26,7 @@ function toast(msg, ok) {
   const t = $('#toast');
   t.textContent = msg;
   t.classList.toggle('success', !!ok);
+  t.classList.toggle('error', !ok);
   t.classList.remove('hidden');
   clearTimeout(t._h);
   t._h = setTimeout(() => t.classList.add('hidden'), 2600);
@@ -116,8 +117,10 @@ $('#login-form').addEventListener('submit', async e => {
     enterApp(j);
   } catch (ex) {
     if (ex.message === 'auth') return;
-    err.textContent = t('toast.failed') + ex.message;
+    const msg = t('toast.failed') + ex.message;
+    err.textContent = msg;
     err.classList.remove('hidden');
+    toast(msg, false);
   }
   btn.classList.remove('loading'); btn.disabled = false;
 });
