@@ -82,7 +82,7 @@ function enterApp(me) {
   if (!isAdmin) loadPlan(); else { $('#plan-card').hidden = true; if (planTimer) clearInterval(planTimer); }
 }
 
-/* Fingerprint perangkat sederhana untuk batas 3 akun per device. */
+/* Fingerprint perangkat sederhana untuk batas 1 akun per device. */
 function deviceFingerprint() {
   const s = [navigator.userAgent || '', (screen.width || 0) + 'x' + (screen.height || 0),
     (Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || '', navigator.language || ''].join('|');
@@ -1199,7 +1199,7 @@ const I18N = {
     'auth.reg.password': 'Password (min 6 karakter)',
     'auth.reg.password.ph': 'Min 6 karakter',
     'auth.reg.submit': 'Daftar',
-    'auth.reg.note': 'Hanya Gmail yang bisa daftar. Satu perangkat maksimal 3 akun.',
+    'auth.reg.note': 'Hanya Gmail yang bisa daftar. Satu perangkat hanya untuk 1 akun.',
     'auth.reg.otp': 'Kode verifikasi (cek Gmail)',
     'auth.reg.otp.send': 'Kirim kode',
     'auth.reg.otp.sent': 'Kode dikirim ke Gmail kamu. Cek kotak masuk ya.',
@@ -1207,7 +1207,7 @@ const I18N = {
     'auth.reg.otp.wait': 'detik',
     'auth.reg.otp.verified': 'Email terverifikasi. Silakan lanjutkan daftar.',
     'auth.example': 'contoh pakai',
-    'auth.suspended': 'Akun dibuat, tapi langsung di-suspend (batas 3 akun per perangkat). Hubungi admin.',
+    'auth.suspended': 'Pendaftaran diblokir: perangkat ini sudah terdaftar. 1 perangkat hanya untuk 1 Gmail.',
     'section.mykeys.title': 'Key saya',
     'section.providers.title': 'Daftar provider',
     'section.workers.title': 'Worker Saya',
@@ -1401,7 +1401,7 @@ const I18N = {
     'auth.reg.password': 'Password (min 6 characters)',
     'auth.reg.password.ph': 'Min 6 characters',
     'auth.reg.submit': 'Sign up',
-    'auth.reg.note': 'Only Gmail can register. Max 3 accounts per device.',
+    'auth.reg.note': 'Only Gmail can register. One device is only for 1 account.',
     'auth.reg.otp': 'Verification code (check Gmail)',
     'auth.reg.otp.send': 'Send code',
     'auth.reg.otp.sent': 'Code sent to your Gmail. Check your inbox.',
@@ -1417,7 +1417,7 @@ const I18N = {
     'auth.forgot.done': 'Password reset successful. Please log in.',
     'auth.forgot.toast': 'Reset code sent, check your Gmail.',
     'auth.example': 'usage example',
-    'auth.suspended': 'Account created, but immediately suspended (3 accounts per device limit). Contact admin.',
+    'auth.suspended': 'Registration blocked: this device is already registered. 1 device is only for 1 Gmail.',
     'section.mykeys.title': 'My keys',
     'section.providers.title': 'Provider list',
     'section.workers.title': 'My Workers',
