@@ -524,3 +524,22 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ===== WALLPAPER: teks tetap terbaca ===== */
+body.has-wallpaper {
+  background-size: cover; background-position: center top;
+  background-attachment: fixed; background-repeat: no-repeat;
+}
+body.has-wallpaper .section-head h2,
+body.has-wallpaper .page-sub {
+  background: rgba(255,255,255,.85); backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: .4rem .9rem; border-radius: 999px;
+  display: inline-block; box-shadow: var(--shadow);
+}
+body.has-wallpaper .page-sub {
+  border-radius: 14px; display: block; margin-top: .5rem;
+}
+body.has-wallpaper .section-head {
+  flex-wrap: wrap;
+}
+
