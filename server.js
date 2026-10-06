@@ -22,7 +22,6 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const nodemailer = require('nodemailer');
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
@@ -330,17 +329,30 @@ function usersOnDevice(fp) {
 }
 
 /* --------------------------- Email OTP --------------------------------- */
-const SMTP_USER = (process.env.SMTP_USER || '').trim();
-const SMTP_PASS = (process.env.SMTP_PASS || '').trim();
+const SENDGRID_API_KEY = (process.env.SENDGRID_API_KEY || '').trim();
+const SMTP_USER = (process.env.SMTP_USER || 'hestia.sri.rosee@gmail.com').trim();
 const APP_URL = (process.env.APP_URL || 'https://hestia-bridge-production.up.railway.app').trim();
 
-let mailer = null;
-if (SMTP_USER && SMTP_PASS) {
-  mailer = nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user: SMTP_USER, pass: SMTP_PASS.replace(/\s+/g, '') }
+// Kirim email via SendGrid HTTP API (Railway memblokir SMTP).
+async function sendOtpEmail(to, code) {
+  if (!SENDGRID_API_KEY) throw new Error('Layanan email belum aktif.');
+  const body = {
+    personalizations: [{ to: [{ email: to }] }],
+    from: { email: SMTP_USER, name: 'Hestia Bridge' },
+    subject: 'Kode Verifikasi Hestia Bridge: ' + code,
+    content: [{ type: 'text/html', value: otpEmailHtml(code) }]
+  };
+  const r = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + SENDGRID_API_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
   });
+  if (!r.ok) {
+    const t = await r.text().catch(() => '');
+    throw new Error('SendGrid ' + r.status + ': ' + t.slice(0, 120));
+  }
 }
+const mailerReady = () => !!SENDGRID_API_KEY;
 
 // OTP: email -> { code, expiresAt, verified, attempts }
 const otpStore = new Map();
@@ -369,7 +381,7 @@ app.post('/api/auth/send-otp', async (req, res) => {
   if (db.users.some(u => u.email === em)) {
     return res.status(400).json({ error: 'Email sudah terdaftar. Silakan masuk.' });
   }
-  if (!mailer) return res.status(500).json({ error: 'Layanan email belum aktif.' });
+  if (!mailerReady()) return res.status(500).json({ error: 'Layanan email belum aktif.' });
   const now = Date.now();
   const prev = otpStore.get(em);
   if (prev && now - prev.sentAt < OTP_RESEND_MS) {
@@ -379,17 +391,12 @@ app.post('/api/auth/send-otp', async (req, res) => {
   const code = String(Math.floor(100000 + Math.random() * 900000));
   otpStore.set(em, { code, expiresAt: now + OTP_TTL_MS, sentAt: now, verified: false, attempts: 0 });
   try {
-    await mailer.sendMail({
-      from: '"Hestia Bridge" <' + SMTP_USER + '>',
-      to: em,
-      subject: 'Kode Verifikasi Hestia Bridge: ' + code,
-      html: otpEmailHtml(code)
-    });
+    await sendOtpEmail(em, code);
     res.json({ ok: true });
   } catch (e) {
     otpStore.delete(em);
     const msg = (e && e.message) || 'unknown';
-    console.error('[OTP] sendMail gagal:', msg);
+    console.error('[OTP] sendGrid gagal:', msg);
     res.status(500).json({ error: 'Gagal mengirim email: ' + msg });
   }
 });
