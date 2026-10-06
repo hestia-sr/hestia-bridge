@@ -118,6 +118,71 @@ $('#login-form').addEventListener('submit', async e => {
     err.classList.remove('hidden');
   }
 });
+/* --------------------------- Forgot password ----------------------------- */
+const forgotModal = $('#forgot-modal');
+document.addEventListener('click', e => {
+  if (e.target && e.target.id === 'forgot-link') {
+    e.preventDefault();
+    $('#forgot-step1').classList.remove('hidden');
+    $('#forgot-step2').classList.add('hidden');
+    $('#forgot-step3').classList.add('hidden');
+    $('#forgot-error').classList.add('hidden');
+    $('#forgot-error2').classList.add('hidden');
+    forgotModal.classList.remove('hidden');
+  }
+});
+$('#forgot-modal-close').addEventListener('click', () => forgotModal.classList.add('hidden'));
+forgotModal.addEventListener('click', e => {
+  if (e.target.id === 'forgot-modal') forgotModal.classList.add('hidden');
+});
+$('#forgot-ok').addEventListener('click', () => forgotModal.classList.add('hidden'));
+
+let forgotCooldown = null;
+$('#forgot-send').addEventListener('click', async () => {
+  const email = $('#forgot-email').value.trim();
+  const err = $('#forgot-error');
+  err.classList.add('hidden');
+  if (!email) { err.textContent = 'Isi email dulu.'; err.classList.remove('hidden'); return; }
+  const btn = $('#forgot-send');
+  btn.disabled = true;
+  try {
+    await api('/api/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
+    $('#forgot-step1').classList.add('hidden');
+    $('#forgot-step2').classList.remove('hidden');
+    toast(t('auth.forgot.toast'), true);
+  } catch (ex) {
+    err.textContent = ex.message;
+    err.classList.remove('hidden');
+    btn.disabled = false;
+  }
+});
+
+$('#forgot-reset').addEventListener('click', async () => {
+  const err = $('#forgot-error2');
+  err.classList.add('hidden');
+  const email = $('#forgot-email').value.trim();
+  const code = $('#forgot-otp').value.trim();
+  const password = $('#forgot-password').value;
+  if (code.length !== 6) { err.textContent = 'Kode harus 6 digit.'; err.classList.remove('hidden'); return; }
+  if (!password || password.length < 6) { err.textContent = 'Sandi minimal 6 karakter.'; err.classList.remove('hidden'); return; }
+  const btn = $('#forgot-reset');
+  btn.disabled = true;
+  try {
+    await api('/api/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ email, code, password })
+    });
+    $('#forgot-step2').classList.add('hidden');
+    $('#forgot-step3').classList.remove('hidden');
+    $('#forgot-otp').value = '';
+    $('#forgot-password').value = '';
+  } catch (ex) {
+    err.textContent = ex.message;
+    err.classList.remove('hidden');
+  }
+  btn.disabled = false;
+});
+
 /* --------------------------- TOS checkbox gate --------------------------- */
 const regTos = $('#reg-tos');
 const regSubmitBtn = $('#reg-submit-btn');
@@ -1076,6 +1141,14 @@ const I18N = {
     'tos.title': 'Syarat & Ketentuan',
     'auth.reg.tos': 'Saya menyetujui <a href="#" id="tos-link">Syarat &amp; Ketentuan</a> Hestia Bridge',
     'tos.content': '<h4>1. Penerimaan</h4><p>Dengan mendaftar dan menggunakan Hestia Bridge, Anda menyetujui seluruh Syarat &amp; Ketentuan ini.</p><h4>2. Akun</h4><ul><li>Hanya alamat Gmail valid yang dapat mendaftar.</li><li>Satu perangkat dibatasi untuk jumlah akun tertentu.</li><li>Anda bertanggung jawab menjaga kerahasiaan kata sandi dan API key Anda.</li></ul><h4>3. Penggunaan yang Dilarang</h4><ul><li>Dilarang menggunakan layanan untuk aktivitas ilegal, spam, atau penyalahgunaan.</li><li>Dilarang membagikan API key Anda kepada pihak lain tanpa izin.</li><li>Dilarang mencoba merusak, mengganggu, atau mengeksploitasi sistem.</li></ul><h4>4. Kuota &amp; Batasan</h4><p>Penggunaan mengikuti kuota provider masing-masing dan batasan yang ditetapkan admin. Pelanggaran dapat mengakibatkan penangguhan akun.</p><h4>5. Perubahan Layanan</h4><p>Kami dapat mengubah, menangguhkan, atau menghentikan layanan sewaktu-waktu dengan pemberitahuan yang wajar.</p><h4>6. Hubungi Kami</h4><p>Untuk pertanyaan atau laporan, hubungi tim Hestia Bridge melalui kanal resmi yang tersedia.</p>',
+    'auth.forgot.link': 'Lupa kata sandi?',
+    'auth.forgot.title': 'Lupa Kata Sandi',
+    'auth.forgot.desc': 'Masukkan email akunmu, kami kirim kode reset ke Gmail.',
+    'auth.forgot.code.desc': 'Masukkan kode 6 digit dari Gmail dan kata sandi baru.',
+    'auth.forgot.newpass': 'Kata sandi baru (min 6 karakter)',
+    'auth.forgot.submit': 'Reset kata sandi',
+    'auth.forgot.done': 'Kata sandi berhasil direset. Silakan masuk.',
+    'auth.forgot.toast': 'Kode reset terkirim, periksa di Gmail anda.',
     'nav.home': 'Beranda',
     'home.title': 'Selamat datang di Hestia Bridge',
     'home.sub': 'Sambungkan API key kamu ke aplikasi AI favoritmu. Satu key, banyak aplikasi.',
@@ -1312,6 +1385,14 @@ const I18N = {
     'auth.reg.otp.toast': 'Verification code sent, check your Gmail.',
     'auth.reg.otp.wait': 'sec',
     'auth.reg.otp.verified': 'Email verified. Please continue signing up.',
+    'auth.forgot.link': 'Forgot password?',
+    'auth.forgot.title': 'Forgot Password',
+    'auth.forgot.desc': 'Enter your account email, we will send a reset code to Gmail.',
+    'auth.forgot.code.desc': 'Enter the 6-digit code from Gmail and your new password.',
+    'auth.forgot.newpass': 'New password (min 6 characters)',
+    'auth.forgot.submit': 'Reset password',
+    'auth.forgot.done': 'Password reset successful. Please log in.',
+    'auth.forgot.toast': 'Reset code sent, check your Gmail.',
     'auth.example': 'usage example',
     'auth.suspended': 'Account created, but immediately suspended (3 accounts per device limit). Contact admin.',
     'section.mykeys.title': 'My keys',
