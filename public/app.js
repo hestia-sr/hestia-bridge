@@ -105,6 +105,8 @@ $('#login-form').addEventListener('submit', async e => {
   e.preventDefault();
   const err = $('#login-error');
   err.classList.add('hidden');
+  const btn = $('#login-form button[type="submit"]');
+  btn.classList.add('loading'); btn.disabled = true;
   try {
     const j = await api('/api/auth/login', {
       method: 'POST',
@@ -117,7 +119,17 @@ $('#login-form').addEventListener('submit', async e => {
     err.textContent = t('toast.failed') + ex.message;
     err.classList.remove('hidden');
   }
+  btn.classList.remove('loading'); btn.disabled = false;
 });
+/* --------------------------- Page loader --------------------------------- */
+window.addEventListener('load', () => {
+  setTimeout(() => $('#page-loader').classList.add('hide'), 300);
+});
+// Fallback: sembunyikan juga setelah DOM siap jika load lambat
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => $('#page-loader').classList.add('hide'), 2500);
+});
+
 /* --------------------------- Forgot password ----------------------------- */
 const forgotModal = $('#forgot-modal');
 document.addEventListener('click', e => {
@@ -145,6 +157,7 @@ $('#forgot-send').addEventListener('click', async () => {
   if (!email) { err.textContent = 'Isi email dulu.'; err.classList.remove('hidden'); return; }
   const btn = $('#forgot-send');
   btn.disabled = true;
+  btn.classList.add('loading');
   try {
     await api('/api/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
     $('#forgot-step1').classList.add('hidden');
@@ -153,8 +166,9 @@ $('#forgot-send').addEventListener('click', async () => {
   } catch (ex) {
     err.textContent = ex.message;
     err.classList.remove('hidden');
-    btn.disabled = false;
   }
+  btn.classList.remove('loading');
+  btn.disabled = false;
 });
 
 $('#forgot-reset').addEventListener('click', async () => {
@@ -167,6 +181,7 @@ $('#forgot-reset').addEventListener('click', async () => {
   if (!password || password.length < 6) { err.textContent = 'Sandi minimal 6 karakter.'; err.classList.remove('hidden'); return; }
   const btn = $('#forgot-reset');
   btn.disabled = true;
+  btn.classList.add('loading');
   try {
     await api('/api/auth/reset-password', {
       method: 'POST',
@@ -180,6 +195,7 @@ $('#forgot-reset').addEventListener('click', async () => {
     err.textContent = ex.message;
     err.classList.remove('hidden');
   }
+  btn.classList.remove('loading');
   btn.disabled = false;
 });
 
@@ -207,8 +223,10 @@ otpSendBtn.addEventListener('click', async () => {
   const email = $('#reg-email').value.trim();
   if (!email) { otpStatus.textContent = t('auth.reg.email') + ' dulu.'; return; }
   otpSendBtn.disabled = true;
+  otpSendBtn.classList.add('loading');
   try {
     await api('/api/auth/send-otp', { method: 'POST', body: JSON.stringify({ email }) });
+    otpSendBtn.classList.remove('loading');
     otpStatus.textContent = t('auth.reg.otp.sent');
     toast(t('auth.reg.otp.toast'), true);
     // Cooldown 30 detik dengan hitung mundur
@@ -227,6 +245,7 @@ otpSendBtn.addEventListener('click', async () => {
     otpSendBtn.textContent = sisa + ' ' + t('auth.reg.otp.wait');
   } catch (ex) {
     otpStatus.textContent = ex.message;
+    otpSendBtn.classList.remove('loading');
     otpSendBtn.disabled = false;
   }
 });
@@ -257,6 +276,7 @@ $('#register-form').addEventListener('submit', async e => {
     err.classList.remove('hidden');
     return;
   }
+  regSubmitBtn.classList.add('loading'); regSubmitBtn.disabled = true;
   try {
     const j = await api('/api/auth/register', {
       method: 'POST',
@@ -283,6 +303,7 @@ $('#register-form').addEventListener('submit', async e => {
     err.textContent = t('toast.failed') + ex.message;
     err.classList.remove('hidden');
   }
+  regSubmitBtn.classList.remove('loading');
 });
 async function doLogout() {
   try { await api('/api/auth/logout', { method: 'POST' }); } catch (e) {}
