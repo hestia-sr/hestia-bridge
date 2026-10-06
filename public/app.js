@@ -122,6 +122,10 @@ $('#login-form').addEventListener('submit', async e => {
     err.textContent = msg;
     err.classList.remove('hidden');
     toast(msg, false);
+    // Cegah popup password manager Chrome: kosongkan & blur field sandi
+    const pw = $('#login-password');
+    pw.value = '';
+    pw.blur();
     return;
   }
   btn.classList.remove('loading'); btn.disabled = false;
