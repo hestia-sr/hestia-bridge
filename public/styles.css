@@ -516,6 +516,23 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   animation: fadeUp .25s ease both; max-width: 90vw; text-align: center;
 }
 
+/* ===== CHECKBOX ROW & TOS ===== */
+.check-row {
+  display: flex; align-items: flex-start; gap: .6rem;
+  font-size: .85rem; font-weight: 400; cursor: pointer;
+  margin-bottom: .8rem; line-height: 1.5;
+}
+.check-row input[type="checkbox"] {
+  width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0;
+  accent-color: var(--purple-dark); cursor: pointer;
+}
+.check-row a { color: var(--purple-dark); font-weight: 600; }
+.tos-body { font-size: .88rem; line-height: 1.65; }
+.tos-body h4 { margin: 1rem 0 .4rem; font-size: .95rem; }
+.tos-body h4:first-child { margin-top: 0; }
+.tos-body p, .tos-body li { margin-bottom: .5rem; }
+.tos-body ol, .tos-body ul { padding-left: 1.2rem; }
+
 /* ===== MOBILE FIXES ===== */
 @media (max-width: 480px) {
   .hero { padding: 1.3rem 1rem; margin: .8rem 0 1rem; border-radius: 20px; }
