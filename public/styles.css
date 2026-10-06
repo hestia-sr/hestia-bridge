@@ -536,6 +536,28 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 .btn:disabled {
   opacity: .45; cursor: not-allowed; filter: grayscale(.4);
 }
+.btn.loading { position: relative; pointer-events: none; }
+.btn.loading::after {
+  content: ''; display: inline-block; width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.4); border-top-color: #fff;
+  border-radius: 50%; animation: spin .7s linear infinite;
+  margin-left: .5rem; vertical-align: -3px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== PAGE LOADER ===== */
+#page-loader {
+  position: fixed; inset: 0; z-index: 200;
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1rem; transition: opacity .4s ease;
+}
+#page-loader.hide { opacity: 0; pointer-events: none; }
+#page-loader .spin {
+  width: 48px; height: 48px; border: 4px solid rgba(255,255,255,.3);
+  border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite;
+}
+#page-loader p { color: #fff; font-weight: 600; font-size: .95rem; margin: 0; }
 .tos-body { font-size: .88rem; line-height: 1.65; }
 .tos-body h4 { margin: 1rem 0 .4rem; font-size: .95rem; }
 .tos-body h4:first-child { margin-top: 0; }
