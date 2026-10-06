@@ -423,6 +423,87 @@ app.post('/api/auth/verify-otp', (req, res) => {
   rec.verified = true;
   res.json({ ok: true });
 });
+
+/* --------------------------- Lupa kata sandi --------------------------- */
+const resetStore = new Map(); // email -> { code, expiresAt, sentAt, verified, attempts }
+
+function resetEmailHtml(code) {
+  return '<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;background:#f6f1fb;border-radius:16px;overflow:hidden">' +
+    '<div style="background:linear-gradient(135deg,#a855f7,#ec4899);padding:28px 24px;text-align:center">' +
+    '<img src="' + APP_URL + '/logo.jpg" alt="Hestia Bridge" width="72" height="72" style="border-radius:18px">' +
+    '<h2 style="color:#fff;margin:12px 0 0;font-size:20px">Hestia Bridge</h2>' +
+    '<p style="color:#f5e6ff;margin:6px 0 0;font-size:13px">Kode Reset Kata Sandi</p></div>' +
+    '<div style="padding:28px 24px;text-align:center;background:#fff">' +
+    '<p style="color:#555;font-size:14px;margin:0 0 16px">Masukkan kode berikut untuk mereset kata sandimu:</p>' +
+    '<div style="font-size:36px;font-weight:bold;letter-spacing:12px;color:#7c3aed;margin:0 0 16px">' + code + '</div>' +
+    '<p style="color:#999;font-size:12px;margin:0">Kode berlaku 10 menit. Jika kamu tidak meminta reset, abaikan email ini.</p></div>' +
+    '<div style="padding:16px;text-align:center;background:#f6f1fb">' +
+    '<p style="color:#aaa;font-size:11px;margin:0">— Tim Hestia Bridge</p></div></div>';
+}
+
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const { email } = req.body || {};
+  const em = String(email || '').trim().toLowerCase();
+  if (!em) return res.status(400).json({ error: 'Isi email dulu.' });
+  const u = db.users.find(x => x.email === em);
+  // Selalu balas OK agar tidak membocorkan email mana yang terdaftar.
+  if (!u) return res.json({ ok: true });
+  if (!mailerReady()) return res.status(500).json({ error: 'Layanan email belum aktif.' });
+  const now = Date.now();
+  const prev = resetStore.get(em);
+  if (prev && now - prev.sentAt < OTP_RESEND_MS) {
+    const wait = Math.ceil((OTP_RESEND_MS - (now - prev.sentAt)) / 1000);
+    return res.status(429).json({ error: 'Tunggu ' + wait + ' detik sebelum kirim ulang.' });
+  }
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  resetStore.set(em, { code, expiresAt: now + OTP_TTL_MS, sentAt: now, verified: false, attempts: 0 });
+  try {
+    const body = {
+      personalizations: [{ to: [{ email: em }] }],
+      from: { email: SMTP_USER, name: 'Hestia Bridge' },
+      subject: 'Kode Reset Kata Sandi Hestia Bridge: ' + code,
+      content: [{ type: 'text/html', value: resetEmailHtml(code) }]
+    };
+    const r = await fetch('https://api.sendgrid.com/v3/mail/send', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + SENDGRID_API_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!r.ok) throw new Error('SendGrid ' + r.status);
+    res.json({ ok: true });
+  } catch (e) {
+    resetStore.delete(em);
+    res.status(500).json({ error: 'Gagal mengirim email. Coba lagi.' });
+  }
+});
+
+app.post('/api/auth/reset-password', async (req, res) => {
+  const { email, code, password } = req.body || {};
+  const em = String(email || '').trim().toLowerCase();
+  const rec = resetStore.get(em);
+  if (!rec) return res.status(400).json({ error: 'Minta kode reset dulu.' });
+  if (Date.now() > rec.expiresAt) {
+    resetStore.delete(em);
+    return res.status(400).json({ error: 'Kode kedaluwarsa. Minta kode baru.' });
+  }
+  rec.attempts++;
+  if (rec.attempts > 5) {
+    resetStore.delete(em);
+    return res.status(400).json({ error: 'Terlalu banyak percobaan. Minta kode baru.' });
+  }
+  if (String(code || '').trim() !== rec.code) {
+    return res.status(400).json({ error: 'Kode salah. Coba lagi.' });
+  }
+  if (!password || String(password).length < 6) {
+    return res.status(400).json({ error: 'Sandi minimal 6 karakter.' });
+  }
+  const u = db.users.find(x => x.email === em);
+  if (!u) return res.status(400).json({ error: 'Akun tidak ditemukan.' });
+  u.passwordHash = bcrypt.hashSync(String(password), 10);
+  saveDb();
+  resetStore.delete(em);
+  res.json({ ok: true });
+});
 app.post('/api/auth/register', async (req, res) => {
   const { email, password, fingerprint } = req.body || {};
   const chk = emailCheck(email);
