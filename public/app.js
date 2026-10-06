@@ -117,12 +117,11 @@ $('#login-form').addEventListener('submit', async e => {
     enterApp(j);
   } catch (ex) {
     btn.classList.remove('loading'); btn.disabled = false;
-    if (ex.message === 'auth') return;
-    const msg = t('toast.failed') + ex.message;
+    // Untuk form login, 401 berarti sandi salah — tampilkan pesannya, jangan diam.
+    const msg = ex.message === 'auth' ? 'Sandi anda salah.' : (t('toast.failed') + ex.message);
     err.textContent = msg;
     err.classList.remove('hidden');
     toast(msg, false);
-    // Cegah popup password manager Chrome: kosongkan & blur field sandi
     const pw = $('#login-password');
     pw.value = '';
     pw.blur();
