@@ -22,6 +22,7 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const nodemailer = require('nodemailer');
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
@@ -327,6 +328,92 @@ function usersOnDevice(fp) {
   if (!fp) return [];
   return db.users.filter(u => u.role !== 'admin' && u.deviceFingerprint === fp);
 }
+
+/* --------------------------- Email OTP --------------------------------- */
+const SMTP_USER = (process.env.SMTP_USER || '').trim();
+const SMTP_PASS = (process.env.SMTP_PASS || '').trim();
+const APP_URL = (process.env.APP_URL || 'https://hestia-bridge-production.up.railway.app').trim();
+
+let mailer = null;
+if (SMTP_USER && SMTP_PASS) {
+  mailer = nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user: SMTP_USER, pass: SMTP_PASS.replace(/\s+/g, '') }
+  });
+}
+
+// OTP: email -> { code, expiresAt, verified, attempts }
+const otpStore = new Map();
+const OTP_TTL_MS = 10 * 60 * 1000; // 10 menit
+const OTP_RESEND_MS = 60 * 1000;   // kirim ulang min 60 detik
+
+function otpEmailHtml(code) {
+  return '<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;background:#f6f1fb;border-radius:16px;overflow:hidden">' +
+    '<div style="background:linear-gradient(135deg,#a855f7,#ec4899);padding:28px 24px;text-align:center">' +
+    '<img src="' + APP_URL + '/logo.jpg" alt="Hestia Bridge" width="72" height="72" style="border-radius:18px">' +
+    '<h2 style="color:#fff;margin:12px 0 0;font-size:20px">Hestia Bridge</h2>' +
+    '<p style="color:#f5e6ff;margin:6px 0 0;font-size:13px">Kode Verifikasi Pendaftaran</p></div>' +
+    '<div style="padding:28px 24px;text-align:center;background:#fff">' +
+    '<p style="color:#555;font-size:14px;margin:0 0 16px">Masukkan kode berikut untuk menyelesaikan pendaftaran akunmu:</p>' +
+    '<div style="font-size:36px;font-weight:bold;letter-spacing:12px;color:#7c3aed;margin:0 0 16px">' + code + '</div>' +
+    '<p style="color:#999;font-size:12px;margin:0">Kode berlaku 10 menit. Jangan bagikan ke siapa pun.</p></div>' +
+    '<div style="padding:16px;text-align:center;background:#f6f1fb">' +
+    '<p style="color:#aaa;font-size:11px;margin:0">— Tim Hestia Bridge</p></div></div>';
+}
+
+app.post('/api/auth/send-otp', async (req, res) => {
+  const { email } = req.body || {};
+  const chk = emailCheck(email);
+  if (!chk.ok) return res.status(400).json({ error: chk.msg });
+  const em = chk.email;
+  if (db.users.some(u => u.email === em)) {
+    return res.status(400).json({ error: 'Email sudah terdaftar. Silakan masuk.' });
+  }
+  if (!mailer) return res.status(500).json({ error: 'Layanan email belum aktif.' });
+  const now = Date.now();
+  const prev = otpStore.get(em);
+  if (prev && now - prev.sentAt < OTP_RESEND_MS) {
+    const wait = Math.ceil((OTP_RESEND_MS - (now - prev.sentAt)) / 1000);
+    return res.status(429).json({ error: 'Tunggu ' + wait + ' detik sebelum kirim ulang.' });
+  }
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  otpStore.set(em, { code, expiresAt: now + OTP_TTL_MS, sentAt: now, verified: false, attempts: 0 });
+  try {
+    await mailer.sendMail({
+      from: '"Hestia Bridge" <' + SMTP_USER + '>',
+      to: em,
+      subject: 'Kode Verifikasi Hestia Bridge: ' + code,
+      html: otpEmailHtml(code)
+    });
+    res.json({ ok: true });
+  } catch (e) {
+    otpStore.delete(em);
+    res.status(500).json({ error: 'Gagal mengirim email. Coba lagi.' });
+  }
+});
+
+app.post('/api/auth/verify-otp', (req, res) => {
+  const { email, code } = req.body || {};
+  const chk = emailCheck(email);
+  if (!chk.ok) return res.status(400).json({ error: chk.msg });
+  const em = chk.email;
+  const rec = otpStore.get(em);
+  if (!rec) return res.status(400).json({ error: 'Belum ada kode dikirim. Minta kode dulu.' });
+  if (Date.now() > rec.expiresAt) {
+    otpStore.delete(em);
+    return res.status(400).json({ error: 'Kode kedaluwarsa. Minta kode baru.' });
+  }
+  rec.attempts++;
+  if (rec.attempts > 5) {
+    otpStore.delete(em);
+    return res.status(400).json({ error: 'Terlalu banyak percobaan. Minta kode baru.' });
+  }
+  if (String(code || '').trim() !== rec.code) {
+    return res.status(400).json({ error: 'Kode salah. Coba lagi.' });
+  }
+  rec.verified = true;
+  res.json({ ok: true });
+});
 app.post('/api/auth/register', async (req, res) => {
   const { email, password, fingerprint } = req.body || {};
   const chk = emailCheck(email);
@@ -338,6 +425,11 @@ app.post('/api/auth/register', async (req, res) => {
   if (db.users.some(u => u.email === em)) {
     return res.status(400).json({ error: 'Email sudah terdaftar. Silakan masuk.' });
   }
+  const otp = otpStore.get(em);
+  if (!otp || !otp.verified || Date.now() > otp.expiresAt) {
+    return res.status(400).json({ error: 'Verifikasi email dulu dengan kode OTP.' });
+  }
+  otpStore.delete(em);
   const fp = String(fingerprint || '').slice(0, 128);
   let suspended = false;
   const sameDevice = usersOnDevice(fp);
