@@ -281,8 +281,8 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 }
 .app-logo {
   width: 46px; height: 46px; border-radius: 14px; margin: 0 auto .6rem;
-  display: block; object-fit: cover; background: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,.1);
+  display: block; object-fit: cover; background: var(--grad);
+  box-shadow: 0 2px 8px rgba(0,0,0,.1); padding: 4px;
 }
 .app-name { font-weight: 800; font-size: .92rem; }
 .app-plat { font-size: .76rem; color: var(--muted); margin-top: .15rem; }
