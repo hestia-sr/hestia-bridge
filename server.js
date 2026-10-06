@@ -1062,12 +1062,45 @@ app.post('/v1/worker/heartbeat', requireWorker, (req, res) => {
   saveDb();
   res.json({ ok: true });
 });
-app.get('/v1/worker/pending', requireWorker, (req, res) => {
+/* Long-poll waiters: workerId -> [resolve fns]. When a new queue item arrives,
+   waiting /v1/worker/pending?wait= requests are answered immediately. */
+const pendingWaiters = new Map();
+function notifyPendingWaiters(workerId) {
+  const list = pendingWaiters.get(workerId);
+  if (!list || !list.length) return;
+  pendingWaiters.delete(workerId);
+  for (const r of list) { try { r(); } catch (e) {} }
+}
+function getPendingFor(workerId) {
+  return db.wqueue
+    .filter(q => q.status === 'pending' && q.workerId === workerId)
+    .map(q => ({ id: q.id, received_at: q.receivedAt }));
+}
+app.get('/v1/worker/pending', requireWorker, async (req, res) => {
   expireOldQueueItems();
   // Each worker only ever sees its OWN queue items (1 key = 1 worker).
-  const pending = db.wqueue
-    .filter(q => q.status === 'pending' && q.workerId === req.worker.id)
-    .map(q => ({ id: q.id, received_at: q.receivedAt }));
+  let pending = getPendingFor(req.worker.id);
+  // Long-poll: ?wait=N (max 50s). Hold until work arrives or timeout,
+  // so the worker answers almost instantly instead of cron-polling.
+  const waitSec = Math.min(Math.max(parseInt(req.query.wait, 10) || 0, 0), 50);
+  if (!pending.length && waitSec > 0) {
+    let done = false;
+    await new Promise(resolve => {
+      const timer = setTimeout(() => { done = true; resolve(); }, waitSec * 1000);
+      const arr = pendingWaiters.get(req.worker.id) || [];
+      arr.push(() => { if (!done) { done = true; clearTimeout(timer); resolve(); } });
+      pendingWaiters.set(req.worker.id, arr);
+      res.on('close', () => {
+        if (!done) {
+          done = true; clearTimeout(timer); resolve();
+          const l = pendingWaiters.get(req.worker.id) || [];
+          pendingWaiters.set(req.worker.id, l.filter(f => f !== arr[arr.length - 1]));
+        }
+      });
+    });
+    if (!res.writableEnded) pending = getPendingFor(req.worker.id);
+    else return;
+  }
   res.json({ pending, worker_online: true });
 });
 app.post('/v1/worker/claim', requireWorker, (req, res) => {
@@ -1166,6 +1199,7 @@ async function handleWorkerChat(req, res) {
   };
   db.wqueue.push(item);
   saveDb();
+  notifyPendingWaiters(key.workerId); // wake any long-polling worker instantly
 
   let cancelled = false;
   res.on('close', () => { if (!res.writableEnded) cancelled = true; });
