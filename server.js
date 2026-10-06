@@ -357,7 +357,7 @@ const mailerReady = () => !!SENDGRID_API_KEY;
 // OTP: email -> { code, expiresAt, verified, attempts }
 const otpStore = new Map();
 const OTP_TTL_MS = 10 * 60 * 1000; // 10 menit
-const OTP_RESEND_MS = 60 * 1000;   // kirim ulang min 60 detik
+const OTP_RESEND_MS = 30 * 1000;   // kirim ulang min 30 detik
 
 function otpEmailHtml(code) {
   return '<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;background:#f6f1fb;border-radius:16px;overflow:hidden">' +
