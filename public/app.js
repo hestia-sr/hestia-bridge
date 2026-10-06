@@ -116,11 +116,13 @@ $('#login-form').addEventListener('submit', async e => {
     $('#login-password').value = '';
     enterApp(j);
   } catch (ex) {
+    btn.classList.remove('loading'); btn.disabled = false;
     if (ex.message === 'auth') return;
     const msg = t('toast.failed') + ex.message;
     err.textContent = msg;
     err.classList.remove('hidden');
     toast(msg, false);
+    return;
   }
   btn.classList.remove('loading'); btn.disabled = false;
 });
@@ -302,9 +304,11 @@ $('#register-form').addEventListener('submit', async e => {
     }
     enterApp(j);
   } catch (ex) {
+    regSubmitBtn.classList.remove('loading');
     if (ex.message === 'auth') return;
     err.textContent = t('toast.failed') + ex.message;
     err.classList.remove('hidden');
+    return;
   }
   regSubmitBtn.classList.remove('loading');
 });
