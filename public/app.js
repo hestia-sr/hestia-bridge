@@ -109,16 +109,19 @@ $('#login-form').addEventListener('submit', async e => {
   const btn = $('#login-form button[type="submit"]');
   btn.classList.add('loading'); btn.disabled = true;
   try {
-    const j = await api('/api/auth/login', {
+    const r = await fetch('/api/auth/login', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: $('#login-email').value, password: $('#login-password').value })
     });
+    let j = null;
+    try { j = await r.json(); } catch (e) {}
+    if (!r.ok) throw new Error((j && j.error) || 'Login gagal.');
     $('#login-password').value = '';
     enterApp(j);
   } catch (ex) {
     btn.classList.remove('loading'); btn.disabled = false;
-    // Untuk form login, 401 berarti sandi salah — tampilkan pesannya, jangan diam.
-    const msg = ex.message === 'auth' ? 'Sandi anda salah.' : (t('toast.failed') + ex.message);
+    const msg = ex.message;
     err.textContent = msg;
     err.classList.remove('hidden');
     toast(msg, false);
