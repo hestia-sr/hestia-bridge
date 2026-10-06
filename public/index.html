@@ -41,9 +41,11 @@
       </label>
       <div id="otp-row" class="hidden">
         <label><span data-i18n="auth.reg.otp">Kode verifikasi (cek Gmail)</span>
-          <input type="text" id="reg-otp" placeholder="6 digit" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+          <div class="otp-input-row">
+            <input type="text" id="reg-otp" placeholder="6 digit" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+            <button type="button" class="btn btn-ghost" id="otp-send" data-i18n="auth.reg.otp.send">Kirim kode</button>
+          </div>
         </label>
-        <button type="button" class="btn btn-ghost btn-block" id="otp-send" data-i18n="auth.reg.otp.send">Kirim kode</button>
         <p class="muted small note" id="otp-status"></p>
       </div>
       <label class="check-row">
