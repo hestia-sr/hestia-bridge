@@ -117,10 +117,57 @@ $('#login-form').addEventListener('submit', async e => {
     err.classList.remove('hidden');
   }
 });
+/* --------------------------- OTP flow ------------------------------------ */
+let otpVerified = false;
+const otpRow = $('#otp-row');
+const otpSendBtn = $('#otp-send');
+const otpStatus = $('#otp-status');
+
+$('#reg-email').addEventListener('input', () => {
+  otpVerified = false;
+  otpRow.classList.remove('hidden');
+  otpStatus.textContent = '';
+});
+
+otpSendBtn.addEventListener('click', async () => {
+  const email = $('#reg-email').value.trim();
+  if (!email) { otpStatus.textContent = t('auth.reg.email') + ' dulu.'; return; }
+  otpSendBtn.disabled = true;
+  try {
+    await api('/api/auth/send-otp', { method: 'POST', body: JSON.stringify({ email }) });
+    otpStatus.textContent = t('auth.reg.otp.sent');
+  } catch (ex) {
+    otpStatus.textContent = ex.message;
+  }
+  otpSendBtn.disabled = false;
+});
+
+$('#reg-otp').addEventListener('input', async e => {
+  const v = e.target.value.replace(/\D/g, '').slice(0, 6);
+  e.target.value = v;
+  if (v.length === 6 && !otpVerified) {
+    try {
+      await api('/api/auth/verify-otp', {
+        method: 'POST',
+        body: JSON.stringify({ email: $('#reg-email').value.trim(), code: v })
+      });
+      otpVerified = true;
+      otpStatus.textContent = t('auth.reg.otp.verified');
+    } catch (ex) {
+      otpStatus.textContent = ex.message;
+    }
+  }
+});
+
 $('#register-form').addEventListener('submit', async e => {
   e.preventDefault();
   const err = $('#reg-error');
   err.classList.add('hidden');
+  if (!otpVerified) {
+    err.textContent = 'Verifikasi email dulu dengan kode OTP.';
+    err.classList.remove('hidden');
+    return;
+  }
   try {
     const j = await api('/api/auth/register', {
       method: 'POST',
@@ -131,6 +178,9 @@ $('#register-form').addEventListener('submit', async e => {
       })
     });
     $('#reg-password').value = '';
+    $('#reg-otp').value = '';
+    otpVerified = false;
+    otpRow.classList.add('hidden');
     if (j.suspended) {
       err.textContent = t('auth.suspended');
       err.classList.remove('hidden');
@@ -1028,6 +1078,10 @@ const I18N = {
     'auth.reg.password.ph': 'Min 6 karakter',
     'auth.reg.submit': 'Daftar',
     'auth.reg.note': 'Hanya Gmail yang bisa daftar. Satu perangkat maksimal 3 akun.',
+    'auth.reg.otp': 'Kode verifikasi (cek Gmail)',
+    'auth.reg.otp.send': 'Kirim kode',
+    'auth.reg.otp.sent': 'Kode dikirim ke Gmail kamu. Cek kotak masuk ya.',
+    'auth.reg.otp.verified': 'Email terverifikasi. Silakan lanjutkan daftar.',
     'auth.example': 'contoh pakai',
     'auth.suspended': 'Akun dibuat, tapi langsung di-suspend (batas 3 akun per perangkat). Hubungi admin.',
     'section.mykeys.title': 'Key saya',
@@ -1224,6 +1278,10 @@ const I18N = {
     'auth.reg.password.ph': 'Min 6 characters',
     'auth.reg.submit': 'Sign up',
     'auth.reg.note': 'Only Gmail can register. Max 3 accounts per device.',
+    'auth.reg.otp': 'Verification code (check Gmail)',
+    'auth.reg.otp.send': 'Send code',
+    'auth.reg.otp.sent': 'Code sent to your Gmail. Check your inbox.',
+    'auth.reg.otp.verified': 'Email verified. Please continue signing up.',
     'auth.example': 'usage example',
     'auth.suspended': 'Account created, but immediately suspended (3 accounts per device limit). Contact admin.',
     'section.mykeys.title': 'My keys',
