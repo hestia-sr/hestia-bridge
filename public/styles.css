@@ -459,6 +459,8 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   padding: 1rem;
 }
 .modal-backdrop.hidden { display: none !important; }
+.modal-backdrop[hidden] { display: none !important; }
+.drawer-backdrop[hidden] { display: none !important; }
 .modal {
   background: var(--card); border-radius: 20px;
   width: 100%; max-width: 440px; max-height: 90vh;
