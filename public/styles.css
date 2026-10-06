@@ -515,6 +515,9 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,.2);
   animation: fadeUp .25s ease both; max-width: 90vw; text-align: center;
 }
+.toast.success {
+  background: #16a34a; color: #fff;
+}
 
 /* ===== CHECKBOX ROW & TOS ===== */
 .check-row {
