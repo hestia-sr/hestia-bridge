@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hestia Bridge — Kunci API</title>
-<link rel="stylesheet" href="styles.css?v=7">
+<link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body>
 
@@ -36,18 +36,16 @@
       <label><span data-i18n="auth.reg.email">Email (Gmail)</span>
         <input type="email" id="reg-email" placeholder="nama@gmail.com" autocomplete="username" required>
       </label>
-      <div id="otp-row" class="hidden">
-        <label><span data-i18n="auth.reg.otp">Kode verifikasi (cek Gmail)</span>
-          <div class="otp-input-row">
-            <input type="text" id="reg-otp" placeholder="6 digit" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
-            <button type="button" class="btn btn-ghost" id="otp-send" data-i18n="auth.reg.otp.send">Kirim kode</button>
-          </div>
-        </label>
-        <p class="muted small note" id="otp-status"></p>
-      </div>
       <label><span data-i18n="auth.reg.password">Password (min 6 karakter)</span>
         <input type="password" id="reg-password" data-i18n-ph="auth.reg.password.ph" placeholder="Min 6 karakter" autocomplete="new-password" minlength="6" required>
       </label>
+      <div id="otp-row" class="hidden">
+        <label><span data-i18n="auth.reg.otp">Kode verifikasi (cek Gmail)</span>
+          <input type="text" id="reg-otp" placeholder="6 digit" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+        </label>
+        <button type="button" class="btn btn-ghost btn-block" id="otp-send" data-i18n="auth.reg.otp.send">Kirim kode</button>
+        <p class="muted small note" id="otp-status"></p>
+      </div>
       <label class="check-row">
         <input type="checkbox" id="reg-tos" required>
         <span data-i18n-html="auth.reg.tos">Saya menyetujui <a href="#" id="tos-link">Syarat &amp; Ketentuan</a> Hestia Bridge</span>
