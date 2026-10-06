@@ -570,7 +570,8 @@ app.post('/api/auth/login', async (req, res) => {
   let ok = false;
   try { ok = !!u && await bcrypt.compare(String(password || ''), u.passwordHash || ''); }
   catch (e) { ok = false; }
-  if (!u || !ok) return res.status(401).json({ error: 'Email atau password salah.' });
+  if (!u) return res.status(401).json({ error: 'Email atau password salah.' });
+  if (!ok) return res.status(401).json({ error: 'Sandi anda salah.' });
   if (u.suspended) return res.status(403).json({ error: 'Akun kamu di-suspend. Hubungi admin.' });
   const token = createSessionObj({ role: u.role, userId: u.id, email: u.email });
   setSessionCookie(res, token);
