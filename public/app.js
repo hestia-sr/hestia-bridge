@@ -118,6 +118,14 @@ $('#login-form').addEventListener('submit', async e => {
     err.classList.remove('hidden');
   }
 });
+/* --------------------------- TOS checkbox gate --------------------------- */
+const regTos = $('#reg-tos');
+const regSubmitBtn = $('#reg-submit-btn');
+regTos.addEventListener('change', () => {
+  regSubmitBtn.disabled = !regTos.checked;
+});
+regSubmitBtn.disabled = true;
+
 /* --------------------------- OTP flow ------------------------------------ */
 let otpVerified = false;
 const otpRow = $('#otp-row');
@@ -197,6 +205,8 @@ $('#register-form').addEventListener('submit', async e => {
     $('#reg-otp').value = '';
     otpVerified = false;
     otpRow.classList.add('hidden');
+    regTos.checked = false;
+    regSubmitBtn.disabled = true;
     if (j.suspended) {
       err.textContent = t('auth.suspended');
       err.classList.remove('hidden');
