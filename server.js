@@ -168,6 +168,14 @@ function requireAdmin(req, res, next) {
   req.session = s;
   next();
 }
+/* Auth khusus bot Telegram: header x-bot-token harus sama dengan env BOT_API_TOKEN */
+const BOT_API_TOKEN = String(process.env.BOT_API_TOKEN || '').trim();
+function requireBot(req, res, next) {
+  if (!BOT_API_TOKEN) return res.status(500).json({ ok: false, msg: 'BOT_API_TOKEN belum diset di server.' });
+  if (req.headers['x-bot-token'] !== BOT_API_TOKEN)
+    return res.status(403).json({ ok: false, msg: 'Token bot tidak valid.' });
+  next();
+}
 /* Regular logged-in users (and admin). Suspended accounts are rejected. */
 function requireUser(req, res, next) {
   const s = sessionOf(req);
@@ -956,9 +964,29 @@ app.post('/api/users/:id/extend', requireAdmin, (req, res) => {
   saveDb();
   res.json({ ok: true, plan: u.plan, planExpiresAt: u.planExpiresAt });
 });
+/* ============ BOT TELEGRAM: perpanjang durasi akun (auth: x-bot-token) ============ */
+app.get('/api/bot/user', requireBot, (req, res) => {
+  const em = String(req.query.email || '').trim().toLowerCase();
+  const u = db.users.find(x => x.email === em);
+  if (!u) return res.json({ ok: true, exists: false });
+  res.json({ ok: true, exists: true, suspended: !!u.suspended, plan: u.plan || 'gratis', planExpiresAt: u.planExpiresAt || null });
+});
+app.post('/api/bot/extend', requireBot, (req, res) => {
+  const { email, plan } = req.body || {};
+  const em = String(email || '').trim().toLowerCase();
+  if (!em) return res.json({ ok: false, msg: 'email kosong' });
+  if (!PLAN_DURATIONS[plan]) return res.json({ ok: false, msg: 'plan tidak valid' });
+  const u = db.users.find(x => x.email === em);
+  if (!u) return res.json({ ok: false, msg: 'akun tidak ditemukan' });
+  if (u.role === 'admin') return res.json({ ok: false, msg: 'tidak bisa perpanjang akun admin' });
+  const base = Math.max(Date.now(), u.planExpiresAt || 0);
+  u.plan = plan;
+  u.planExpiresAt = base + PLAN_DURATIONS[plan];
+  saveDb();
+  res.json({ ok: true, email: u.email, plan: u.plan, planName: PLAN_NAMES[u.plan] || u.plan, planExpiresAt: u.planExpiresAt });
+});
 /* Info paket user sendiri. */
-app.get('/api/my-plan', requireUser, (req, res) => {
-  if (!req.user) return res.json({ plan: 'admin', planName: 'Admin', planExpiresAt: null, remainingMs: null, expired: false });
+app.get('/api/my-plan', requireUser, (req, res) => {  if (!req.user) return res.json({ plan: 'admin', planName: 'Admin', planExpiresAt: null, remainingMs: null, expired: false });
   const u = req.user;
   res.json({
     plan: u.plan || 'gratis',
