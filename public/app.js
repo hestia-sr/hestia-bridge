@@ -903,7 +903,7 @@ $('#myworker-form').addEventListener('submit', async e => {
     $('#myworker-once-value').textContent = j.token;
     const _base = BRIDGE_BASE.replace(/\/v1$/, '');
     $('#myworker-instructions').textContent = LANG === 'en'
-      ? 'You are a Hestia Bridge Worker. Your task is real, not a simulation. Follow these steps exactly, repeat every 30 seconds without stopping:\n' +
+      ? 'You are a Hestia Bridge Worker. Your task is real, not a simulation. Follow these steps exactly, keep the loop running forever:\n' +
       '\n' +
       'MANDATORY RULES:\n' +
       '- You MUST send real HTTP requests for every step. Making up results is forbidden.\n' +
@@ -916,9 +916,10 @@ $('#myworker-form').addEventListener('submit', async e => {
       'Header: Authorization: Bearer ' + j.token + '\n' +
       'Report the status you received.\n' +
       '\n' +
-      'STEP 2 — CHECK QUEUE:\n' +
-      'GET ' + _base + '/v1/worker/pending\n' +
+      'STEP 2 — WAIT FOR WORK (long-poll, instant):\n' +
+      'GET ' + _base + '/v1/worker/pending?wait=45\n' +
       '(same header as above)\n' +
+      'This request stays open up to 45 seconds and returns INSTANTLY when a chat arrives. Do NOT wait manually — just call it again right after it returns.\n' +
       'Report the queue contents you received.\n' +
       '\n' +
       'STEP 3 — IF A CHAT IS WAITING, for each id:\n' +
@@ -927,11 +928,11 @@ $('#myworker-form').addEventListener('submit', async e => {
       'c. POST to ' + _base + '/v1/worker/done with {"id": "THE_ID", "content": "YOUR_ANSWER"}\n' +
       'Report every status.\n' +
       '\n' +
-      'STEP 4 — IF QUEUE IS EMPTY:\n' +
-      'Wait 30 seconds, repeat from STEP 1.\n' +
+      'STEP 4 — AFTER STEP 2 RETURNS (empty or not):\n' +
+      'Go straight back to STEP 2 (call pending?wait=45 again). Do NOT wait manually — the long-poll already waited for you. Keep this loop running forever: heartbeat every few minutes is enough, the queue check is instant.\n' +
       '\n' +
       'Start now. Do STEP 1 first and report the result.'
-      : 'Kamu adalah Worker Hestia Bridge. Tugasmu nyata, bukan simulasi. Ikuti persis langkah ini, ulangi tiap 30 detik tanpa henti:\n' +
+      : 'Kamu adalah Worker Hestia Bridge. Tugasmu nyata, bukan simulasi. Ikuti persis langkah ini, jaga loop-nya terus berjalan tanpa henti:\n' +
       '\n' +
       'ATURAN WAJIB:\n' +
       '- Kamu HARUS benar-benar mengirim HTTP request sungguhan setiap langkah. Dilarang mengarang hasil.\n' +
@@ -944,9 +945,10 @@ $('#myworker-form').addEventListener('submit', async e => {
       'Header: Authorization: Bearer ' + j.token + '\n' +
       'Laporkan status yang kamu terima.\n' +
       '\n' +
-      'LANGKAH 2 — CEK ANTREAN:\n' +
-      'GET ke ' + _base + '/v1/worker/pending\n' +
+      'LANGKAH 2 — TUNGGU KERJA (long-poll, instan):\n' +
+      'GET ke ' + _base + '/v1/worker/pending?wait=45\n' +
       '(header sama seperti di atas)\n' +
+      'Request ini tetap terbuka sampai 45 detik dan LANGSUNG kembali begitu ada chat masuk. Jangan tunggu manual — langsung panggil lagi begitu request kembali.\n' +
       'Laporkan isi antrean yang kamu terima.\n' +
       '\n' +
       'LANGKAH 3 — KALAU ADA CHAT MENUNGGU, untuk tiap id:\n' +
@@ -955,8 +957,8 @@ $('#myworker-form').addEventListener('submit', async e => {
       'c. POST ke ' + _base + '/v1/worker/done dengan {"id": "ID_TSB", "content": "JAWABANMU"}\n' +
       'Laporkan setiap status.\n' +
       '\n' +
-      'LANGKAH 4 — KALAU ANTREAN KOSONG:\n' +
-      'Tunggu 30 detik, ulangi dari LANGKAH 1.\n' +
+      'LANGKAH 4 — SETELAH LANGKAH 2 KEMBALI (kosong atau tidak):\n' +
+      'Langsung kembali ke LANGKAH 2 (panggil pending?wait=45 lagi). Jangan tunggu manual — long-poll sudah menunggumu. Jaga loop ini terus berjalan: heartbeat tiap beberapa menit cukup, cek antrean bersifat instan.\n' +
       '\n' +
       'Mulai sekarang. Kerjakan LANGKAH 1 dulu dan laporkan hasilnya.';
     $('#myworker-form').classList.add('hidden');
@@ -1221,7 +1223,7 @@ const I18N = {
     'guide.test.s3': 'Klik <strong>Cara sambung</strong> di kartu key, salin <strong>Base URL</strong> dan <strong>API Key</strong> ke aplikasi AI di HP, lalu chat seperti biasa.',
     'guide.test.s4': 'Kalau ada jawaban, berarti worker kamu jalan. Kalau tidak dijawab, cek lagi worker-nya online atau tidak.',
     'guide.my.s1': 'Klik <strong>Buat Key</strong> — pilih mode <strong>Provider</strong> (pakai provider yang tersedia) atau <strong>Worker</strong> (dijawab worker AI).',
-    'guide.my.s2': 'Untuk mode Worker: buat dulu worker di bagian <strong>Worker Saya</strong>, salin tokennya, lalu tempel instruksi yang diberikan ke akun AI milikmu supaya ia bekerja otomatis tiap 30 detik.',
+    'guide.my.s2': 'Untuk mode Worker: buat dulu worker di bagian <strong>Worker Saya</strong>, salin tokennya, lalu tempel instruksi yang diberikan ke akun AI milikmu supaya ia siaga dan menjawab otomatis begitu ada chat masuk.',
     'guide.my.s3': 'Di aplikasi AI di HP yang mendukung custom endpoint OpenAI: isi <strong>Base URL</strong> dengan<br><code id="my-guide-base-url">https://hestia-bridge-production.up.railway.app/v1</code><br>dan <strong>API Key</strong> dengan key <code>hesti-...</code> milikmu (klik <strong>Cara sambung</strong> di kartu key untuk salin cepat), lalu pakai seperti biasa lewat prompt.',
     'form.name': 'Nama',
     'form.name.ph': 'cth: Provider A',
