@@ -138,10 +138,24 @@ otpSendBtn.addEventListener('click', async () => {
     await api('/api/auth/send-otp', { method: 'POST', body: JSON.stringify({ email }) });
     otpStatus.textContent = t('auth.reg.otp.sent');
     toast(t('auth.reg.otp.toast'), true);
+    // Cooldown 30 detik dengan hitung mundur
+    let sisa = 30;
+    const labelAsli = t('auth.reg.otp.send');
+    const timer = setInterval(() => {
+      sisa--;
+      if (sisa <= 0) {
+        clearInterval(timer);
+        otpSendBtn.disabled = false;
+        otpSendBtn.textContent = labelAsli;
+      } else {
+        otpSendBtn.textContent = sisa + ' ' + t('auth.reg.otp.wait');
+      }
+    }, 1000);
+    otpSendBtn.textContent = sisa + ' ' + t('auth.reg.otp.wait');
   } catch (ex) {
     otpStatus.textContent = ex.message;
+    otpSendBtn.disabled = false;
   }
-  otpSendBtn.disabled = false;
 });
 
 $('#reg-otp').addEventListener('input', async e => {
@@ -1084,6 +1098,7 @@ const I18N = {
     'auth.reg.otp.send': 'Kirim kode',
     'auth.reg.otp.sent': 'Kode dikirim ke Gmail kamu. Cek kotak masuk ya.',
     'auth.reg.otp.toast': 'Kode email sudah terkirim, periksa di Gmail anda.',
+    'auth.reg.otp.wait': 'detik',
     'auth.reg.otp.verified': 'Email terverifikasi. Silakan lanjutkan daftar.',
     'auth.example': 'contoh pakai',
     'auth.suspended': 'Akun dibuat, tapi langsung di-suspend (batas 3 akun per perangkat). Hubungi admin.',
@@ -1285,6 +1300,7 @@ const I18N = {
     'auth.reg.otp.send': 'Send code',
     'auth.reg.otp.sent': 'Code sent to your Gmail. Check your inbox.',
     'auth.reg.otp.toast': 'Verification code sent, check your Gmail.',
+    'auth.reg.otp.wait': 'sec',
     'auth.reg.otp.verified': 'Email verified. Please continue signing up.',
     'auth.example': 'usage example',
     'auth.suspended': 'Account created, but immediately suspended (3 accounts per device limit). Contact admin.',
