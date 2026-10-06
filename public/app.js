@@ -928,6 +928,23 @@ document.getElementById('info-modal').addEventListener('click', e => {
   if (e.target.id === 'info-modal') e.target.classList.add('hidden');
 });
 
+/* --------------------------- TOS modal --------------------------------- */
+document.addEventListener('click', e => {
+  if (e.target && e.target.id === 'tos-link') {
+    e.preventDefault();
+    document.getElementById('tos-modal').classList.remove('hidden');
+  }
+});
+document.getElementById('tos-modal-close').addEventListener('click', () => {
+  document.getElementById('tos-modal').classList.add('hidden');
+});
+document.getElementById('tos-ok').addEventListener('click', () => {
+  document.getElementById('tos-modal').classList.add('hidden');
+});
+document.getElementById('tos-modal').addEventListener('click', e => {
+  if (e.target.id === 'tos-modal') e.target.classList.add('hidden');
+});
+
 document.getElementById('wallpaper-input').addEventListener('change', e => {
   const f = e.target.files && e.target.files[0];
   if (!f) return;
@@ -980,6 +997,9 @@ const I18N = {
     'info.p3': 'Terima kasih atas <strong>pengertian, kesabaran, dan kepercayaan</strong> kalian. Kehadiran kalian adalah semangat terbesar saya untuk terus berkarya.',
     'info.sign': '— Tim Hestia Bridge',
     'btn.understand': 'Mengerti',
+    'tos.title': 'Syarat & Ketentuan',
+    'auth.reg.tos': 'Saya menyetujui <a href="#" id="tos-link">Syarat &amp; Ketentuan</a> Hestia Bridge',
+    'tos.content': '<h4>1. Penerimaan</h4><p>Dengan mendaftar dan menggunakan Hestia Bridge, Anda menyetujui seluruh Syarat &amp; Ketentuan ini.</p><h4>2. Akun</h4><ul><li>Hanya alamat Gmail valid yang dapat mendaftar.</li><li>Satu perangkat dibatasi untuk jumlah akun tertentu.</li><li>Anda bertanggung jawab menjaga kerahasiaan kata sandi dan API key Anda.</li></ul><h4>3. Penggunaan yang Dilarang</h4><ul><li>Dilarang menggunakan layanan untuk aktivitas ilegal, spam, atau penyalahgunaan.</li><li>Dilarang membagikan API key Anda kepada pihak lain tanpa izin.</li><li>Dilarang mencoba merusak, mengganggu, atau mengeksploitasi sistem.</li></ul><h4>4. Kuota &amp; Batasan</h4><p>Penggunaan mengikuti kuota provider masing-masing dan batasan yang ditetapkan admin. Pelanggaran dapat mengakibatkan penangguhan akun.</p><h4>5. Perubahan Layanan</h4><p>Kami dapat mengubah, menangguhkan, atau menghentikan layanan sewaktu-waktu dengan pemberitahuan yang wajar.</p><h4>6. Hubungi Kami</h4><p>Untuk pertanyaan atau laporan, hubungi tim Hestia Bridge melalui kanal resmi yang tersedia.</p>',
     'nav.home': 'Beranda',
     'home.title': 'Selamat datang di Hestia Bridge',
     'home.sub': 'Sambungkan API key kamu ke aplikasi AI favoritmu. Satu key, banyak aplikasi.',
@@ -1173,6 +1193,9 @@ const I18N = {
     'info.p3': 'Thank you for your <strong>understanding, patience, and trust</strong>. Your presence is my greatest motivation to keep creating.',
     'info.sign': '— Hestia Bridge Team',
     'btn.understand': 'Understood',
+    'tos.title': 'Terms & Conditions',
+    'auth.reg.tos': 'I agree to the Hestia Bridge <a href="#" id="tos-link">Terms &amp; Conditions</a>',
+    'tos.content': '<h4>1. Acceptance</h4><p>By registering and using Hestia Bridge, you agree to all of these Terms &amp; Conditions.</p><h4>2. Account</h4><ul><li>Only valid Gmail addresses may register.</li><li>One device is limited to a certain number of accounts.</li><li>You are responsible for keeping your password and API keys confidential.</li></ul><h4>3. Prohibited Use</h4><ul><li>Using the service for illegal activity, spam, or abuse is prohibited.</li><li>Sharing your API keys with others without permission is prohibited.</li><li>Attempting to damage, disrupt, or exploit the system is prohibited.</li></ul><h4>4. Quotas &amp; Limits</h4><p>Usage follows each provider\'s quota and limits set by the admin. Violations may result in account suspension.</p><h4>5. Service Changes</h4><p>We may change, suspend, or discontinue the service at any time with reasonable notice.</p><h4>6. Contact Us</h4><p>For questions or reports, contact the Hestia Bridge team through the available official channels.</p>',
     'nav.home': 'Home',
     'home.title': 'Welcome to Hestia Bridge',
     'home.sub': 'Connect your API key to your favorite AI apps. One key, many apps.',
