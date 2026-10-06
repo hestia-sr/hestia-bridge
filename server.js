@@ -388,7 +388,9 @@ app.post('/api/auth/send-otp', async (req, res) => {
     res.json({ ok: true });
   } catch (e) {
     otpStore.delete(em);
-    res.status(500).json({ error: 'Gagal mengirim email. Coba lagi.' });
+    const msg = (e && e.message) || 'unknown';
+    console.error('[OTP] sendMail gagal:', msg);
+    res.status(500).json({ error: 'Gagal mengirim email: ' + msg });
   }
 });
 
