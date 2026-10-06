@@ -22,9 +22,10 @@ async function api(path, opts) {
   return j;
 }
 
-function toast(msg) {
+function toast(msg, ok) {
   const t = $('#toast');
   t.textContent = msg;
+  t.classList.toggle('success', !!ok);
   t.classList.remove('hidden');
   clearTimeout(t._h);
   t._h = setTimeout(() => t.classList.add('hidden'), 2600);
@@ -136,6 +137,7 @@ otpSendBtn.addEventListener('click', async () => {
   try {
     await api('/api/auth/send-otp', { method: 'POST', body: JSON.stringify({ email }) });
     otpStatus.textContent = t('auth.reg.otp.sent');
+    toast(t('auth.reg.otp.toast'), true);
   } catch (ex) {
     otpStatus.textContent = ex.message;
   }
@@ -1081,6 +1083,7 @@ const I18N = {
     'auth.reg.otp': 'Kode verifikasi (cek Gmail)',
     'auth.reg.otp.send': 'Kirim kode',
     'auth.reg.otp.sent': 'Kode dikirim ke Gmail kamu. Cek kotak masuk ya.',
+    'auth.reg.otp.toast': 'Kode email sudah terkirim, periksa di Gmail anda.',
     'auth.reg.otp.verified': 'Email terverifikasi. Silakan lanjutkan daftar.',
     'auth.example': 'contoh pakai',
     'auth.suspended': 'Akun dibuat, tapi langsung di-suspend (batas 3 akun per perangkat). Hubungi admin.',
@@ -1281,6 +1284,7 @@ const I18N = {
     'auth.reg.otp': 'Verification code (check Gmail)',
     'auth.reg.otp.send': 'Send code',
     'auth.reg.otp.sent': 'Code sent to your Gmail. Check your inbox.',
+    'auth.reg.otp.toast': 'Verification code sent, check your Gmail.',
     'auth.reg.otp.verified': 'Email verified. Please continue signing up.',
     'auth.example': 'usage example',
     'auth.suspended': 'Account created, but immediately suspended (3 accounts per device limit). Contact admin.',
