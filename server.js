@@ -913,10 +913,10 @@ app.delete('/api/my-keys/:id', requireUser, (req, res) => {
 
 /* ============ user: safe provider & worker lists (no secrets) ============ */
 app.get('/api/my-providers', requireUser, (req, res) => {
-  // NEVER expose provider.apiKey to non-admin callers.
-  // models list is safe to expose (not sensitive).
-  const list = db.providers.map(p => ({ id: p.id, name: p.name, models: p.models || [] }));
-  // BYOK: tampilkan "Provider Saya" bila user sudah mengaturnya di Pengaturan.
+  // User hanya melihat "Provider Saya" miliknya sendiri.
+  // Provider admin TIDAK ditampilkan ke user (privasi, masing-masing).
+  const list = [];
+  // BYOK: tampilkan "Provider Saya" bila user sudah mengaturnya di Agent Pilihan.
   const cp = customProviderOf(req.user);
   if (cp) list.push({ id: 'custom', name: 'Provider Saya', models: cp.models || [] });
   res.json({ providers: list });
