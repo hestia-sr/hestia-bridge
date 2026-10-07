@@ -1332,6 +1332,45 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
   }
 
   // Streaming: forward SSE untouched, estimate tokens from bytes on finish.
+  // Fallback: jika upstream mengabaikan stream:true dan mengembalikan JSON utuh
+  // (bukan SSE), konversi ke satu chunk SSE agar frontend tetap menerima respons.
+  const upstreamCT = (upstream.headers.get('content-type') || '').toLowerCase();
+  if (!upstreamCT.includes('text/event-stream')) {
+    let data;
+    try { data = await upstream.text(); } catch (e) { data = ''; }
+    clearTimeout(timer);
+    let content = '';
+    let usage = null;
+    try {
+      const j = JSON.parse(data);
+      const ch = j && j.choices && j.choices[0];
+      if (ch) {
+        if (ch.message && typeof ch.message.content === 'string') content = ch.message.content;
+        else if (ch.delta && typeof ch.delta.content === 'string') content = ch.delta.content;
+        else if (typeof ch.text === 'string') content = ch.text;
+      }
+      if (j && j.usage) usage = j.usage;
+    } catch (e) { /* bukan JSON valid, kirim apa adanya */ }
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no'
+    });
+    res.on('error', () => {});
+    if (content) {
+      res.write('data: ' + JSON.stringify({ choices: [{ delta: { content: content } }] }) + '\n\n');
+    } else if (data) {
+      // fallback terakhir: kirim mentah sebagai satu chunk agar tidak kosong
+      res.write('data: ' + JSON.stringify({ choices: [{ delta: { content: data.slice(0, 4000) } }] }) + '\n\n');
+    }
+    res.write('data: [DONE]\n\n');
+    try { res.end(); } catch (e) {}
+    const pt = usage ? (usage.prompt_tokens || 0) : estimateTokens(promptText);
+    const ct = usage ? (usage.completion_tokens || 0) : estimateTokens(content || data);
+    recordUsage(req.bridgeKey.id, model, pt, ct, true);
+    return;
+  }
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
