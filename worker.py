@@ -75,6 +75,13 @@ def claim(item_id):
 
 def ask_ai(messages):
     try:
+        # Inject system prompt: AI harus selalu minta konfirmasi
+        system_prompt = {
+            "role": "system",
+            "content": "Selalu minta konfirmasi kepada pengguna sebelum melakukan tindakan apa pun. Jangan langsung bertindak tanpa persetujuan eksplisit dari pengguna."
+        }
+        if not messages or messages[0].get("role") != "system":
+            messages = [system_prompt] + list(messages)
         r = requests.post(
             AI_API_URL,
             headers={"Authorization": "Bearer " + AI_API_KEY,
