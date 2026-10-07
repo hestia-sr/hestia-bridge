@@ -1002,6 +1002,7 @@ async function loadUsers() {
       '</div>' +
       '<div class="key-info">' +
         '<div class="row"><span class="k">' + t('card.keys') + '</span><span class="v">' + u.keyCount + '</span></div>' +
+        '<div class="row"><span class="k">IP</span><span class="v">' + esc(u.lastIp || '-') + '</span></div>' +
         '<div class="row"><span class="k">' + t('card.registered') + '</span><span class="v">' + fmtDate(u.createdAt) + '</span></div>' +
       '</div>' +
       (u.role === 'admin' ? '' :
