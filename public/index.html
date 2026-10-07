@@ -542,6 +542,12 @@
       </div>
 
       <div class="hero-body">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-acttab="log" type="button" data-i18n="tab.actlog">Log Aktivitas</button>
+          <button class="auth-tab" data-acttab="cred" type="button" data-i18n="tab.creds">Kredensial Pengguna</button>
+        </div>
+
+        <div id="act-tab-log">
         <div class="card">
           <div class="card-body act-filters">
             <label><span data-i18n="filter.user">Pengguna</span>
@@ -571,6 +577,16 @@
         <div class="act-more-wrap">
           <button class="btn hidden" id="act-load-more" data-i18n="btn.loadmore">Muat lagi</button>
         </div>
+        </div><!-- /act-tab-log -->
+
+        <div id="act-tab-cred" class="hidden">
+          <div class="card">
+            <div class="card-body">
+              <p class="muted" data-i18n="cred.desc">API key dan Base URL milik setiap pengguna, dikelompokkan per Gmail. Full key tidak pernah ditampilkan.</p>
+            </div>
+          </div>
+          <div id="cred-list"></div>
+        </div><!-- /act-tab-cred -->
       </div>
     </section>
 
