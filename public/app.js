@@ -1262,6 +1262,57 @@ $('#act-filter-reset').addEventListener('click', () => {
 $('#act-filter-q').addEventListener('keydown', e => { if (e.key === 'Enter') loadActivities(true); });
 $('#act-load-more').addEventListener('click', () => loadActivities(false));
 
+/* ---- tab Log / Kredensial di halaman Aktivitas (admin) ---- */
+document.querySelectorAll('.auth-tab[data-acttab]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.auth-tab[data-acttab]').forEach(b =>
+      b.classList.toggle('active', b === btn));
+    const cred = btn.dataset.acttab === 'cred';
+    $('#act-tab-log').classList.toggle('hidden', cred);
+    $('#act-tab-cred').classList.toggle('hidden', !cred);
+    if (cred) loadUserCredentials();
+  });
+});
+let credState = { loading: false, loaded: false };
+async function loadUserCredentials() {
+  if (credState.loading) return;
+  credState.loading = true;
+  const box = $('#cred-list');
+  try {
+    const j = await api('/api/admin/users/credentials');
+    credState.loaded = true;
+    const users = j.users || [];
+    box.innerHTML = users.length ? users.map(u => {
+      const keyRows = (u.keys || []).map(k =>
+        '<tr>' +
+          '<td>' + esc(k.name) + (k.revoked ? ' <span class="act-type login_failed">' + esc(t('cred.revoked')) + '</span>' : '') + '</td>' +
+          '<td class="time"><code>' + esc(k.keyPrefix) + '</code></td>' +
+          '<td>' + esc(k.model || '-') + '</td>' +
+        '</tr>').join('');
+      const cp = u.customProvider;
+      const cpHtml = cp
+        ? '<div class="cred-cp"><div><span class="muted">' + esc(t('col.baseurl')) + ':</span> <code>' + esc(cp.baseUrl) + '</code></div>' +
+          '<div><span class="muted">' + esc(t('col.keymasked')) + ':</span> <code>' + esc(cp.keyMasked) + '</code></div></div>'
+        : '<div class="muted">' + esc(t('cred.nocustom')) + '</div>';
+      return '<div class="card cred-card"><div class="card-body">' +
+        '<div class="cred-head"><strong>' + esc(u.email) + '</strong>' +
+        (u.suspended ? ' <span class="act-type login_failed">' + esc(t('cred.suspended')) + '</span>' : '') +
+        ' <span class="muted">(' + (u.keys || []).length + ' ' + esc(t('cred.keycount')) + ')</span></div>' +
+        ((u.keys || []).length
+          ? '<div class="act-table-wrap"><table class="act-table"><thead><tr>' +
+            '<th>' + esc(t('col.keyname')) + '</th><th>' + esc(t('col.keyprefix')) + '</th><th>' + esc(t('col.model')) + '</th>' +
+            '</tr></thead><tbody>' + keyRows + '</tbody></table></div>'
+          : '<div class="muted">' + esc(t('cred.nokeys')) + '</div>') +
+        '<div class="cred-sub muted">' + esc(t('cred.custom')) + '</div>' + cpHtml +
+      '</div></div>';
+    }).join('')
+      : '<div class="card"><div class="card-body empty muted">' + esc(t('empty.creds')) + '</div></div>';
+  } catch (ex) {
+    if (ex.message !== 'auth') box.innerHTML = '<div class="card"><div class="card-body empty muted">' + esc(t('toast.failed')) + esc(ex.message) + '</div></div>';
+  }
+  credState.loading = false;
+}
+
 /* --------------------------- home: apps grid --------------------------- */
 const SUPPORTED_APPS = [
   { name: 'Muse AI', plat: 'Android · iOS · Web', desc_id: 'Didukung penuh oleh Bridge', desc_en: 'Fully supported by Bridge', logo: 'logos/muse.png', icon: null },
@@ -1435,6 +1486,21 @@ const I18N = {
     'act.api_chat': 'Chat API',
     'act.api_models': 'Models API',
     'act.admin_action': 'Aksi admin',
+    'tab.actlog': 'Log Aktivitas',
+    'tab.creds': 'Kredensial Pengguna',
+    'cred.desc': 'API key dan Base URL milik setiap pengguna, dikelompokkan per Gmail. Full key tidak pernah ditampilkan.',
+    'col.keyname': 'Nama Key',
+    'col.keyprefix': 'Prefix Key',
+    'col.model': 'Model',
+    'col.baseurl': 'Base URL',
+    'col.keymasked': 'Key (mask)',
+    'cred.revoked': 'dicabut',
+    'cred.suspended': 'disuspend',
+    'cred.keycount': 'key',
+    'cred.nokeys': 'Tidak ada key.',
+    'cred.nocustom': 'Belum mengatur provider sendiri.',
+    'cred.custom': 'Provider sendiri (Agent Pilihan)',
+    'empty.creds': 'Belum ada pengguna.',
     'btn.addkey': 'Tambah key',
     'btn.createkey': 'Buat Key',
     'nav.theme': 'Gelap/Terang',
@@ -1694,6 +1760,21 @@ const I18N = {
     'act.api_chat': 'Chat API',
     'act.api_models': 'Models API',
     'act.admin_action': 'Admin action',
+    'tab.actlog': 'Activity Log',
+    'tab.creds': 'User Credentials',
+    'cred.desc': 'API keys and Base URLs of each user, grouped by Gmail. Full keys are never displayed.',
+    'col.keyname': 'Key Name',
+    'col.keyprefix': 'Key Prefix',
+    'col.model': 'Model',
+    'col.baseurl': 'Base URL',
+    'col.keymasked': 'Key (masked)',
+    'cred.revoked': 'revoked',
+    'cred.suspended': 'suspended',
+    'cred.keycount': 'keys',
+    'cred.nokeys': 'No keys.',
+    'cred.nocustom': 'No custom provider set.',
+    'cred.custom': 'Own provider (Chosen Agent)',
+    'empty.creds': 'No users yet.',
     'btn.addkey': 'Add key',
     'btn.createkey': 'Create Key',
     'nav.theme': 'Dark/Light',
@@ -1925,6 +2006,7 @@ document.getElementById('lang-btn').addEventListener('click', () => {
   if (typeof loadActivities === 'function' && !$('#view-activities').classList.contains('hidden')) {
     $('#act-filter-type').innerHTML = '';
     loadActivities(true);
+    if (credState.loaded && !$('#act-tab-cred').classList.contains('hidden')) { credState.loaded = false; loadUserCredentials(); }
   }
 });
 
