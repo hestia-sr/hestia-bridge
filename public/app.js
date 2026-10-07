@@ -500,17 +500,13 @@ function keyCard(k, maxReq) {
 }
 
 let connectKeyId = null;
-async function openConnectModal(id, apiBase, name) {
+async function openConnectModal(id, apiBase, name, model) {
   connectKeyId = id;
   const j = await api(apiBase + '/' + id + '/reveal');
   $('#connect-base').textContent = BRIDGE_BASE;
   $('#connect-key').textContent = j.token;
   $('#connect-key-name').textContent = name || '';
-  let modelId = 'model-id';
-  try {
-    const mj = await (await fetch(BRIDGE_BASE + '/models', { headers: { 'Authorization': 'Bearer ' + j.token } })).json();
-    if (mj && mj.data && mj.data.length && mj.data[0].id) modelId = mj.data[0].id;
-  } catch (e) { /* pakai default */ }
+  let modelId = model || 'model-id';
   $('#connect-curl').textContent =
     'curl ' + BRIDGE_BASE + '/chat/completions \\\n' +
     '  -H "Authorization: Bearer ' + j.token + '" \\\n' +
@@ -559,7 +555,7 @@ $('#key-list').addEventListener('click', async e => {
       toast(t('toast.stats.reset'));
       await refreshAll();
     } else if (act === 'connect') {
-      await openConnectModal(id, '/api/keys', k ? k.name : '');
+      await openConnectModal(id, '/api/keys', k ? k.name : '', k ? k.model : '');
     }
   } catch (ex) { if (ex.message !== 'auth') toast(t('toast.failed') + ex.message); }
 });
@@ -797,7 +793,7 @@ $('#mykey-list').addEventListener('click', async e => {
       toast(t('toast.key.deleted'));
       await loadMyKeys();
     } else if (act === 'connect') {
-      await openConnectModal(id, '/api/my-keys', k ? k.name : '');
+      await openConnectModal(id, '/api/my-keys', k ? k.name : '', k ? k.model : '');
     } else if (act === 'editmodel') {
       await openEditModelModal(id);
     }
