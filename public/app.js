@@ -473,6 +473,7 @@ function keyCard(k, maxReq) {
     '<div><span class="key-masked">' + esc(k.masked) + '</span></div>' +
     '<div class="key-info">' +
       '<div class="row"><span class="k">' + t('card.provider') + '</span><span class="v">' + esc(k.providerName) + '</span></div>' +
+      (k.model ? '<div class="row"><span class="k">' + t('card.model') + '</span><span class="v">' + esc(k.model) + '</span></div>' : '') +
       '<div class="row"><span class="k">' + t('card.request') + '</span><span class="v">' + fmtNum(k.stats.requests) + '</span></div>' +
       '<div class="row"><span class="k">' + t('card.tokens.in') + '</span><span class="v">' + fmtNum(k.stats.promptTokens) + '</span></div>' +
       '<div class="row"><span class="k">' + t('card.tokens.out') + '</span><span class="v">' + fmtNum(k.stats.completionTokens) + '</span></div>' +
@@ -603,6 +604,16 @@ $('#rename-form').addEventListener('submit', async e => {
 });
 
 /* new key modal */
+let keyProvidersCache = [];
+function fillKeyModels() {
+  const pid = $('#key-provider').value;
+  const p = keyProvidersCache.find(x => x.id === pid);
+  const models = (p && p.models) || [];
+  $('#key-model').innerHTML = models.length
+    ? models.map(m => '<option value="' + esc(m) + '">' + esc(m) + '</option>').join('')
+    : '<option value="">' + t('opt.no.model') + '</option>';
+}
+$('#key-provider').addEventListener('change', fillKeyModels);
 $('#new-key-btn').addEventListener('click', async () => {
   $('#key-form').classList.remove('hidden');
   $('#key-result').classList.add('hidden');
@@ -610,8 +621,10 @@ $('#new-key-btn').addEventListener('click', async () => {
   try {
     const j = await api('/api/providers');
     if (!j.providers.length) { toast(t('toast.addprovider')); return; }
+    keyProvidersCache = j.providers;
     $('#key-provider').innerHTML = j.providers.map(p =>
       '<option value="' + p.id + '">' + esc(p.name) + ' (' + p.modelCount + ' ' + t('card.models') + ')</option>').join('');
+    fillKeyModels();
     $('#key-modal').classList.remove('hidden');
   } catch (ex) { if (ex.message !== 'auth') toast(t('toast.failed') + ex.message); }
 });
@@ -632,7 +645,7 @@ $('#key-form').addEventListener('submit', async e => {
   try {
     const j = await api('/api/keys', {
       method: 'POST',
-      body: JSON.stringify({ name: $('#key-name').value, providerId: $('#key-provider').value, tokenQuota: qv > 0 ? qv : null })
+      body: JSON.stringify({ name: $('#key-name').value, providerId: $('#key-provider').value, model: $('#key-model').value || null, tokenQuota: qv > 0 ? qv : null })
     });
     $('#key-once-value').textContent = j.token;
     $('#key-form').classList.add('hidden');
@@ -752,6 +765,7 @@ function myKeyCard(k, maxReq) {
     '<div class="key-info">' +
       '<div class="row"><span class="k">' + (k.mode === 'worker' ? t('card.worker') : t('card.provider')) + '</span><span class="v">' + via + '</span></div>' +
       (k.mode === 'worker' ? '<div class="row"><span class="k">' + t('card.worker.status') + '</span><span class="v">' + (k.workerOnline ? t('card.online') : t('card.offline')) + '</span></div>' : '') +
+      (k.model ? '<div class="row"><span class="k">' + t('card.model') + '</span><span class="v">' + esc(k.model) + '</span></div>' : '') +
       '<div class="row"><span class="k">' + t('card.request') + '</span><span class="v">' + fmtNum(k.stats.requests) + '</span></div>' +
       '<div class="row"><span class="k">' + t('card.tokens.in') + '</span><span class="v">' + fmtNum(k.stats.promptTokens) + '</span></div>' +
       '<div class="row"><span class="k">' + t('card.tokens.out') + '</span><span class="v">' + fmtNum(k.stats.completionTokens) + '</span></div>' +
@@ -785,12 +799,24 @@ $('#mykey-list').addEventListener('click', async e => {
 });
 
 /* my key modal */
+let mykeyProvidersCache = [];
+function fillMykeyModels() {
+  const pid = $('#mykey-provider').value;
+  const p = mykeyProvidersCache.find(x => x.id === pid);
+  const models = (p && p.models) || [];
+  $('#mykey-model').innerHTML = models.length
+    ? models.map(m => '<option value="' + esc(m) + '">' + esc(m) + '</option>').join('')
+    : '<option value="">' + t('opt.no.model') + '</option>';
+  $('#mykey-model-wrap').classList.toggle('hidden', $('#mykey-mode').value === 'worker');
+}
+$('#mykey-provider').addEventListener('change', fillMykeyModels);
 $('#my-new-key-btn').addEventListener('click', async () => {
   $('#mykey-form').classList.remove('hidden');
   $('#mykey-result').classList.add('hidden');
   $('#mykey-error').classList.add('hidden');
   try {
     const [p, w] = await Promise.all([api('/api/my-providers'), api('/api/my-workers/available')]);
+    mykeyProvidersCache = p.providers;
     $('#mykey-provider').innerHTML = p.providers.length
       ? p.providers.map(x => '<option value="' + x.id + '">' + esc(x.name) + '</option>').join('')
       : '<option value="">' + t('opt.no.provider') + '</option>';
@@ -800,13 +826,16 @@ $('#my-new-key-btn').addEventListener('click', async () => {
       : '<option value="">' + t('opt.no.worker') + '</option>';
     $('#mykey-mode').value = 'provider';
     $('#mykey-provider-wrap').classList.remove('hidden');
+    $('#mykey-model-wrap').classList.remove('hidden');
     $('#mykey-worker-wrap').classList.add('hidden');
+    fillMykeyModels();
     $('#mykey-modal').classList.remove('hidden');
   } catch (ex) { if (ex.message !== 'auth') toast(t('toast.failed') + ex.message); }
 });
 $('#mykey-mode').addEventListener('change', () => {
   const isWorker = $('#mykey-mode').value === 'worker';
   $('#mykey-provider-wrap').classList.toggle('hidden', isWorker);
+  $('#mykey-model-wrap').classList.toggle('hidden', isWorker);
   $('#mykey-worker-wrap').classList.toggle('hidden', !isWorker);
 });
 $('#mykey-modal-close').addEventListener('click', () => $('#mykey-modal').classList.add('hidden'));
@@ -826,7 +855,10 @@ $('#mykey-form').addEventListener('submit', async e => {
     const mode = $('#mykey-mode').value;
     const body = { name: $('#mykey-name').value, mode };
     if (mode === 'worker') body.workerId = $('#mykey-worker').value;
-    else body.providerId = $('#mykey-provider').value;
+    else {
+      body.providerId = $('#mykey-provider').value;
+      if ($('#mykey-model').value) body.model = $('#mykey-model').value;
+    }
     const qv = parseInt($('#mykey-quota').value, 10);
     if (qv > 0) body.tokenQuota = qv;
     const j = await api('/api/my-keys', { method: 'POST', body: JSON.stringify(body) });
@@ -1254,6 +1286,7 @@ const I18N = {
     'form.keyname': 'Nama key',
     'form.keyname.ph': 'cth: Key HP',
     'form.provider': 'Provider',
+    'form.model': 'Model',
     'form.quota': 'Kuota token (opsional)',
     'form.quota.ph': 'cth: 1000000 (kosongkan = tanpa batas)',
     'form.newname': 'Nama baru',
@@ -1282,6 +1315,7 @@ const I18N = {
     'card.active': 'AKTIF',
     'card.disabled': 'NONAKTIF',
     'card.provider': 'Provider',
+    'card.model': 'Model',
     'card.request': 'Request',
     'card.tokens.in': 'Token masuk',
     'card.tokens.out': 'Token keluar',
@@ -1358,6 +1392,7 @@ const I18N = {
     'confirm.user.delete': 'Hapus pengguna ini permanen? Semua key miliknya ikut terhapus.',
     'opt.no.provider': '(belum ada provider)',
     'opt.no.worker': '(tidak ada worker online)',
+    'opt.no.model': '(tidak ada model)',
     'opt.online': ' (online)',
   },
   en: {
@@ -1464,6 +1499,7 @@ const I18N = {
     'form.keyname': 'Key name',
     'form.keyname.ph': 'e.g.: Phone Key',
     'form.provider': 'Provider',
+    'form.model': 'Model',
     'form.quota': 'Token quota (optional)',
     'form.quota.ph': 'e.g.: 1000000 (leave empty = unlimited)',
     'form.newname': 'New name',
@@ -1492,6 +1528,7 @@ const I18N = {
     'card.active': 'ACTIVE',
     'card.disabled': 'DISABLED',
     'card.provider': 'Provider',
+    'card.model': 'Model',
     'card.request': 'Request',
     'card.tokens.in': 'Input tokens',
     'card.tokens.out': 'Output tokens',
@@ -1568,6 +1605,7 @@ const I18N = {
     'confirm.user.delete': 'Permanently delete this user? All their keys will be deleted too.',
     'opt.no.provider': '(no providers yet)',
     'opt.no.worker': '(no online workers)',
+    'opt.no.model': '(no models)',
     'opt.online': ' (online)',
   }
 };
