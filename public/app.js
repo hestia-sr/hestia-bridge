@@ -417,7 +417,7 @@ function closeDrawer() {
 }
 $('#drawer-btn').addEventListener('click', openDrawer);
 $('#drawer-backdrop').addEventListener('click', closeDrawer);
-const VIEW_TITLES = { home: 'nav.home', keys: 'topbar.keys', providers: 'nav.providers', users: 'nav.users', mykeys: 'nav.mykeys' };
+const VIEW_TITLES = { home: 'nav.home', keys: 'topbar.keys', providers: 'nav.providers', users: 'nav.users', mykeys: 'nav.mykeys', settings: 'nav.settings' };
 function switchView(name) {
   document.querySelectorAll('.drawer-btn[data-view]').forEach(b =>
     b.classList.toggle('active', b.dataset.view === name));
@@ -426,6 +426,7 @@ function switchView(name) {
   $('.topbar-title').textContent = t(VIEW_TITLES[name] || 'topbar.keys');
   closeDrawer();
   if (name === 'users') loadUsers();
+  if (name === 'settings') loadMySettings();
 }
 document.querySelectorAll('.drawer-btn[data-view]').forEach(btn => {
   btn.addEventListener('click', () => switchView(btn.dataset.view));
@@ -843,6 +844,93 @@ $('#mykey-done').addEventListener('click', () => { $('#mykey-modal').classList.a
 $('#mykey-modal').addEventListener('click', e => {
   if (e.target.id === 'mykey-modal') $('#mykey-modal').classList.add('hidden');
 });
+
+/* ------------------- user settings: BYOK provider sendiri ------------------ */
+let mysetModelsCache = [];
+function fillMysetModels(selected) {
+  const sel = $('#myset-model');
+  sel.innerHTML = mysetModelsCache.length
+    ? mysetModelsCache.map(m => '<option value="' + esc(m) + '"' + (m === selected ? ' selected' : '') + '>' + esc(m) + '</option>').join('')
+    : '<option value="">' + t('opt.checkfirst') + '</option>';
+  sel.disabled = !mysetModelsCache.length;
+}
+async function loadMySettings() {
+  const err = $('#myset-error');
+  if (err) err.classList.add('hidden');
+  $('#myset-ok').classList.add('hidden');
+  try {
+    const s = await api('/api/my-provider');
+    if (s.configured) {
+      $('#myset-base').value = s.baseUrl || '';
+      $('#myset-key').value = '';
+      $('#myset-key').placeholder = t('form.settings.keyset') + ' (' + (s.keyMasked || '') + ')';
+      mysetModelsCache = s.models || [];
+      fillMysetModels(s.model || (mysetModelsCache[0] || ''));
+      $('#myset-ok').textContent = t('settings.configured');
+      $('#myset-ok').classList.remove('hidden');
+      $('#myset-delete').classList.remove('hidden');
+    } else {
+      $('#myset-base').value = '';
+      $('#myset-key').value = '';
+      $('#myset-key').placeholder = 'sk-...';
+      mysetModelsCache = [];
+      fillMysetModels('');
+      $('#myset-delete').classList.add('hidden');
+    }
+  } catch (e) { if (e.message !== 'auth') toast(t('toast.failed') + e.message); }
+}
+$('#myset-check').addEventListener('click', async () => {
+  const err = $('#myset-error');
+  err.classList.add('hidden');
+  const btn = $('#myset-check');
+  btn.disabled = true;
+  try {
+    const r = await api('/api/my-provider/check', {
+      method: 'POST',
+      body: JSON.stringify({ baseUrl: $('#myset-base').value.trim(), apiKey: $('#myset-key').value })
+    });
+    if (!r.ok) throw new Error(r.error || 'check failed');
+    mysetModelsCache = r.models || [];
+    fillMysetModels(mysetModelsCache[0] || '');
+    toast(t('settings.checkok'), true);
+  } catch (e) {
+    mysetModelsCache = [];
+    fillMysetModels('');
+    err.textContent = e.message;
+    err.classList.remove('hidden');
+  } finally { btn.disabled = false; }
+});
+$('#mysettings-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = $('#myset-error');
+  err.classList.add('hidden');
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  try {
+    await api('/api/my-provider', {
+      method: 'POST',
+      body: JSON.stringify({
+        baseUrl: $('#myset-base').value.trim(),
+        apiKey: $('#myset-key').value, // boleh kosong = pakai key yang tersimpan
+        model: $('#myset-model').value || null
+      })
+    });
+    $('#myset-key').value = '';
+    await loadMySettings();
+    toast(t('settings.saved'), true);
+  } catch (ex) {
+    err.textContent = ex.message;
+    err.classList.remove('hidden');
+  } finally { btn.disabled = false; }
+});
+$('#myset-delete').addEventListener('click', async () => {
+  if (!confirm(t('settings.confirmdelete'))) return;
+  try {
+    await api('/api/my-provider', { method: 'DELETE' });
+    toast(t('settings.deleted'), true);
+    await loadMySettings();
+  } catch (e) { toast(t('toast.failed') + e.message); }
+});
 $('#mykey-once-copy').addEventListener('click', async () => {
   await navigator.clipboard.writeText($('#mykey-once-value').textContent);
   toast(t('toast.key.copied'));
@@ -1188,6 +1276,24 @@ const I18N = {
     'nav.providers': 'Provider',
     'nav.users': 'Pengguna',
     'nav.mykeys': 'Key Saya',
+    'nav.settings': 'Pengaturan',
+    'hero.settings': 'Pengaturan',
+    'hero.settings.sub': 'Pakai API key AI milikmu sendiri — kuota terpakai dari akunmu, bukan admin.',
+    'btn.checkmodels': 'Cek Model',
+    'btn.save': 'Simpan',
+    'btn.delete': 'Hapus',
+    'opt.checkfirst': 'Cek model dulu',
+    'form.settings.keyset': 'Tersimpan',
+    'form.settings.note': 'Key hanya dipakai untuk request milikmu. <strong>Jangan</strong> bagikan ke orang lain.',
+    'settings.configured': 'Provider pribadimu sudah tersimpan.',
+    'settings.checkok': 'Model ditemukan!',
+    'settings.saved': 'Pengaturan tersimpan.',
+    'settings.deleted': 'Provider pribadi dihapus.',
+    'settings.confirmdelete': 'Hapus provider pribadimu?',
+    'guide.settings.title': 'Cara pakai provider sendiri',
+    'guide.settings.s1': 'Isi <strong>Base URL</strong> dan <strong>API Key</strong> dari provider AI milikmu (yang kompatibel OpenAI API).',
+    'guide.settings.s2': 'Klik <strong>Cek Model</strong> — daftar model dari key-mu akan muncul otomatis.',
+    'guide.settings.s3': 'Pilih model, lalu klik <strong>Simpan</strong>. Setelah itu, saat <strong>Buat Key</strong> pilih <strong>Provider Saya</strong>.',
     'nav.logout': 'Keluar',
     'nav.account': 'Akun',
     'account.title': 'Akun',
@@ -1401,6 +1507,24 @@ const I18N = {
     'nav.providers': 'Providers',
     'nav.users': 'Users',
     'nav.mykeys': 'My Keys',
+    'nav.settings': 'Settings',
+    'hero.settings': 'Settings',
+    'hero.settings.sub': 'Use your own AI API key — usage is billed to your account, not the admin.',
+    'btn.checkmodels': 'Check Models',
+    'btn.save': 'Save',
+    'btn.delete': 'Delete',
+    'opt.checkfirst': 'Check models first',
+    'form.settings.keyset': 'Saved',
+    'form.settings.note': 'The key is only used for your own requests. <strong>Do not</strong> share it with others.',
+    'settings.configured': 'Your personal provider is saved.',
+    'settings.checkok': 'Models found!',
+    'settings.saved': 'Settings saved.',
+    'settings.deleted': 'Personal provider deleted.',
+    'settings.confirmdelete': 'Delete your personal provider?',
+    'guide.settings.title': 'How to use your own provider',
+    'guide.settings.s1': 'Fill in the <strong>Base URL</strong> and <strong>API Key</strong> of your own AI provider (OpenAI API compatible).',
+    'guide.settings.s2': 'Click <strong>Check Models</strong> — the model list from your key will appear automatically.',
+    'guide.settings.s3': 'Pick a model, then click <strong>Save</strong>. After that, when creating a key choose <strong>My Provider</strong>.',
     'nav.logout': 'Logout',
     'nav.account': 'Account',
     'account.title': 'Account',
