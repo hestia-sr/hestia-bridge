@@ -779,6 +779,7 @@ function myKeyCard(k, maxReq) {
     '</div>' +
     '<div class="key-actions">' +
       '<button class="btn btn-sm btn-primary" data-act="connect" data-id="' + k.id + '">' + t('btn.connect') + '</button>' +
+      (k.mode === 'provider' ? '<button class="btn btn-sm" data-act="editmodel" data-id="' + k.id + '">' + t('btn.editmodel') + '</button>' : '') +
       '<button class="btn btn-sm btn-danger" data-act="del" data-id="' + k.id + '">' + t('btn.delete') + '</button>' +
     '</div>' +
     '<div class="key-meta">' + t('card.created') + ' ' + fmtDate(k.createdAt) + ' · ' + t('card.lastused') + ' ' + timeAgo(k.lastUsedAt) + '</div>' +
@@ -797,8 +798,54 @@ $('#mykey-list').addEventListener('click', async e => {
       await loadMyKeys();
     } else if (act === 'connect') {
       await openConnectModal(id, '/api/my-keys', k ? k.name : '');
+    } else if (act === 'editmodel') {
+      await openEditModelModal(id);
     }
   } catch (ex) { if (ex.message !== 'auth') toast(t('toast.failed') + ex.message); }
+});
+
+/* edit model modal (ganti model key yang sudah dibuat) */
+async function openEditModelModal(id) {
+  const k = myKeysCache.find(x => x.id === id);
+  if (!k || k.mode !== 'provider') return;
+  try {
+    if (!mykeyProvidersCache.length) {
+      const j = await api('/api/my-providers');
+      mykeyProvidersCache = j.providers || [];
+    }
+    const p = mykeyProvidersCache.find(x => x.id === k.providerId);
+    const models = (p && p.models) || [];
+    if (!models.length) { toast(t('toast.failed') + t('opt.no.model')); return; }
+    $('#editmodel-keyname').textContent = k.name || '';
+    $('#editmodel-model').innerHTML = models.map(m =>
+      '<option value="' + esc(m) + '"' + (m === k.model ? ' selected' : '') + '>' + esc(m) + '</option>').join('');
+    $('#editmodel-error').classList.add('hidden');
+    $('#editmodel-modal').dataset.id = id;
+    $('#editmodel-modal').classList.remove('hidden');
+  } catch (ex) { if (ex.message !== 'auth') toast(t('toast.failed') + ex.message); }
+}
+$('#editmodel-modal-close').addEventListener('click', () => $('#editmodel-modal').classList.add('hidden'));
+$('#editmodel-modal').addEventListener('click', e => {
+  if (e.target.id === 'editmodel-modal') $('#editmodel-modal').classList.add('hidden');
+});
+$('#editmodel-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = $('#editmodel-modal').dataset.id;
+  const err = $('#editmodel-error');
+  err.classList.add('hidden');
+  try {
+    await api('/api/my-keys/' + id, {
+      method: 'PATCH',
+      body: JSON.stringify({ model: $('#editmodel-model').value })
+    });
+    $('#editmodel-modal').classList.add('hidden');
+    toast(t('toast.saved'));
+    await loadMyKeys();
+  } catch (ex) {
+    if (ex.message === 'auth') return;
+    err.textContent = t('toast.failed') + ex.message;
+    err.classList.remove('hidden');
+  }
 });
 
 /* my key modal */
@@ -1168,7 +1215,7 @@ $('#users-list').addEventListener('click', async e => {
 
 /* ------------------------- admin: activity log --------------------------- */
 const ACT_TYPE_KEYS = ['register', 'login', 'login_failed', 'logout', 'key_created',
-  'key_deleted', 'api_chat', 'api_models', 'admin_action'];
+  'key_deleted', 'key_model_changed', 'api_chat', 'api_models', 'admin_action'];
 let actState = { offset: 0, total: 0, hasMore: false, loading: false };
 const ACT_LIMIT = 50;
 function fmtDateTime(iso) {
@@ -1483,6 +1530,7 @@ const I18N = {
     'act.logout': 'Keluar',
     'act.key_created': 'Key dibuat',
     'act.key_deleted': 'Key dihapus',
+    'act.key_model_changed': 'Model diganti',
     'act.api_chat': 'Chat API',
     'act.api_models': 'Models API',
     'act.admin_action': 'Aksi admin',
@@ -1602,6 +1650,8 @@ const I18N = {
     'modal.connect.title': 'info cURL',
     'modal.connect.desc': 'Isi dua kolom ini di aplikasi AI di HP, lalu pakai lewat prompt seperti biasa.',
     'modal.rename.title': 'Ganti nama key',
+    'modal.editmodel.title': 'Ganti model',
+    'modal.editmodel.key': 'Key',
     'modal.mykey.title': 'Buat API Key',
     'modal.myworker.title': 'Buat Worker',
     'modal.myworker.once': 'Token worker hanya ditampilkan sekali. Salin sekarang, lalu tempel instruksi di bawah ke akun AI milikmu.',
@@ -1635,6 +1685,7 @@ const I18N = {
     'btn.deactivate': 'nonaktifkan',
     'btn.connect': 'info cURL',
     'btn.edit': 'edit',
+    'btn.editmodel': 'ganti model',
     'btn.rotate': 'rotate',
     'btn.reset': 'reset pakai',
     'btn.delete': 'hapus',
@@ -1757,6 +1808,7 @@ const I18N = {
     'act.logout': 'Logout',
     'act.key_created': 'Key created',
     'act.key_deleted': 'Key deleted',
+    'act.key_model_changed': 'Model changed',
     'act.api_chat': 'Chat API',
     'act.api_models': 'Models API',
     'act.admin_action': 'Admin action',
@@ -1876,6 +1928,8 @@ const I18N = {
     'modal.connect.title': 'cURL info',
     'modal.connect.desc': 'Fill these two fields in the AI app on your phone, then use it via prompt as usual.',
     'modal.rename.title': 'Rename key',
+    'modal.editmodel.title': 'Change model',
+    'modal.editmodel.key': 'Key',
     'modal.mykey.title': 'Create API Key',
     'modal.myworker.title': 'Create Worker',
     'modal.myworker.once': 'Worker token is shown only once. Copy it now, then paste the instructions below into your AI account.',
@@ -1909,6 +1963,7 @@ const I18N = {
     'btn.deactivate': 'deactivate',
     'btn.connect': 'cURL info',
     'btn.edit': 'edit',
+    'btn.editmodel': 'change model',
     'btn.rotate': 'rotate',
     'btn.reset': 'reset usage',
     'btn.delete': 'delete',
