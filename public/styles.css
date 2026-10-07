@@ -628,6 +628,7 @@ body.has-wallpaper .section-head {
 .act-type.login_failed { background: #fee2e2; color: #991b1b; }
 .act-type.key_created { background: #e0e7ff; color: #3730a3; }
 .act-type.key_deleted { background: #ffedd5; color: #9a3412; }
+.act-type.key_model_changed { background: #fce7f3; color: #9d174d; }
 .act-type.api_chat { background: #f3e8ff; color: #6b21a8; }
 .act-type.api_models { background: #ecfeff; color: #155e75; }
 .act-type.admin_action { background: #fef9c3; color: #854d0e; }
@@ -637,6 +638,7 @@ body.dark .act-type.register { background: #1e3a8a; color: #bfdbfe; }
 body.dark .act-type.login_failed { background: #7f1d1d; color: #fecaca; }
 body.dark .act-type.key_created { background: #312e81; color: #c7d2fe; }
 body.dark .act-type.key_deleted { background: #7c2d12; color: #fed7aa; }
+body.dark .act-type.key_model_changed { background: #831843; color: #fbcfe8; }
 body.dark .act-type.api_chat { background: #581c87; color: #e9d5ff; }
 body.dark .act-type.api_models { background: #164e63; color: #a5f3fc; }
 body.dark .act-type.admin_action { background: #713f12; color: #fef08a; }
