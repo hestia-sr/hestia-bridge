@@ -260,7 +260,12 @@ function requireBridgeKey(req, res, next) {
       return bridgeError(res, 429, 'Kuota token key ini sudah habis (' + key.tokenQuota.toLocaleString('id-ID') + ' token).');
     }
   }
-  const provider = db.providers.find(p => p.id === key.providerId);
+  let provider = db.providers.find(p => p.id === key.providerId);
+  if (!provider && key.providerId === 'custom' && key.userId) {
+    // BYOK: key terikat ke provider milik user sendiri.
+    const keyOwner = db.users.find(u => u.id === key.userId);
+    provider = customProviderOf(keyOwner);
+  }
   if (key.mode === 'worker') {
     // Worker-mode keys are answered by a connected worker, not a provider.
     req.bridgeKey = key;
@@ -310,6 +315,15 @@ async function fetchUpstreamModels(baseUrl, apiKey) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+/* BYOK: provider milik user sendiri (diatur di halaman Pengaturan).
+ * Dibangun sebagai objek mirip provider agar seluruh alur chat
+ * (baseUrl, key, models) bisa dipakai ulang tanpa perubahan. */
+function customProviderOf(user) {
+  const c = user && user.customProvider;
+  if (!c || !c.baseUrl || !c.apiKey) return null;
+  return { id: 'custom', name: 'Provider Saya', baseUrl: c.baseUrl, key: c.apiKey, models: c.models || [] };
 }
 
 /* ============================ public: health ============================= */
@@ -678,7 +692,7 @@ app.get('/api/keys', requireAdmin, (req, res) => {
       return {
         id: k.id, name: k.name, masked: maskKey(k.token),
         mode: k.mode || 'provider',
-        providerId: k.providerId, providerName: p ? p.name : '(deleted)',
+        providerId: k.providerId, providerName: k.providerId === 'custom' ? 'Provider Saya' : (p ? p.name : '(deleted)'),
         model: k.model || null,
         workerId: k.workerId || null, workerName: w ? w.name : null,
         userId: k.userId || null, ownerEmail: owner ? owner.email : 'admin',
@@ -806,12 +820,13 @@ app.post('/api/keys/:id/bind', requireAdmin, (req, res) => {
 
 /* ==================== user: my keys (self-service, no limits) ============ */
 function userKeyShape(k) {
-  const p = db.providers.find(x => x.id === k.providerId);
+  const p = k.providerId === 'custom' ? null : db.providers.find(x => x.id === k.providerId);
   const w = k.workerId ? db.workers.find(x => x.id === k.workerId) : null;
+  const pname = k.providerId === 'custom' ? 'Provider Saya' : (p ? p.name : '(deleted)');
   return {
     id: k.id, name: k.name, masked: maskKey(k.token),
     mode: k.mode || 'provider',
-    providerId: k.providerId, providerName: p ? p.name : '(deleted)',
+    providerId: k.providerId, providerName: pname,
     model: k.model || null,
     workerId: k.workerId || null, workerName: w ? w.name : null,
     workerOnline: w ? workerOnline(w) : null,
@@ -837,9 +852,12 @@ app.post('/api/my-keys', requireUser, (req, res) => {
   if (!name || !String(name).trim()) return res.status(400).json({ error: 'name is required' });
   let pid = null, wid = null, pmodel = null;
   if (m === 'provider') {
-    const p = db.providers.find(x => x.id === providerId);
-    if (!p) return res.status(400).json({ error: 'provider_not_found' });
-    pid = p.id;
+    // BYOK: 'custom' = provider milik user sendiri (diatur di Pengaturan).
+    const p = providerId === 'custom'
+      ? customProviderOf(req.user)
+      : db.providers.find(x => x.id === providerId);
+    if (!p) return res.status(400).json({ error: providerId === 'custom' ? 'custom_provider_not_configured' : 'provider_not_found' });
+    pid = providerId === 'custom' ? 'custom' : p.id;
     // Validate model against provider's model list if provided.
     if (model && String(model).trim()) {
       const models = p.models || [];
@@ -897,7 +915,77 @@ app.delete('/api/my-keys/:id', requireUser, (req, res) => {
 app.get('/api/my-providers', requireUser, (req, res) => {
   // NEVER expose provider.apiKey to non-admin callers.
   // models list is safe to expose (not sensitive).
-  res.json({ providers: db.providers.map(p => ({ id: p.id, name: p.name, models: p.models || [] })) });
+  const list = db.providers.map(p => ({ id: p.id, name: p.name, models: p.models || [] }));
+  // BYOK: tampilkan "Provider Saya" bila user sudah mengaturnya di Pengaturan.
+  const cp = customProviderOf(req.user);
+  if (cp) list.push({ id: 'custom', name: 'Provider Saya', models: cp.models || [] });
+  res.json({ providers: list });
+});
+
+/* ============ user: BYOK provider sendiri (halaman Pengaturan) ============
+ * User mengisi Base URL + API key miliknya sendiri, lalu Bridge memakai
+ * kredensial itu saat key terikat ke "Provider Saya". Hestia tidak nanggung. */
+app.post('/api/my-provider/check', requireUser, async (req, res) => {
+  if (!req.user) return res.status(403).json({ ok: false, error: 'user_only' });
+  const { baseUrl, apiKey } = req.body || {};
+  if (!baseUrl || !String(baseUrl).trim() || !apiKey || !String(apiKey).trim()) {
+    return res.status(400).json({ ok: false, error: 'baseUrl and apiKey are required' });
+  }
+  const probe = await fetchUpstreamModels(String(baseUrl).trim(), String(apiKey).trim());
+  if (!probe.ok) return res.json({ ok: false, error: probe.error });
+  res.json({ ok: true, models: probe.models });
+});
+app.get('/api/my-provider', requireUser, (req, res) => {
+  if (!req.user) return res.status(403).json({ error: 'user_only' });
+  const c = req.user.customProvider || null;
+  if (!c) return res.json({ configured: false });
+  res.json({
+    configured: true,
+    baseUrl: c.baseUrl,
+    model: c.model || null,
+    models: c.models || [],
+    keyMasked: maskKey(c.apiKey),
+    checkedAt: c.checkedAt || null
+  });
+});
+app.post('/api/my-provider', requireUser, async (req, res) => {
+  if (!req.user) return res.status(403).json({ error: 'user_only' });
+  let { baseUrl, apiKey, model } = req.body || {};
+  baseUrl = baseUrl && String(baseUrl).trim() ? String(baseUrl).trim() : null;
+  apiKey = apiKey && String(apiKey).trim() ? String(apiKey).trim() : null;
+  const existing = req.user.customProvider || null;
+  // API key boleh dikosongkan = pakai key yang sudah tersimpan.
+  if (!apiKey && existing && existing.apiKey) apiKey = existing.apiKey;
+  if (!baseUrl) return res.status(400).json({ error: 'baseUrl is required' });
+  if (!apiKey) return res.status(400).json({ error: 'apiKey is required' });
+  // Validasi dulu: pastikan URL + key benar-benar bisa dihubungi.
+  const probe = await fetchUpstreamModels(baseUrl, apiKey);
+  if (!probe.ok) return res.status(502).json({ error: 'upstream_unreachable', detail: probe.error });
+  const m = model && String(model).trim() ? String(model).trim() : null;
+  if (m && probe.models.length && !probe.models.includes(m)) {
+    return res.status(400).json({ error: 'model_not_found' });
+  }
+  req.user.customProvider = {
+    baseUrl: normBaseUrl(baseUrl),
+    apiKey: apiKey,
+    model: m,
+    models: probe.models,
+    checkedAt: nowIso()
+  };
+  saveDb();
+  res.json({
+    ok: true,
+    baseUrl: req.user.customProvider.baseUrl,
+    model: m,
+    models: probe.models,
+    keyMasked: maskKey(req.user.customProvider.apiKey)
+  });
+});
+app.delete('/api/my-provider', requireUser, (req, res) => {
+  if (!req.user) return res.status(403).json({ error: 'user_only' });
+  delete req.user.customProvider;
+  saveDb();
+  res.json({ ok: true });
 });
 function userWorkerShape(w) {
   // Worker tokens are NEVER exposed here.
