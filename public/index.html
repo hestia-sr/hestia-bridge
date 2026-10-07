@@ -156,6 +156,10 @@
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-4 0-7 2-7 5v1h14v-1c0-3-3-5-7-5z" fill="currentColor"/></svg>
         <span data-i18n="nav.users">Pengguna</span>
       </button>
+      <button class="drawer-btn admin-only" data-view="activities">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 12h4l2-7 4 14 2-7h6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span data-i18n="nav.activities">Aktivitas</span>
+      </button>
       <button class="drawer-btn user-only" data-view="mykeys">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M14 3a7 7 0 0 0-6.9 8.2L3 15.3V21h5.7l4.1-4.1A7 7 0 1 0 14 3zm1.4 4.6a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z" fill="currentColor"/></svg>
         <span data-i18n="nav.mykeys">Key Saya</span>
@@ -521,6 +525,52 @@
       <div class="hero-body">
 
       <div id="users-list"></div>
+      </div>
+    </section>
+
+    <section id="view-activities" class="view hidden">
+      <div class="hero">
+        <div class="hero-top">
+          <div>
+            <h1 class="hero-title" data-i18n="hero.activities">Aktivitas Pengguna</h1>
+            <p class="hero-sub" data-i18n="hero.activities.sub">Pantau semua aktivitas pengguna: login, pembuatan key, dan pemakaian API.</p>
+          </div>
+          <button id="activities-refresh-btn" class="hero-refresh" aria-label="Refresh">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5V1L6 7l6 6V9a8 8 0 1 1-8 8H2a10 10 0 1 0 10-12z" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="hero-body">
+        <div class="card">
+          <div class="card-body act-filters">
+            <label><span data-i18n="filter.user">Pengguna</span>
+              <select id="act-filter-user" class="select"></select>
+            </label>
+            <label><span data-i18n="filter.type">Jenis</span>
+              <select id="act-filter-type" class="select"></select>
+            </label>
+            <label><span data-i18n="filter.from">Dari</span>
+              <input type="date" id="act-filter-from" class="select">
+            </label>
+            <label><span data-i18n="filter.to">Sampai</span>
+              <input type="date" id="act-filter-to" class="select">
+            </label>
+            <label><span data-i18n="filter.search">Cari</span>
+              <input type="text" id="act-filter-q" data-i18n-ph="filter.search.ph" placeholder="email / key / model / IP">
+            </label>
+            <div class="act-filter-btns">
+              <button class="btn btn-sm btn-primary" id="act-filter-apply" data-i18n="btn.filter">Filter</button>
+              <button class="btn btn-sm" id="act-filter-reset" data-i18n="btn.resetfilter">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="act-count" class="muted act-count"></div>
+        <div id="activities-list"></div>
+        <div class="act-more-wrap">
+          <button class="btn hidden" id="act-load-more" data-i18n="btn.loadmore">Muat lagi</button>
+        </div>
       </div>
     </section>
 
