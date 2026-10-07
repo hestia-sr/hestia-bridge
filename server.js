@@ -1001,6 +1001,34 @@ app.delete('/api/my-keys/:id', requireUser, (req, res) => {
   });
   res.json({ ok: true });
 });
+app.patch('/api/my-keys/:id', requireUser, (req, res) => {
+  const k = ownKey(req, res);
+  if (!k) return;
+  if (k.mode !== 'provider') return res.status(400).json({ error: 'model_not_applicable' });
+  const { model } = req.body || {};
+  if (!model || !String(model).trim()) return res.status(400).json({ error: 'model is required' });
+  // Resolve provider yang terikat ke key ini (validasi model terhadap daftarnya).
+  const p = k.providerId === 'custom'
+    ? customProviderOf(req.user)
+    : db.providers.find(x => x.id === k.providerId);
+  if (!p) return res.status(400).json({ error: k.providerId === 'custom' ? 'custom_provider_not_configured' : 'provider_not_found' });
+  const m = String(model).trim();
+  const models = p.models || [];
+  if (models.length && !models.includes(m)) {
+    return res.status(400).json({ error: 'model_not_found' });
+  }
+  const old = k.model || null;
+  k.model = m;
+  saveDb();
+  logActivity('key_model_changed', {
+    userId: req.user ? req.user.id : null,
+    email: req.user ? req.user.email : null,
+    ip: clientIp(req),
+    keyId: k.id, keyName: k.name, model: m,
+    detail: 'Ganti model key "' + k.name + '" dari ' + (old || '(kosong)') + ' ke ' + m
+  });
+  res.json({ ok: true, key: userKeyShape(k) });
+});
 
 /* ============ user: safe provider & worker lists (no secrets) ============ */
 app.get('/api/my-providers', requireUser, (req, res) => {
