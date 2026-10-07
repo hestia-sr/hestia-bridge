@@ -417,7 +417,7 @@ function closeDrawer() {
 }
 $('#drawer-btn').addEventListener('click', openDrawer);
 $('#drawer-backdrop').addEventListener('click', closeDrawer);
-const VIEW_TITLES = { home: 'nav.home', keys: 'topbar.keys', providers: 'nav.providers', users: 'nav.users', mykeys: 'nav.mykeys', settings: 'nav.settings' };
+const VIEW_TITLES = { home: 'nav.home', keys: 'topbar.keys', providers: 'nav.providers', users: 'nav.users', activities: 'nav.activities', mykeys: 'nav.mykeys', settings: 'nav.settings' };
 function switchView(name) {
   document.querySelectorAll('.drawer-btn[data-view]').forEach(b =>
     b.classList.toggle('active', b.dataset.view === name));
@@ -426,6 +426,7 @@ function switchView(name) {
   $('.topbar-title').textContent = t(VIEW_TITLES[name] || 'topbar.keys');
   closeDrawer();
   if (name === 'users') loadUsers();
+  if (name === 'activities') loadActivities(true);
   if (name === 'settings') loadMySettings();
 }
 document.querySelectorAll('.drawer-btn[data-view]').forEach(btn => {
@@ -434,6 +435,7 @@ document.querySelectorAll('.drawer-btn[data-view]').forEach(btn => {
 $('#refresh-btn').addEventListener('click', async () => { await refreshAll(); toast(t('toast.refreshed')); });
 $('#my-refresh-btn').addEventListener('click', async () => { await refreshMine(); toast(t('toast.refreshed')); });
 $('#users-refresh-btn').addEventListener('click', async () => { await loadUsers(); toast(t('toast.refreshed')); });
+$('#activities-refresh-btn').addEventListener('click', async () => { await loadActivities(true); toast(t('toast.refreshed')); });
 
 /* -------------------------------- stats ---------------------------------- */
 async function loadStats() {
@@ -1164,6 +1166,102 @@ $('#users-list').addEventListener('click', async e => {
   } catch (ex) { if (ex.message !== 'auth') toast(t('toast.failed') + ex.message); }
 });
 
+/* ------------------------- admin: activity log --------------------------- */
+const ACT_TYPE_KEYS = ['register', 'login', 'login_failed', 'logout', 'key_created',
+  'key_deleted', 'api_chat', 'api_models', 'admin_action'];
+let actState = { offset: 0, total: 0, hasMore: false, loading: false };
+const ACT_LIMIT = 50;
+function fmtDateTime(iso) {
+  if (!iso) return '-';
+  const d = new Date(iso);
+  return d.toLocaleString(LANG === 'en' ? 'en-US' : 'id-ID',
+    { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+function actTypeLabel(type) { return t('act.' + type); }
+function actDetail(a) {
+  let d = a.detail || '';
+  if ((a.type === 'api_chat') && (a.promptTokens || a.completionTokens)) {
+    const tot = (a.promptTokens || 0) + (a.completionTokens || 0);
+    d += ' — <span class="tok">' + fmtNum(tot) + ' token</span>';
+  }
+  if (a.keyName && a.type !== 'key_created' && a.type !== 'key_deleted') {
+    d += ' <span class="muted">[' + esc(a.keyName) + ']</span>';
+  }
+  if (a.model && a.type === 'api_chat') d = '<strong>' + esc(a.model) + '</strong>' + (d ? '<br>' + d : '');
+  return d || '-';
+}
+function buildActFilters() {
+  const tu = $('#act-filter-user');
+  if (tu && !tu.dataset.built) {
+    tu.dataset.built = '1';
+    api('/api/users').then(j => {
+      tu.innerHTML = '<option value="">' + esc(t('filter.user')) + '</option>' +
+        j.users.map(u => '<option value="' + esc(u.id) + '">' + esc(u.email) + '</option>').join('');
+    }).catch(() => {});
+  }
+  const tt = $('#act-filter-type');
+  if (tt) {
+    const cur = tt.value;
+    tt.innerHTML = '<option value="">' + esc(t('filter.type')) + '</option>' +
+      ACT_TYPE_KEYS.map(k => '<option value="' + k + '"' + (cur === k ? ' selected' : '') + '>' + esc(actTypeLabel(k)) + '</option>').join('');
+  }
+}
+function actQuery(offset) {
+  const p = new URLSearchParams();
+  p.set('limit', ACT_LIMIT); p.set('offset', offset);
+  const u = $('#act-filter-user').value, ty = $('#act-filter-type').value;
+  const f = $('#act-filter-from').value, to = $('#act-filter-to').value, q = $('#act-filter-q').value.trim();
+  if (u) p.set('user', u);
+  if (ty) p.set('type', ty);
+  if (f) p.set('from', f);
+  if (to) p.set('to', to);
+  if (q) p.set('q', q);
+  return p.toString();
+}
+async function loadActivities(reset) {
+  if (actState.loading) return;
+  if (reset) { actState.offset = 0; buildActFilters(); }
+  actState.loading = true;
+  try {
+    const j = await api('/api/admin/activities?' + actQuery(actState.offset));
+    actState.total = j.total; actState.hasMore = j.hasMore;
+    const box = $('#activities-list');
+    const rows = j.activities.map(a =>
+      '<tr>' +
+        '<td class="time">' + esc(fmtDateTime(a.ts)) + '</td>' +
+        '<td class="user" title="' + esc(a.email || '') + '">' + esc(a.email || '-') +
+          (a.actor === 'admin' ? ' <span class="act-type admin_action">ADMIN</span>' : '') + '</td>' +
+        '<td><span class="act-type ' + a.type + '">' + esc(actTypeLabel(a.type)) + '</span></td>' +
+        '<td>' + actDetail(a) + '</td>' +
+        '<td class="time">' + esc(a.ip || '-') + '</td>' +
+      '</tr>').join('');
+    if (reset) {
+      $('#act-count').textContent = fmtNum(j.total) + ' ' + t('act.count');
+      box.innerHTML = j.activities.length
+        ? '<div class="card"><div class="act-table-wrap"><table class="act-table"><thead><tr>' +
+          '<th>' + esc(t('col.time')) + '</th><th>' + esc(t('col.user')) + '</th><th>' + esc(t('col.type')) + '</th>' +
+          '<th>' + esc(t('col.detail')) + '</th><th>' + esc(t('col.ip')) + '</th>' +
+          '</tr></thead><tbody>' + rows + '</tbody></table></div></div>'
+        : '<div class="card"><div class="card-body empty muted">' + t('empty.activities') + '</div></div>';
+      actState.offset = j.activities.length;
+    } else {
+      const tb = box.querySelector('tbody');
+      if (tb) tb.insertAdjacentHTML('beforeend', rows);
+      actState.offset += j.activities.length;
+    }
+    $('#act-load-more').classList.toggle('hidden', !actState.hasMore);
+  } catch (ex) { if (ex.message !== 'auth') toast(t('toast.failed') + ex.message); }
+  actState.loading = false;
+}
+$('#act-filter-apply').addEventListener('click', () => loadActivities(true));
+$('#act-filter-reset').addEventListener('click', () => {
+  $('#act-filter-user').value = ''; $('#act-filter-type').value = '';
+  $('#act-filter-from').value = ''; $('#act-filter-to').value = ''; $('#act-filter-q').value = '';
+  loadActivities(true);
+});
+$('#act-filter-q').addEventListener('keydown', e => { if (e.key === 'Enter') loadActivities(true); });
+$('#act-load-more').addEventListener('click', () => loadActivities(false));
+
 /* --------------------------- home: apps grid --------------------------- */
 const SUPPORTED_APPS = [
   { name: 'Muse AI', plat: 'Android · iOS · Web', desc_id: 'Didukung penuh oleh Bridge', desc_en: 'Fully supported by Bridge', logo: 'logos/muse.png', icon: null },
@@ -1309,6 +1407,34 @@ const I18N = {
     'hero.mykeys.sub': 'Buat API key sendiri, tanpa batasan jumlah.',
     'hero.users': 'Pengguna',
     'hero.users.sub': 'Akun pengguna yang mendaftar sendiri lewat halaman Daftar.',
+    'nav.activities': 'Aktivitas',
+    'hero.activities': 'Aktivitas Pengguna',
+    'hero.activities.sub': 'Pantau semua aktivitas pengguna: login, pembuatan key, dan pemakaian API.',
+    'filter.user': 'Semua pengguna',
+    'filter.type': 'Semua jenis',
+    'filter.from': 'Dari',
+    'filter.to': 'Sampai',
+    'filter.search': 'Cari',
+    'filter.search.ph': 'email / key / model / IP',
+    'btn.filter': 'Filter',
+    'btn.resetfilter': 'Reset',
+    'btn.loadmore': 'Muat lagi',
+    'col.time': 'Waktu',
+    'col.user': 'Pengguna',
+    'col.type': 'Jenis',
+    'col.detail': 'Detail',
+    'col.ip': 'IP',
+    'empty.activities': 'Belum ada aktivitas tercatat.',
+    'act.count': 'aktivitas',
+    'act.register': 'Daftar',
+    'act.login': 'Masuk',
+    'act.login_failed': 'Gagal masuk',
+    'act.logout': 'Keluar',
+    'act.key_created': 'Key dibuat',
+    'act.key_deleted': 'Key dihapus',
+    'act.api_chat': 'Chat API',
+    'act.api_models': 'Models API',
+    'act.admin_action': 'Aksi admin',
     'btn.addkey': 'Tambah key',
     'btn.createkey': 'Buat Key',
     'nav.theme': 'Gelap/Terang',
@@ -1540,6 +1666,34 @@ const I18N = {
     'hero.mykeys.sub': 'Create your own API keys, no limit.',
     'hero.users': 'Users',
     'hero.users.sub': 'User accounts registered via the Sign Up page.',
+    'nav.activities': 'Activities',
+    'hero.activities': 'User Activities',
+    'hero.activities.sub': 'Monitor all user activities: logins, key creation, and API usage.',
+    'filter.user': 'All users',
+    'filter.type': 'All types',
+    'filter.from': 'From',
+    'filter.to': 'To',
+    'filter.search': 'Search',
+    'filter.search.ph': 'email / key / model / IP',
+    'btn.filter': 'Filter',
+    'btn.resetfilter': 'Reset',
+    'btn.loadmore': 'Load more',
+    'col.time': 'Time',
+    'col.user': 'User',
+    'col.type': 'Type',
+    'col.detail': 'Detail',
+    'col.ip': 'IP',
+    'empty.activities': 'No activities recorded yet.',
+    'act.count': 'activities',
+    'act.register': 'Registered',
+    'act.login': 'Login',
+    'act.login_failed': 'Failed login',
+    'act.logout': 'Logout',
+    'act.key_created': 'Key created',
+    'act.key_deleted': 'Key deleted',
+    'act.api_chat': 'Chat API',
+    'act.api_models': 'Models API',
+    'act.admin_action': 'Admin action',
     'btn.addkey': 'Add key',
     'btn.createkey': 'Create Key',
     'nav.theme': 'Dark/Light',
@@ -1768,6 +1922,10 @@ document.getElementById('lang-btn').addEventListener('click', () => {
   const mgb = $('#my-guide-base-url');
   if (mgb) mgb.textContent = BRIDGE_BASE;
   if (typeof refreshAll === 'function') refreshAll();
+  if (typeof loadActivities === 'function' && !$('#view-activities').classList.contains('hidden')) {
+    $('#act-filter-type').innerHTML = '';
+    loadActivities(true);
+  }
 });
 
 /* --------------------------------- boot ----------------------------------- */
