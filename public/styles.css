@@ -614,6 +614,13 @@ body.has-wallpaper .section-head {
 .act-table td.time { white-space: nowrap; }
 .act-table td.user { max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
 .act-table .tok { color: #7c3aed; font-weight: 600; }
+
+/* ---------- admin: kredensial pengguna ---------- */
+.cred-card { margin-bottom: 1rem; }
+.cred-head { margin-bottom: .6rem; font-size: 1rem; word-break: break-all; }
+.cred-sub { margin: .8rem 0 .4rem; font-size: .8rem; font-weight: 600; }
+.cred-cp { display: grid; gap: .3rem; font-size: .82rem; }
+.cred-cp code, .act-table code { background: var(--chip); padding: .1rem .4rem; border-radius: 6px; word-break: break-all; }
 .act-type { display: inline-block; padding: .15rem .55rem; border-radius: 999px; font-size: .72rem; font-weight: 600; white-space: nowrap; }
 .act-type.login { background: #dcfce7; color: #166534; }
 .act-type.logout { background: #f3f4f6; color: #4b5563; }
