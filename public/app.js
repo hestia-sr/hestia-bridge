@@ -1006,6 +1006,7 @@ async function loadUsers() {
       '</div>' +
       (u.role === 'admin' ? '' :
         '<div class="key-actions">' +
+          '<button class="btn btn-sm btn-primary" data-act="extend" data-id="' + u.id + '">+ Durasi</button>' +
           (u.suspended
             ? '<button class="btn btn-sm" data-act="unsuspend" data-id="' + u.id + '">' + t('btn.unsuspend') + '</button>'
             : '<button class="btn btn-sm" data-act="suspend" data-id="' + u.id + '">' + t('btn.suspend') + '</button>') +
@@ -1030,6 +1031,13 @@ $('#users-list').addEventListener('click', async e => {
       if (!confirm(t('confirm.user.delete'))) return;
       await api('/api/users/' + id, { method: 'DELETE' });
       toast(t('toast.user.deleted'));
+    } else if (act === 'extend') {
+      const plan = prompt('Pilih durasi:\n1 = 1 hari\n2 = 3 hari\n3 = 1 minggu\n4 = gratis', '1');
+      const planMap = { '1': '1hari', '2': '3hari', '3': '1minggu', '4': 'gratis' };
+      const p = planMap[String(plan || '').trim()];
+      if (!p) return;
+      await api('/api/users/' + id + '/extend', { method: 'POST', body: JSON.stringify({ plan: p }) });
+      toast('Durasi diperpanjang: ' + p);
     }
     await loadUsers();
   } catch (ex) { if (ex.message !== 'auth') toast(t('toast.failed') + ex.message); }
