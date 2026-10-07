@@ -296,6 +296,59 @@ function recordUsage(keyId, model, promptTokens, completionTokens, streamed, via
   saveDb();
 }
 
+/* ==================== activity log (admin monitoring) ===================== */
+/* In-memory, bounded ke 10k entri terakhir. Tidak disimpan ke DB supaya
+ * file data.json tidak membengkak. */
+const activities = [];
+const MAX_ACTIVITIES = 10000;
+const ACT_TYPES = ['register', 'login', 'login_failed', 'logout', 'key_created',
+  'key_deleted', 'api_chat', 'api_models', 'admin_action'];
+function logActivity(type, o) {
+  o = o || {};
+  activities.push({
+    id: uid('act_'),
+    ts: nowIso(),
+    type: type,
+    actor: o.actor || null, // 'admin' bila aksi dilakukan admin
+    userId: o.userId || null,
+    email: o.email || null,
+    ip: o.ip || null,
+    keyId: o.keyId || null,
+    keyName: o.keyName || null,
+    model: o.model || null,
+    promptTokens: o.promptTokens || 0,
+    completionTokens: o.completionTokens || 0,
+    detail: o.detail || null
+  });
+  if (activities.length > MAX_ACTIVITIES) activities.splice(0, activities.length - MAX_ACTIVITIES);
+}
+/* Catat pemakaian API dari sebuah bridge key (resolve pemilik key). */
+function logKeyUsage(req, key, endpoint, model, pt, ct) {
+  const owner = key.userId ? db.users.find(u => u.id === key.userId) : null;
+  logActivity(endpoint === 'models' ? 'api_models' : 'api_chat', {
+    userId: key.userId || null,
+    email: owner ? owner.email : (key.userId ? '(akun dihapus)' : 'admin'),
+    ip: clientIp(req),
+    keyId: key.id,
+    keyName: key.name,
+    model: model || null,
+    promptTokens: pt || 0,
+    completionTokens: ct || 0,
+    detail: endpoint === 'models' ? 'GET /v1/models' : 'POST /v1/chat/completions'
+  });
+}
+
+/* Catat aksi admin (actor = 'admin'). */
+function adminLog(req, detail, o) {
+  o = o || {};
+  logActivity('admin_action', Object.assign({
+    actor: 'admin',
+    email: (req.session && req.session.email) || ADMIN_EMAIL,
+    ip: clientIp(req),
+    detail: detail
+  }, o));
+}
+
 /* Upstream /models probe used when adding/testing a provider. */
 async function fetchUpstreamModels(baseUrl, apiKey) {
   const ctrl = new AbortController();
@@ -569,6 +622,7 @@ app.post('/api/auth/register', async (req, res) => {
   };
   db.users.push(user);
   saveDb();
+  logActivity('register', { userId: user.id, email: user.email, ip: clientIp(req), detail: 'akun baru mendaftar' });
   const token = createSessionObj({ role: user.role, userId: user.id, email: user.email });
   setSessionCookie(res, token);
   res.json({ ok: true, role: user.role, email: user.email, suspended: user.suspended });
@@ -584,6 +638,7 @@ app.post('/api/auth/login', async (req, res) => {
     if (!ok) return res.status(401).json({ error: 'Email atau password salah.' });
     const token = createSessionObj({ role: 'admin', userId: 'admin', email: ADMIN_EMAIL });
     setSessionCookie(res, token);
+    logActivity('login', { actor: 'admin', email: ADMIN_EMAIL, ip: clientIp(req), detail: 'admin login' });
     return res.json({ ok: true, role: 'admin', email: ADMIN_EMAIL });
   }
   // Pengguna terdaftar.
@@ -591,18 +646,34 @@ app.post('/api/auth/login', async (req, res) => {
   let ok = false;
   try { ok = !!u && await bcrypt.compare(String(password || ''), u.passwordHash || ''); }
   catch (e) { ok = false; }
-  if (!u) return res.status(401).json({ error: 'Email belum terdaftar.' });
-  if (!ok) return res.status(401).json({ error: 'Sandi anda salah.' });
-  if (u.suspended) return res.status(403).json({ error: 'Akun kamu di-suspend. Hubungi admin.' });
+  if (!u) {
+    logActivity('login_failed', { email: em, ip: clientIp(req), detail: 'email belum terdaftar' });
+    return res.status(401).json({ error: 'Email belum terdaftar.' });
+  }
+  if (!ok) {
+    logActivity('login_failed', { userId: u.id, email: u.email, ip: clientIp(req), detail: 'sandi salah' });
+    return res.status(401).json({ error: 'Sandi anda salah.' });
+  }
+  if (u.suspended) {
+    logActivity('login_failed', { userId: u.id, email: u.email, ip: clientIp(req), detail: 'akun di-suspend' });
+    return res.status(403).json({ error: 'Akun kamu di-suspend. Hubungi admin.' });
+  }
   u.lastIp = clientIp(req) || u.lastIp || null;
   saveDb();
   const token = createSessionObj({ role: u.role, userId: u.id, email: u.email });
   setSessionCookie(res, token);
+  logActivity('login', { userId: u.id, email: u.email, ip: clientIp(req), detail: 'user login' });
   res.json({ ok: true, role: u.role, email: u.email, suspended: !!u.suspended });
 });
 app.post('/api/auth/logout', (req, res) => {
   const token = parseCookies(req).hb_session;
+  const s = token ? sessions.get(token) : null;
   if (token && sessions.delete(token)) saveDb();
+  if (s) logActivity('logout', {
+    actor: s.role === 'admin' ? 'admin' : null,
+    userId: s.role === 'admin' ? null : (s.userId || null),
+    email: s.email || null, detail: s.role === 'admin' ? 'admin logout' : 'user logout'
+  });
   res.setHeader('Set-Cookie', 'hb_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0');
   res.json({ ok: true });
 });
@@ -646,6 +717,7 @@ app.post('/api/providers', requireAdmin, async (req, res) => {
   };
   db.providers.push(p);
   saveDb();
+  adminLog(req, 'Tambah provider "' + p.name + '" (' + (p.models || []).length + ' model)');
   res.json({ provider: publicProvider(p) });
 });
 app.post('/api/providers/:id/test', requireAdmin, async (req, res) => {
@@ -665,10 +737,12 @@ app.delete('/api/providers/:id', requireAdmin, (req, res) => {
   const i = db.providers.findIndex(x => x.id === req.params.id);
   if (i < 0) return res.status(404).json({ error: 'provider_not_found' });
   const pid = db.providers[i].id;
+  const pname = db.providers[i].name;
   // revoke (not delete) bound keys so usage history stays intact
   db.keys.forEach(k => { if (k.providerId === pid && !k.revoked) k.revoked = true; });
   db.providers.splice(i, 1);
   saveDb();
+  adminLog(req, 'Hapus provider "' + pname + '" (key terikat di-revoke)');
   res.json({ ok: true });
 });
 
@@ -757,6 +831,7 @@ app.post('/api/keys/:id/revoke', requireAdmin, (req, res) => {
   if (!k) return res.status(404).json({ error: 'key_not_found' });
   k.revoked = true;
   saveDb();
+  adminLog(req, 'Revoke key "' + (k.name || k.id) + '"', { keyId: k.id, keyName: k.name, userId: k.userId || null });
   res.json({ ok: true });
 });
 app.post('/api/keys/:id/restore', requireAdmin, (req, res) => {
@@ -794,8 +869,10 @@ app.post('/api/keys/:id/reset-usage', requireAdmin, (req, res) => {
 app.delete('/api/keys/:id', requireAdmin, (req, res) => {
   const i = db.keys.findIndex(x => x.id === req.params.id);
   if (i < 0) return res.status(404).json({ error: 'key_not_found' });
+  const k = db.keys[i];
   db.keys.splice(i, 1);
   saveDb();
+  adminLog(req, 'Hapus key "' + (k.name || k.id) + '" permanen', { keyId: k.id, keyName: k.name, userId: k.userId || null });
   res.json({ ok: true });
 });
 /* Bind (or rebind) a worker-mode key to exactly one worker.
@@ -894,6 +971,13 @@ app.post('/api/my-keys', requireUser, (req, res) => {
   };
   db.keys.push(k);
   saveDb();
+  logActivity('key_created', {
+    userId: req.user ? req.user.id : null,
+    email: req.user ? req.user.email : null,
+    ip: clientIp(req),
+    keyId: k.id, keyName: k.name, model: pmodel,
+    detail: 'Buat key "' + k.name + '" (' + (m === 'worker' ? 'worker' : 'provider: ' + String(pid)) + (pmodel ? ', model: ' + pmodel : '') + ')'
+  });
   // Full token is returned exactly once, at creation.
   res.json({ id: k.id, name: k.name, token: k.token, mode: m, providerId: pid, workerId: wid, model: pmodel });
 });
@@ -908,6 +992,13 @@ app.delete('/api/my-keys/:id', requireUser, (req, res) => {
   db.keys = db.keys.filter(x => x.id !== k.id);
   db.usage = db.usage.filter(u => u.keyId !== k.id);
   saveDb();
+  logActivity('key_deleted', {
+    userId: req.user ? req.user.id : null,
+    email: req.user ? req.user.email : null,
+    ip: clientIp(req),
+    keyId: k.id, keyName: k.name,
+    detail: 'Hapus key "' + k.name + '"'
+  });
   res.json({ ok: true });
 });
 
@@ -1064,6 +1155,7 @@ app.post('/api/users/:id/suspend', requireAdmin, (req, res) => {
   if (!u || u.role === 'admin') return res.status(400).json({ error: 'cannot_suspend' });
   u.suspended = true;
   saveDb();
+  adminLog(req, 'Suspend pengguna ' + u.email, { userId: u.id, email: u.email });
   res.json({ ok: true });
 });
 app.post('/api/users/:id/unsuspend', requireAdmin, (req, res) => {
@@ -1071,6 +1163,7 @@ app.post('/api/users/:id/unsuspend', requireAdmin, (req, res) => {
   if (!u || u.role === 'admin') return res.status(400).json({ error: 'cannot_unsuspend' });
   u.suspended = false;
   saveDb();
+  adminLog(req, 'Buka suspend pengguna ' + u.email, { userId: u.id, email: u.email });
   res.json({ ok: true });
 });
 /* Perpanjang durasi user: plan = gratis|1hari|3hari|1minggu. Dipakai admin/bot setelah pembayaran. */
@@ -1083,6 +1176,7 @@ app.post('/api/users/:id/extend', requireAdmin, (req, res) => {
   u.plan = plan;
   u.planExpiresAt = base + PLAN_DURATIONS[plan];
   saveDb();
+  adminLog(req, 'Tambah durasi ' + u.email + ' → ' + (PLAN_NAMES[plan] || plan), { userId: u.id, email: u.email });
   res.json({ ok: true, plan: u.plan, planExpiresAt: u.planExpiresAt });
 });
 /* ============ BOT TELEGRAM: perpanjang durasi akun (auth: x-bot-token) ============ */
@@ -1127,6 +1221,7 @@ app.delete('/api/users/:id', requireAdmin, (req, res) => {
   db.usage = db.usage.filter(x => !keyIds.has(x.keyId));
   db.users.splice(i, 1);
   saveDb();
+  adminLog(req, 'Hapus pengguna ' + u.email + ' permanen', { userId: u.id, email: u.email });
   res.json({ ok: true });
 });
 
@@ -1274,6 +1369,47 @@ app.post('/v1/worker/done', requireWorker, (req, res) => {
   res.json({ ok: true });
 });
 
+/* ========================= admin: activity log =========================== */
+/* Pantau aktivitas pengguna: login, pembuatan key, pemakaian API, aksi admin.
+ * Hanya admin (requireAdmin) yang boleh akses. */
+app.get('/api/admin/activities', requireAdmin, (req, res) => {
+  const q = req.query || {};
+  let rows = activities.slice().reverse(); // terbaru dulu
+  if (q.type && ACT_TYPES.includes(String(q.type))) {
+    rows = rows.filter(a => a.type === String(q.type));
+  }
+  if (q.user) {
+    const needle = String(q.user).toLowerCase();
+    rows = rows.filter(a =>
+      (a.userId && String(a.userId).toLowerCase().includes(needle)) ||
+      (a.email && String(a.email).toLowerCase().includes(needle)));
+  }
+  if (q.from) {
+    const from = String(q.from).length <= 10 ? String(q.from) + 'T00:00:00.000Z' : String(q.from);
+    rows = rows.filter(a => a.ts >= from);
+  }
+  if (q.to) {
+    const to = String(q.to).length <= 10 ? String(q.to) + 'T23:59:59.999Z' : String(q.to);
+    rows = rows.filter(a => a.ts <= to);
+  }
+  if (q.q) {
+    const needle = String(q.q).toLowerCase();
+    rows = rows.filter(a => [a.email, a.detail, a.keyName, a.model, a.ip]
+      .some(v => v && String(v).toLowerCase().includes(needle)));
+  }
+  const total = rows.length;
+  const lim = Math.min(Math.max(parseInt(q.limit, 10) || 50, 1), 200);
+  const off = Math.max(parseInt(q.offset, 10) || 0, 0);
+  rows = rows.slice(off, off + lim);
+  res.json({ activities: rows, total: total, hasMore: off + lim < total });
+});
+/* Ringkasan jumlah per jenis aktivitas (untuk badge/filter cepat). */
+app.get('/api/admin/activities/summary', requireAdmin, (req, res) => {
+  const counts = {};
+  for (const a of activities) counts[a.type] = (counts[a.type] || 0) + 1;
+  res.json({ counts: counts, total: activities.length });
+});
+
 /* ============================ admin: usage ================================ */
 app.get('/api/usage', requireAdmin, (req, res) => {
   const { keyId, days } = req.query;
@@ -1308,6 +1444,7 @@ app.get('/api/stats', requireAdmin, (req, res) => {
 
 /* ================== OpenAI-compatible bridge endpoints =================== */
 app.get('/v1/models', requireBridgeKey, (req, res) => {
+  logKeyUsage(req, req.bridgeKey, 'models');
   if (req.bridgeKey.mode === 'worker' || !req.provider) {
     // Worker-mode: khusus Muse — 1 model tetap supaya konsisten di semua aplikasi.
     return res.json({ object: 'list', data: [{
@@ -1369,6 +1506,7 @@ async function handleWorkerChat(req, res) {
   const pt = estimateTokens(JSON.stringify(body.messages || []));
   const ct = estimateTokens(answer);
   recordUsage(key.id, 'muse-spark', pt, ct, false, 'worker');
+  logKeyUsage(req, key, 'chat', 'muse-spark', pt, ct);
   res.json({
     id: 'chatcmpl-w' + crypto.randomBytes(8).toString('hex'),
     object: 'chat.completion',
@@ -1442,6 +1580,7 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
       ct = estimateTokens(outText);
     }
     recordUsage(req.bridgeKey.id, model, pt, ct, false);
+    logKeyUsage(req, req.bridgeKey, 'chat', model, pt, ct);
     return res.json(data);
   }
 
@@ -1483,6 +1622,7 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
     const pt = usage ? (usage.prompt_tokens || 0) : estimateTokens(promptText);
     const ct = usage ? (usage.completion_tokens || 0) : estimateTokens(content || data);
     recordUsage(req.bridgeKey.id, model, pt, ct, true);
+    logKeyUsage(req, req.bridgeKey, 'chat', model, pt, ct);
     return;
   }
   res.writeHead(200, {
@@ -1530,6 +1670,7 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
   const pt = sawUsage ? (sawUsage.prompt_tokens || 0) : estimateTokens(promptText);
   const ct = sawUsage ? (sawUsage.completion_tokens || 0) : estimateTokens('x'.repeat(streamedChars));
   recordUsage(req.bridgeKey.id, model, pt, ct, true);
+  logKeyUsage(req, req.bridgeKey, 'chat', model, pt, ct);
 });
 
 /* ============================ static frontend ============================ */
