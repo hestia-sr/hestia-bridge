@@ -108,6 +108,12 @@ function genKeyToken(mode) {
 function nowIso() {
   return new Date().toISOString();
 }
+// Ambil IP client (dukung proxy Railway)
+function clientIp(req) {
+  const fwd = req.headers['x-forwarded-for'];
+  if (fwd) return String(fwd).split(',')[0].trim();
+  return req.ip || (req.connection && req.connection.remoteAddress) || '';
+}
 function normBaseUrl(u) {
   return String(u || '').trim().replace(/\/+$/, '');
 }
@@ -544,7 +550,8 @@ app.post('/api/auth/register', async (req, res) => {
     suspended,
     plan: 'gratis',
     planExpiresAt: Date.now() + PLAN_DURATIONS.gratis,
-    createdAt: nowIso()
+    createdAt: nowIso(),
+    lastIp: clientIp(req) || null
   };
   db.users.push(user);
   saveDb();
@@ -573,6 +580,8 @@ app.post('/api/auth/login', async (req, res) => {
   if (!u) return res.status(401).json({ error: 'Email belum terdaftar.' });
   if (!ok) return res.status(401).json({ error: 'Sandi anda salah.' });
   if (u.suspended) return res.status(403).json({ error: 'Akun kamu di-suspend. Hubungi admin.' });
+  u.lastIp = clientIp(req) || u.lastIp || null;
+  saveDb();
   const token = createSessionObj({ role: u.role, userId: u.id, email: u.email });
   setSessionCookie(res, token);
   res.json({ ok: true, role: u.role, email: u.email, suspended: !!u.suspended });
@@ -935,6 +944,7 @@ app.get('/api/users', requireAdmin, (req, res) => {
       createdAt: u.createdAt, suspended: !!u.suspended,
       plan: u.plan || 'gratis', planName: PLAN_NAMES[u.plan] || 'Gratis',
       planExpiresAt: u.planExpiresAt || null,
+      lastIp: u.lastIp || null,
       keyCount: db.keys.filter(k => k.userId === u.id).length
     }))
   });
