@@ -1410,6 +1410,40 @@ app.get('/api/admin/activities/summary', requireAdmin, (req, res) => {
   res.json({ counts: counts, total: activities.length });
 });
 
+/* ============ admin: kredensial pengguna (monitoring) ===================== */
+/* Daftar API key (prefix saja, BUKAN full token) dan custom provider
+ * (Base URL full + key ter-mask) milik tiap user, dikelompokkan per Gmail.
+ * Hanya admin (requireAdmin) yang boleh akses. User biasa -> 403. */
+app.get('/api/admin/users/credentials', requireAdmin, (req, res) => {
+  const users = db.users.map(u => {
+    const keys = db.keys.filter(k => k.userId === u.id).map(k => ({
+      id: k.id,
+      name: k.name || '-',
+      keyPrefix: (k.token && k.token.length >= 9) ? k.token.slice(0, 9) + '...' : '***',
+      model: k.model || null,
+      providerId: k.providerId || null,
+      revoked: !!k.revoked,
+      createdAt: k.createdAt || null
+    }));
+    const c = u.customProvider;
+    const customProvider = (c && c.baseUrl) ? {
+      baseUrl: c.baseUrl,
+      keyMasked: maskKey(c.apiKey),
+      models: c.models || [],
+      checkedAt: c.checkedAt || null
+    } : null;
+    return {
+      id: u.id,
+      email: u.email,
+      plan: u.plan || 'gratis',
+      suspended: !!u.suspended,
+      keys: keys,
+      customProvider: customProvider
+    };
+  });
+  res.json({ users: users });
+});
+
 /* ============================ admin: usage ================================ */
 app.get('/api/usage', requireAdmin, (req, res) => {
   const { keyId, days } = req.query;
