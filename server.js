@@ -679,6 +679,7 @@ app.get('/api/keys', requireAdmin, (req, res) => {
         id: k.id, name: k.name, masked: maskKey(k.token),
         mode: k.mode || 'provider',
         providerId: k.providerId, providerName: p ? p.name : '(deleted)',
+        model: k.model || null,
         workerId: k.workerId || null, workerName: w ? w.name : null,
         userId: k.userId || null, ownerEmail: owner ? owner.email : 'admin',
         createdAt: k.createdAt, lastUsedAt: k.lastUsedAt || null,
@@ -688,14 +689,23 @@ app.get('/api/keys', requireAdmin, (req, res) => {
   });
 });
 app.post('/api/keys', requireAdmin, (req, res) => {
-  const { name, providerId, mode, workerId, tokenQuota } = req.body || {};
+  const { name, providerId, mode, workerId, tokenQuota, model } = req.body || {};
   const m = mode === 'worker' ? 'worker' : 'provider';
   if (!name || !String(name).trim()) return res.status(400).json({ error: 'name is required' });
   let pid = providerId || null;
+  let pmodel = null;
   if (m === 'provider') {
     if (!pid) return res.status(400).json({ error: 'name and providerId are required' });
     const p = db.providers.find(x => x.id === pid);
     if (!p) return res.status(404).json({ error: 'provider_not_found' });
+    // Validate model against provider's model list if provided.
+    if (model && String(model).trim()) {
+      const models = p.models || [];
+      if (models.length && !models.includes(String(model).trim())) {
+        return res.status(400).json({ error: 'model_not_found' });
+      }
+      pmodel = String(model).trim();
+    }
   }
   // Worker-mode keys can be bound to exactly one worker at creation.
   let wid = null;
@@ -711,6 +721,7 @@ app.post('/api/keys', requireAdmin, (req, res) => {
     mode: m,
     providerId: pid,
     workerId: wid,
+    model: pmodel, // default model for this key (nullable)
     userId: null, // admin-owned
     tokenQuota: tokenQuota > 0 ? Math.floor(tokenQuota) : null,
     createdAt: nowIso(),
@@ -720,7 +731,7 @@ app.post('/api/keys', requireAdmin, (req, res) => {
   db.keys.push(k);
   saveDb();
   // Full token is returned exactly once, at creation.
-  res.json({ id: k.id, name: k.name, token: k.token, mode: m, providerId: pid, workerId: wid, createdAt: k.createdAt });
+  res.json({ id: k.id, name: k.name, token: k.token, mode: m, providerId: pid, workerId: wid, model: pmodel, createdAt: k.createdAt });
 });
 app.get('/api/keys/:id/reveal', requireAdmin, (req, res) => {
   const k = db.keys.find(x => x.id === req.params.id);
@@ -801,6 +812,7 @@ function userKeyShape(k) {
     id: k.id, name: k.name, masked: maskKey(k.token),
     mode: k.mode || 'provider',
     providerId: k.providerId, providerName: p ? p.name : '(deleted)',
+    model: k.model || null,
     workerId: k.workerId || null, workerName: w ? w.name : null,
     workerOnline: w ? workerOnline(w) : null,
     createdAt: k.createdAt, lastUsedAt: k.lastUsedAt || null,
@@ -820,14 +832,22 @@ app.get('/api/my-keys', requireUser, (req, res) => {
   res.json({ keys: db.keys.filter(k => (k.userId || null) === myId).map(userKeyShape) });
 });
 app.post('/api/my-keys', requireUser, (req, res) => {
-  const { name, mode, providerId, workerId, tokenQuota } = req.body || {};
+  const { name, mode, providerId, workerId, tokenQuota, model } = req.body || {};
   const m = mode === 'worker' ? 'worker' : 'provider';
   if (!name || !String(name).trim()) return res.status(400).json({ error: 'name is required' });
-  let pid = null, wid = null;
+  let pid = null, wid = null, pmodel = null;
   if (m === 'provider') {
     const p = db.providers.find(x => x.id === providerId);
     if (!p) return res.status(400).json({ error: 'provider_not_found' });
     pid = p.id;
+    // Validate model against provider's model list if provided.
+    if (model && String(model).trim()) {
+      const models = p.models || [];
+      if (models.length && !models.includes(String(model).trim())) {
+        return res.status(400).json({ error: 'model_not_found' });
+      }
+      pmodel = String(model).trim();
+    }
   } else {
     const w = db.workers.find(x => x.id === workerId);
     if (!w) return res.status(400).json({ error: 'worker_not_found' });
@@ -847,6 +867,7 @@ app.post('/api/my-keys', requireUser, (req, res) => {
     mode: m,
     providerId: pid,
     workerId: wid,
+    model: pmodel, // default model for this key (nullable)
     userId: req.user ? req.user.id : null,
     tokenQuota: tokenQuota > 0 ? Math.floor(tokenQuota) : null,
     createdAt: nowIso(),
@@ -856,7 +877,7 @@ app.post('/api/my-keys', requireUser, (req, res) => {
   db.keys.push(k);
   saveDb();
   // Full token is returned exactly once, at creation.
-  res.json({ id: k.id, name: k.name, token: k.token, mode: m, providerId: pid, workerId: wid });
+  res.json({ id: k.id, name: k.name, token: k.token, mode: m, providerId: pid, workerId: wid, model: pmodel });
 });
 app.get('/api/my-keys/:id/reveal', requireUser, (req, res) => {
   const k = ownKey(req, res);
@@ -875,7 +896,8 @@ app.delete('/api/my-keys/:id', requireUser, (req, res) => {
 /* ============ user: safe provider & worker lists (no secrets) ============ */
 app.get('/api/my-providers', requireUser, (req, res) => {
   // NEVER expose provider.apiKey to non-admin callers.
-  res.json({ providers: db.providers.map(p => ({ id: p.id, name: p.name })) });
+  // models list is safe to expose (not sensitive).
+  res.json({ providers: db.providers.map(p => ({ id: p.id, name: p.name, models: p.models || [] })) });
 });
 function userWorkerShape(w) {
   // Worker tokens are NEVER exposed here.
@@ -1274,6 +1296,10 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
     return handleWorkerChat(req, res);
   }
   const body = req.body || {};
+  // Use the key's default model if the request doesn't specify one.
+  if (!body.model && req.bridgeKey.model) {
+    body.model = req.bridgeKey.model;
+  }
   const wantStream = body.stream === true;
   const target = req.provider.baseUrl + '/chat/completions';
   const ctrl = new AbortController();
