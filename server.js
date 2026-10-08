@@ -1728,6 +1728,8 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
   }
   const wantStream = body.stream === true;
   const target = req.provider.baseUrl + '/chat/completions';
+  // DEBUG sementara: log target dan status apiKey (bukan nilainya).
+  console.log('[DEBUG] target=' + target + ' hasKey=' + !!req.provider.apiKey + ' keyLen=' + (req.provider.apiKey || '').length);
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 120000);
   // If the client disconnects mid-proxy, cancel the upstream request.
