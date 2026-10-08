@@ -402,7 +402,7 @@ $('#account-btn').addEventListener('click', openAccount);
 $('#account-close').addEventListener('click', closeAccount);
 $('#account-backdrop').addEventListener('click', closeAccount);
 const DURATIONS = {
-  '1': { id: '1 Hari', en: '1 Day', price: 'Rp 5.000' },
+  '1': { id: '1 Hari', en: '1 Day', price: 'Rp 3.000' },
   '3': { id: '3 Hari', en: '3 Days', price: 'Rp 10.000' },
   '7': { id: '1 Minggu', en: '1 Week', price: 'Rp 15.000' },
 };
@@ -1509,6 +1509,7 @@ const I18N = {
     'nav.account': 'Akun',
     'account.title': 'Akun',
     'account.duration': 'Tambahan Durasi',
+    'account.badge.save': 'Hemat',
     'account.viaBot': 'Pembayaran melalui Bot Telegram',
     'qris.note': 'Scan QRIS di atas sesuai nominal, lalu kirim bukti pembayaran ke Bot Telegram.',
     'qris.sendProof': 'Kirim Bukti ke Bot',
@@ -1819,6 +1820,7 @@ const I18N = {
     'nav.account': 'Account',
     'account.title': 'Account',
     'account.duration': 'Add Duration',
+    'account.badge.save': 'Save',
     'account.viaBot': 'Payment via Telegram Bot',
     'qris.note': 'Scan the QRIS above for the exact amount, then send payment proof to the Telegram Bot.',
     'qris.sendProof': 'Send Proof to Bot',
