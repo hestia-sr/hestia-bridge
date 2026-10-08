@@ -93,10 +93,11 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 #auth-view { background: var(--bg); }
 .landing-nav {
   position: sticky; top: 0; z-index: 30;
-  background: rgba(255,255,255,.85); backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
+  background: transparent;
+  border-bottom: none;
 }
+.landing-nav .brand-name { color: #fff; }
+.landing-nav .lang-plain { color: #fff; }
 .landing-nav-inner {
   max-width: 1080px; margin: 0 auto; padding: .7rem 1.1rem;
   display: flex; align-items: center; justify-content: space-between; gap: .6rem;
