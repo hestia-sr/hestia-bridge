@@ -123,6 +123,19 @@ function estimateTokens(text) {
   if (!text) return 0;
   return Math.max(1, Math.ceil(String(text).length / 4));
 }
+// Hapus field reasoning internal dari respons upstream agar tidak bocor ke user.
+const REASONING_FIELDS = ['reasoning', 'reasoning_content', 'reasoning_details', 'thinking', 'thought', 'chain_of_thought'];
+function stripReasoning(data) {
+  if (!data || !Array.isArray(data.choices)) return data;
+  for (const c of data.choices) {
+    for (const part of [c.message, c.delta]) {
+      if (part && typeof part === 'object') {
+        for (const f of REASONING_FIELDS) delete part[f];
+      }
+    }
+  }
+  return data;
+}
 function parseCookies(req) {
   const out = {};
   const h = req.headers.cookie;
@@ -1643,7 +1656,7 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
     }
     recordUsage(req.bridgeKey.id, model, pt, ct, false);
     logKeyUsage(req, req.bridgeKey, 'chat', model, pt, ct);
-    return res.json(data);
+    return res.json(stripReasoning(data));
   }
 
   // Streaming: forward SSE untouched, estimate tokens from bytes on finish.
