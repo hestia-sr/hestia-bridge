@@ -99,20 +99,24 @@ function recordProviderOk(providerId) {
       'deepseek-v4.1-flash': { context: '1.000.000 konteks', caps: ['Reasoning', 'Text Generation', 'Vision'], popular: true }
     };
     let gp = db.providers.find(p => p.id === 'gateway-test');
+    const gatewayApiKey = 'sk-live-c4cba35f6649dae633043ce5580889e7601c270e7481ccfa4a566f9fa38bc57f';
     if (!gp) {
       db.providers.push({
         id: 'gateway-test',
         name: 'Gateway Test (GateAI)',
         baseUrl: 'https://gateai.id/v1',
-        apiKey: 'sk-live-c4cba35f6649dae633043ce5580889e7601c270e7481ccfa4a566f9fa38bc57f',
+        apiKey: gatewayApiKey,
         models: ['Atria-Dawn-Preview', 'deepseek-v4-pro', 'deepseek-v4-pro-0813', 'deepseek-v4.1-flash'],
         modelMeta: gatewayModelMeta,
         createdAt: nowIso()
       });
       saveDb();
-    } else if (!gp.modelMeta) {
-      gp.modelMeta = gatewayModelMeta;
-      saveDb();
+    } else {
+      // Pastikan selalu sinkron (apiKey, modelMeta, models).
+      let dirty = false;
+      if (gp.apiKey !== gatewayApiKey) { gp.apiKey = gatewayApiKey; dirty = true; }
+      if (!gp.modelMeta) { gp.modelMeta = gatewayModelMeta; dirty = true; }
+      if (dirty) saveDb();
     }
   } catch (e) { console.error('seed gateway gagal:', e.message); }
 })();
