@@ -42,9 +42,70 @@
   </nav>
 
   <section class="landing-hero">
+    <span class="landing-badge" data-i18n="landing.hero.badge">Kelola semua AI dari satu tempat</span>
     <h1 data-i18n="landing.hero.title">Hestia Bridge</h1>
     <p class="landing-hero-sub" data-i18n="landing.hero.sub">Kelola API key AI kamu dari satu dashboard.</p>
-    <button class="btn btn-primary btn-lg" id="hero-cta" type="button" data-i18n="landing.hero.cta">Mulai Gratis</button>
+    <div class="landing-cta-row">
+      <button class="btn btn-primary btn-lg" id="hero-cta" type="button" data-i18n="landing.hero.cta">Mulai Gratis</button>
+      <button class="btn btn-lg" id="hero-guide-btn" type="button" data-i18n="landing.hero.guide">Lihat Cara Pakai</button>
+    </div>
+    <ul class="landing-checks">
+      <li><span class="check">✓</span><span data-i18n="landing.check.1">Satu kunci untuk banyak aplikasi</span></li>
+      <li><span class="check">✓</span><span data-i18n="landing.check.2">Kompatibel OpenAI API</span></li>
+      <li><span class="check">✓</span><span data-i18n="landing.check.3">Kuota dari akunmu sendiri</span></li>
+    </ul>
+  </section>
+
+  <section class="landing-code">
+    <h2 data-i18n="landing.code.title">Pakai seperti API biasa</h2>
+    <div class="code-block"><pre><code>curl https://hestia-bridge-production.up.railway.app/v1/chat/completions \
+  -H "Authorization: Bearer hesti-..." \
+  -H "Content-Type: application/json" \
+  -d '{"model":"model-id","messages":[{"role":"user","content":"Halo"}]}'</code></pre></div>
+  </section>
+
+  <section class="landing-stats">
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-num">1</div>
+        <div class="stat-label" data-i18n="landing.stat.1">kunci API untuk semua aplikasi</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">100%</div>
+        <div class="stat-label" data-i18n="landing.stat.2">kompatibel OpenAI API</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">2</div>
+        <div class="stat-label" data-i18n="landing.stat.3">mode key: provider &amp; worker</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-guide" id="landing-guide">
+    <h2 data-i18n="landing.guide.title">Cara pakai</h2>
+    <div class="guide-steps">
+      <div class="guide-step">
+        <div class="guide-num">1</div>
+        <div>
+          <h3 data-i18n="landing.guide.1t">Daftar akun</h3>
+          <p class="muted" data-i18n="landing.guide.1d">Buat akun dengan Gmail kamu, gratis.</p>
+        </div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-num">2</div>
+        <div>
+          <h3 data-i18n="landing.guide.2t">Buat API key</h3>
+          <p class="muted" data-i18n="landing.guide.2d">Tambah key baru dan pilih provider AI milikmu.</p>
+        </div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-num">3</div>
+        <div>
+          <h3 data-i18n="landing.guide.3t">Sambungkan aplikasi</h3>
+          <p class="muted" data-i18n="landing.guide.3d">Isi Base URL dan API key di aplikasi AI favoritmu, langsung pakai.</p>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section class="landing-features">
