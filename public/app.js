@@ -410,10 +410,12 @@ document.querySelectorAll('.duration-card').forEach(card => {
 function openDrawer() {
   $('#drawer').classList.add('open');
   $('#drawer-backdrop').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
 }
 function closeDrawer() {
   $('#drawer').classList.remove('open');
   $('#drawer-backdrop').classList.add('hidden');
+  document.body.style.overflow = '';
 }
 $('#drawer-btn').addEventListener('click', openDrawer);
 $('#drawer-backdrop').addEventListener('click', closeDrawer);
