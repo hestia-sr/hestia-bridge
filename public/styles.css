@@ -90,9 +90,9 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 .auth-tab.active { background: #fff; color: var(--text); box-shadow: var(--shadow); }
 
 /* ---------- landing (auth view) ---------- */
-#auth-view { background: var(--bg); }
+#auth-view { background: var(--bg); position: relative; }
 .landing-nav {
-  position: sticky; top: 0; z-index: 30;
+  position: absolute; top: 0; left: 0; right: 0; z-index: 30;
   background: transparent;
   border-bottom: none;
 }
