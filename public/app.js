@@ -1386,9 +1386,7 @@ const SUPPORTED_APPS = [
   { name: 'Open WebUI', plat: 'Web', desc_id: 'Self-hosted, fitur lengkap', desc_en: 'Self-hosted, full features', logo: 'logos/openwebui.png', icon: null },
 ];
 function renderApps() {
-  const grid = document.getElementById('apps-grid');
-  if (!grid) return;
-  grid.innerHTML = SUPPORTED_APPS.map(a => {
+  const html = SUPPORTED_APPS.map(a => {
     const ico = a.logo
       ? '<img src="' + a.logo + '" alt="' + a.name + '" class="app-logo">'
       : '<div class="app-ico">' + a.icon + '</div>';
@@ -1398,6 +1396,10 @@ function renderApps() {
     '<div class="app-desc">' + (LANG === 'en' ? a.desc_en : a.desc_id) + '</div>' +
     '</div>';
   }).join('');
+  const grid = document.getElementById('apps-grid');
+  if (grid) grid.innerHTML = html;
+  const gridLanding = document.getElementById('apps-grid-landing');
+  if (gridLanding) gridLanding.innerHTML = html;
 }
 
 /* --------------------------- theme (dark/light) ------------------------ */
