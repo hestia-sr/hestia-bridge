@@ -785,8 +785,11 @@ function myKeyCard(k, maxReq) {
       (k.mode === 'worker' ? '<div class="row"><span class="k">' + t('card.worker') + '</span><span class="v">' + via + '</span></div>' : '') +
       (k.mode === 'worker' ? '<div class="row"><span class="k">' + t('card.worker.status') + '</span><span class="v">' + (k.workerOnline ? t('card.online') : t('card.offline')) + '</span></div>' : '') +
       (k.mode === 'provider' && k.supportedModels && k.supportedModels.length
-        ? '<div class="row"><span class="k">' + t('card.supportedmodels') + '</span></div><div class="model-chips">' +
-          k.supportedModels.map(m => '<span class="model-chip">' + esc(m) + '</span>').join('') + '</div>'
+        ? '<div class="row"><span class="k">' + t('card.supportedmodels') + '</span></div><div class="model-list">' +
+          k.supportedModels.map(m =>
+            '<div class="model-item"><span class="model-dot"></span><span class="model-name">' + esc(m) + '</span>' +
+            '<span class="model-avail">' + t('card.available') + '</span></div>'
+          ).join('') + '</div>'
         : '') +
     '</div>' +
     '<div class="key-actions">' +
@@ -1746,6 +1749,7 @@ const I18N = {
     'card.disabled': 'NONAKTIF',
     'card.provider': 'Provider',
     'card.supportedmodels': 'Model yang didukung',
+    'card.available': 'Tersedia',
     'card.model': 'Model',
     'card.request': 'Request',
     'card.tokens.in': 'Token masuk',
@@ -2080,6 +2084,7 @@ const I18N = {
     'card.added': 'Added',
     'card.models': 'models',
     'card.supportedmodels': 'Supported models',
+    'card.available': 'Available',
     'card.keys': 'Keys',
     'card.registered': 'Registered',
     'card.heartbeat': 'Last heartbeat',
