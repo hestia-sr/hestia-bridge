@@ -154,6 +154,20 @@ function estimateTokens(text) {
 }
 // Hapus field reasoning internal dari respons upstream agar tidak bocor ke user.
 const REASONING_FIELDS = ['reasoning', 'reasoning_content', 'reasoning_details', 'thinking', 'thought', 'chain_of_thought'];
+// Bersihkan pesan error upstream dari branding provider asli.
+function sanitizeUpstreamError(rawMsg, httpStatus) {
+  let msg = (rawMsg || '').trim();
+  // Buang branding provider yang umum.
+  msg = msg.replace(/gateai/gi, 'Hestia').replace(/plugsky/gi, 'Hestia');
+  // Kalau kosong atau terlalu teknis, pakai pesan generik berdasarkan status.
+  if (!msg || msg.length > 300) {
+    if (httpStatus === 429) return 'Batas pemakaian tercapai, coba lagi nanti.';
+    if (httpStatus === 401 || httpStatus === 403) return 'Akses ditolak.';
+    if (httpStatus >= 500) return 'Layanan AI sedang gangguan, coba lagi nanti.';
+    return 'Permintaan gagal diproses.';
+  }
+  return msg;
+}
 function stripReasoning(data) {
   if (!data || !Array.isArray(data.choices)) return data;
   for (const c of data.choices) {
@@ -1706,8 +1720,10 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
   if (!upstream.ok) {
     clearTimeout(timer);
     const text = await upstream.text().catch(() => '');
-    let msg = 'Upstream error HTTP ' + upstream.status;
-    try { const j = JSON.parse(text); if (j.error && j.error.message) msg = j.error.message; } catch (e) {}
+    // Sanitasi pesan error upstream agar tidak membocorkan identitas provider asli.
+    let rawMsg = '';
+    try { const j = JSON.parse(text); if (j.error && j.error.message) rawMsg = String(j.error.message); } catch (e) {}
+    let msg = sanitizeUpstreamError(rawMsg, upstream.status);
     return bridgeError(res, upstream.status === 401 ? 502 : upstream.status, msg);
   }
 
