@@ -792,6 +792,9 @@ function myKeyCard(k, maxReq) {
             return '<div class="model-item">' +
               '<div class="model-item-top"><span class="model-dot"></span>' +
               '<span class="model-name">' + esc(m) + '</span>' +
+              '<button class="icon-btn model-copy" data-model="' + esc(m) + '" title="' + t('card.copymodel') + '" aria-label="' + t('card.copymodel') + '">' +
+                '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z" fill="currentColor"/></svg>' +
+              '</button>' +
               '<span class="model-avail">' + t('card.available') + '</span></div>' +
               (caps ? '<div class="model-caps">' + caps + '</div>' : '') +
               (meta.context ? '<div class="model-ctx">' + esc(meta.context) + '</div>' : '') +
@@ -809,6 +812,14 @@ function myKeyCard(k, maxReq) {
   '</div>';
 }
 $('#mykey-list').addEventListener('click', async e => {
+  const copyBtn = e.target.closest('button.model-copy');
+  if (copyBtn && copyBtn.dataset.model) {
+    try {
+      await navigator.clipboard.writeText(copyBtn.dataset.model);
+      toast(t('toast.model.copied'));
+    } catch (ex) { toast(t('toast.failed')); }
+    return;
+  }
   const btn = e.target.closest('button[data-act]');
   if (!btn) return;
   const id = btn.dataset.id, act = btn.dataset.act;
@@ -1759,6 +1770,8 @@ const I18N = {
     'card.supportedmodels': 'Model yang didukung',
     'card.available': 'Tersedia',
     'card.popular': 'Paling banyak dipakai',
+    'card.copymodel': 'Salin nama model',
+    'toast.model.copied': 'Nama model disalin.',
     'card.model': 'Model',
     'card.request': 'Request',
     'card.tokens.in': 'Token masuk',
@@ -2095,6 +2108,8 @@ const I18N = {
     'card.supportedmodels': 'Supported models',
     'card.available': 'Available',
     'card.popular': 'Most used',
+    'card.copymodel': 'Copy model name',
+    'toast.model.copied': 'Model name copied.',
     'card.keys': 'Keys',
     'card.registered': 'Registered',
     'card.heartbeat': 'Last heartbeat',
