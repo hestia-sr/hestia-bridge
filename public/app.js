@@ -905,17 +905,13 @@ async function openMyKeyModal(presetMode) {
 }
 function onMyKeyModeChange(mode) {
   const isWorker = mode === 'worker';
-  $('#mykey-provider-wrap').classList.toggle('hidden', isWorker);
-  $('#mykey-model-wrap').classList.toggle('hidden', isWorker);
+  // Mode selector disembunyikan — ditentukan dari tombol asal (gateway vs worker)
+  $('#mykey-mode-wrap').classList.add('hidden');
+  // Gateway: tanpa pilih provider/model (pakai default dari Hestia)
+  // Worker: pilih worker saja
+  $('#mykey-provider-wrap').classList.add('hidden');
+  $('#mykey-model-wrap').classList.add('hidden');
   $('#mykey-worker-wrap').classList.toggle('hidden', !isWorker);
-  if (!isWorker) fillMykeyModels();
-  // Sembunyikan opsi mode yang tidak relevan sesuai asal tombol
-  const sel = $('#mykey-mode');
-  for (const opt of sel.options) {
-    if (mode === 'provider' && opt.value === 'worker') opt.hidden = true;
-    else if (mode === 'worker' && opt.value === 'provider') opt.hidden = true;
-    else opt.hidden = false;
-  }
 }
 $('#mykey-mode').addEventListener('change', () => {
   onMyKeyModeChange($('#mykey-mode').value);
@@ -1023,11 +1019,10 @@ $('#mykey-form').addEventListener('submit', async e => {
   try {
     const mode = $('#mykey-mode').value;
     const body = { name: $('#mykey-name').value, mode };
-    if (mode === 'worker') body.workerId = $('#mykey-worker').value;
-    else {
-      body.providerId = $('#mykey-provider').value;
-      if ($('#mykey-model').value) body.model = $('#mykey-model').value;
+    if (mode === 'worker') {
+      body.workerId = $('#mykey-worker').value;
     }
+    // Gateway: providerId/model tidak dikirim — backend pakai default (model jualan Hestia).
     const qv = parseInt($('#mykey-quota').value, 10);
     if (qv > 0) body.tokenQuota = qv;
     const j = await api('/api/my-keys', { method: 'POST', body: JSON.stringify(body) });
