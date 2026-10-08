@@ -121,6 +121,61 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 .landing-hero h1 { font-size: 2.4rem; font-weight: 800; position: relative; z-index: 1; }
 .landing-hero-sub { opacity: .92; font-size: 1.05rem; margin: .7rem 0 1.4rem; position: relative; z-index: 1; }
 .landing-hero .btn-lg { position: relative; z-index: 1; font-size: 1rem; padding: .8rem 1.8rem; border-radius: 14px; }
+.landing-badge {
+  display: inline-block; position: relative; z-index: 1;
+  background: rgba(255,255,255,.18); color: #fff;
+  border: 1px solid rgba(255,255,255,.35);
+  font-size: .8rem; font-weight: 600; padding: .35rem .9rem; border-radius: 999px;
+  margin-bottom: 1rem;
+}
+.landing-cta-row { display: flex; gap: .7rem; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
+.landing-checks {
+  list-style: none; margin: 1.4rem auto 0; padding: 0; position: relative; z-index: 1;
+  display: flex; gap: 1.2rem; justify-content: center; flex-wrap: wrap; max-width: 100%;
+}
+.landing-checks li { display: flex; align-items: center; gap: .4rem; font-size: .88rem; color: #fff; opacity: .95; }
+.landing-checks .check {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.25rem; height: 1.25rem; border-radius: 50%;
+  background: rgba(255,255,255,.22); font-size: .75rem; font-weight: 700; flex-shrink: 0;
+}
+/* code example */
+.landing-code { max-width: 1080px; margin: 0 auto; padding: 3rem 1.25rem 0; }
+.landing-code h2 { text-align: center; margin-bottom: 1.2rem; font-size: 1.5rem; }
+.code-block {
+  background: #1e1e2e; border-radius: 14px; padding: 1.1rem 1.25rem;
+  overflow-x: auto; box-shadow: var(--shadow); max-width: 100%;
+}
+.code-block pre { margin: 0; }
+.code-block code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .82rem; line-height: 1.6; color: #e6e6f0; white-space: pre;
+}
+/* stats */
+.landing-stats { max-width: 1080px; margin: 0 auto; padding: 2.5rem 1.25rem 0; }
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.stat-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1.4rem 1rem; text-align: center; box-shadow: var(--shadow);
+}
+.stat-num { font-size: 2rem; font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.stat-label { font-size: .88rem; color: var(--muted); margin-top: .3rem; }
+/* guide steps */
+.landing-guide { max-width: 1080px; margin: 0 auto; padding: 3rem 1.25rem; }
+.landing-guide h2 { text-align: center; margin-bottom: 1.5rem; font-size: 1.5rem; }
+.guide-steps { display: flex; flex-direction: column; gap: 1rem; max-width: 640px; margin: 0 auto; }
+.guide-step {
+  display: flex; gap: 1rem; align-items: flex-start;
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1.1rem 1.25rem; box-shadow: var(--shadow);
+}
+.guide-num {
+  flex-shrink: 0; width: 2.2rem; height: 2.2rem; border-radius: 50%;
+  background: var(--grad); color: #fff; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+.guide-step h3 { font-size: 1rem; margin: 0 0 .3rem; }
+.guide-step p { margin: 0; font-size: .9rem; }
 .landing-features { max-width: 1080px; margin: 0 auto; padding: 3rem 1.25rem; }
 .landing-features h2 { text-align: center; margin-bottom: 1.5rem; font-size: 1.5rem; }
 .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
@@ -133,9 +188,16 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 #auth-form-section.center-wrap { min-height: auto; }
 @media (max-width: 720px) {
   .feat-grid { grid-template-columns: 1fr; }
+  .stat-grid { grid-template-columns: 1fr; }
+  .landing-hero { padding: 3rem 1rem 2.5rem; }
   .landing-hero h1 { font-size: 1.9rem; }
+  .landing-hero-sub { font-size: .95rem; }
+  .landing-checks { flex-direction: column; align-items: center; gap: .6rem; }
+  .landing-cta-row .btn-lg { width: 100%; max-width: 320px; }
+  .code-block code { font-size: .74rem; }
   .landing-nav-actions .btn { padding: .45rem .7rem; font-size: .82rem; }
   .landing-brand .brand-name { font-size: .95rem; }
+  .landing-code, .landing-stats, .landing-guide, .landing-features { padding-left: 1rem; padding-right: 1rem; }
 }
 
 /* ---------- login ---------- */
