@@ -111,8 +111,8 @@ function gotoAuthTab(tab) {
   const sec = $('#auth-form-section');
   if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
-$('#nav-login-btn').addEventListener('click', () => gotoAuthTab('login'));
-$('#nav-register-btn').addEventListener('click', () => gotoAuthTab('register'));
+const _nlb = $('#nav-login-btn'); if (_nlb) _nlb.addEventListener('click', () => gotoAuthTab('login'));
+const _nrb = $('#nav-register-btn'); if (_nrb) _nrb.addEventListener('click', () => gotoAuthTab('register'));
 $('#hero-cta').addEventListener('click', () => gotoAuthTab('register'));
 $('#hero-guide-btn').addEventListener('click', () => {
   const g = $('#landing-guide');
