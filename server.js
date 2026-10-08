@@ -972,9 +972,15 @@ app.post('/api/my-keys', requireUser, (req, res) => {
   let pid = null, wid = null, pmodel = null;
   if (m === 'provider') {
     // BYOK: 'custom' = provider milik user sendiri (diatur di Pengaturan).
-    const p = providerId === 'custom'
-      ? customProviderOf(req.user)
-      : db.providers.find(x => x.id === providerId);
+    // Gateway: tanpa providerId = pakai provider default (model jualan Hestia).
+    let p;
+    if (!providerId) {
+      p = db.providers.find(x => !x.disabled) || db.providers[0];
+    } else {
+      p = providerId === 'custom'
+        ? customProviderOf(req.user)
+        : db.providers.find(x => x.id === providerId);
+    }
     if (!p) return res.status(400).json({ error: providerId === 'custom' ? 'custom_provider_not_configured' : 'provider_not_found' });
     pid = providerId === 'custom' ? 'custom' : p.id;
     // Validate model against provider's model list if provided.
