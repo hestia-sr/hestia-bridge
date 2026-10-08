@@ -119,7 +119,7 @@ function recordProviderOk(providerId) {
         id: 'gateway-test',
         name: 'Hestia Gateway',
         baseUrl: 'https://api.xkiro.com/v1',
-        apiKey: xkiroKey,
+        key: xkiroKey,
         models: xkiroModels,
         modelMeta: xkiroMeta,
         createdAt: nowIso()
@@ -128,7 +128,7 @@ function recordProviderOk(providerId) {
     } else {
       let dirty = false;
       if (gp.baseUrl !== 'https://api.xkiro.com/v1') { gp.baseUrl = 'https://api.xkiro.com/v1'; dirty = true; }
-      if (gp.apiKey !== xkiroKey) { gp.apiKey = xkiroKey; dirty = true; }
+      if (gp.key !== xkiroKey) { gp.key = xkiroKey; dirty = true; }
       gp.models = xkiroModels; dirty = true;
       gp.modelMeta = xkiroMeta; dirty = true;
       gp.name = 'Hestia Gateway'; dirty = true;
@@ -399,7 +399,7 @@ function requireBridgeKey(req, res, next) {
   if (!provider) return bridgeError(res, 401, 'The provider bound to this key no longer exists.');
   // Gateway: selalu pakai API key dari env var (paling update).
   if (provider.id === 'gateway-test' && process.env.GATEWAY_API_KEY) {
-    provider = { ...provider, apiKey: process.env.GATEWAY_API_KEY };
+    provider = { ...provider, key: process.env.GATEWAY_API_KEY };
   }
   req.bridgeKey = key;
   req.provider = provider;
