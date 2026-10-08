@@ -89,6 +89,55 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 }
 .auth-tab.active { background: #fff; color: var(--text); box-shadow: var(--shadow); }
 
+/* ---------- landing (auth view) ---------- */
+#auth-view { background: var(--bg); }
+.landing-nav {
+  position: sticky; top: 0; z-index: 30;
+  background: rgba(255,255,255,.85); backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.landing-nav-inner {
+  max-width: 1080px; margin: 0 auto; padding: .7rem 1.1rem;
+  display: flex; align-items: center; justify-content: space-between; gap: .6rem;
+}
+.landing-brand { display: flex; align-items: center; gap: .55rem; }
+.landing-nav-actions { display: flex; align-items: center; gap: .5rem; }
+.landing-nav-actions .lang-btn { padding: .45rem .6rem; }
+.landing-hero {
+  background: var(--grad); color: #fff; text-align: center;
+  padding: 4rem 1.25rem 3.5rem; position: relative; overflow: hidden;
+}
+.landing-hero::before {
+  content: ""; position: absolute; right: -60px; top: -60px;
+  width: 220px; height: 220px; border-radius: 50%;
+  background: rgba(255,255,255,.1);
+}
+.landing-hero::after {
+  content: ""; position: absolute; left: -40px; bottom: -70px;
+  width: 170px; height: 170px; border-radius: 50%;
+  background: rgba(255,255,255,.08);
+}
+.landing-hero h1 { font-size: 2.4rem; font-weight: 800; position: relative; z-index: 1; }
+.landing-hero-sub { opacity: .92; font-size: 1.05rem; margin: .7rem 0 1.4rem; position: relative; z-index: 1; }
+.landing-hero .btn-lg { position: relative; z-index: 1; font-size: 1rem; padding: .8rem 1.8rem; border-radius: 14px; }
+.landing-features { max-width: 1080px; margin: 0 auto; padding: 3rem 1.25rem; }
+.landing-features h2 { text-align: center; margin-bottom: 1.5rem; font-size: 1.5rem; }
+.feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.feat-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1.4rem; box-shadow: var(--shadow);
+}
+.feat-card h3 { font-size: 1.05rem; margin-bottom: .5rem; }
+.feat-card p { margin: 0; font-size: .92rem; }
+#auth-form-section.center-wrap { min-height: auto; }
+@media (max-width: 720px) {
+  .feat-grid { grid-template-columns: 1fr; }
+  .landing-hero h1 { font-size: 1.9rem; }
+  .landing-nav-actions .btn { padding: .45rem .7rem; font-size: .82rem; }
+  .landing-brand .brand-name { font-size: .95rem; }
+}
+
 /* ---------- login ---------- */
 .center-wrap {
   min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.25rem;
