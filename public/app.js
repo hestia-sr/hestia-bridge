@@ -80,7 +80,7 @@ function enterApp(me) {
     refreshMine();
   }
   renderApps();
-  $('#home-cta').onclick = () => switchView(isAdmin ? 'keys' : 'mykeys');
+  const _hcta = $('#home-cta'); if (_hcta) _hcta.onclick = () => switchView(isAdmin ? 'keys' : 'mykeys');
   if (!isAdmin) loadPlan(); else { $('#plan-card').hidden = true; if (planTimer) clearInterval(planTimer); }
 }
 
