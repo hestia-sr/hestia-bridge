@@ -291,6 +291,10 @@
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M14 3a7 7 0 0 0-6.9 8.2L3 15.3V21h5.7l4.1-4.1A7 7 0 1 0 14 3zm1.4 4.6a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z" fill="currentColor"/></svg>
         <span data-i18n="nav.mykeys">Key Saya</span>
       </button>
+      <button class="drawer-btn user-only" data-view="myworkers">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M13 2 4.5 13.5H11L9.5 22 19 9.5h-6.5L13 2z" fill="currentColor"/></svg>
+        <span data-i18n="nav.myworkers">Worker</span>
+      </button>
       <button class="drawer-btn user-only" data-view="settings">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" fill="currentColor"/></svg>
         <span data-i18n="nav.settings">Agent Pilihan</span>
@@ -528,26 +532,75 @@
       <div class="hero-body">
       <div id="mykey-list"></div>
 
-      <div class="section-head">
-        <h2 data-i18n="section.workers.title">Worker Saya</h2>
-        <span class="muted small" id="myworker-count"></span>
+      <div class="guide-card">
+        <h2 data-i18n="guide.howto.title">Cara pakai</h2>
+        <ol class="guide-steps">
+          <li>
+            <span class="step-num">1</span>
+            <p data-i18n-html="guide.my.s1">Klik <strong>Buat Key</strong> — pilih mode <strong>Provider</strong> (pakai provider yang tersedia) atau <strong>Worker</strong> (dijawab worker AI).</p>
+          </li>
+          <li>
+            <span class="step-num">2</span>
+            <p data-i18n-html="guide.my.s2">Untuk mode Worker: buat dulu worker di menu <strong>Worker</strong>, salin tokennya, lalu tempel instruksi yang diberikan ke akun AI milikmu supaya ia bekerja otomatis tiap 5 menit.</p>
+          </li>
+          <li>
+            <span class="step-num">3</span>
+            <p data-i18n-html="guide.my.s3">Di aplikasi AI di HP yang mendukung custom endpoint OpenAI: isi <strong>Base URL</strong> dengan<br><code id="my-guide-base-url">https://hestia-bridge-production.up.railway.app/v1</code><br>dan <strong>API Key</strong> dengan key <code>hesti-...</code> milikmu (klik <strong>info cURL</strong> di kartu key untuk salin cepat), lalu pakai seperti biasa lewat prompt.</p>
+          </li>
+        </ol>
       </div>
-      <p class="page-sub" data-i18n="page.workers.desc">Daftarkan worker dari akun AI milikmu — key mode worker milikmu dijawab worker ini secara otomatis.</p>
-      <div class="action-row">
-        <span></span>
-        <button id="my-new-worker-btn" class="btn btn-primary">
+
+      <p class="foot-note muted">Hestia Bridge · <span id="my-foot-email"></span></p>
+      </div>
+    </section>
+
+    <!-- ===== MYWORKERS VIEW (pengguna: worker sendiri, terpisah dari Key Saya) ===== -->
+    <section id="view-myworkers" class="view hidden">
+      <div class="hero">
+        <div class="hero-top">
+          <div>
+            <h1 class="hero-title" data-i18n="nav.myworkers">Worker</h1>
+            <p class="hero-sub" data-i18n="page.workers.desc">Daftarkan worker dari akun AI milikmu — key mode worker milikmu dijawab worker ini secara otomatis.</p>
+          </div>
+          <button id="myworkers-refresh-btn" class="hero-refresh" aria-label="Refresh">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5V1L6 7l6 6V9a8 8 0 1 1-8 8H2a10 10 0 1 0 10-12z" fill="currentColor"/></svg>
+          </button>
+        </div>
+        <button id="my-new-worker-btn" class="btn btn-hero">
           <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" fill="currentColor"/></svg>
           <span data-i18n="btn.createworker">Buat Worker</span>
         </button>
       </div>
+
+      <div class="hero-body">
+      <div class="section-head">
+        <h2 data-i18n="section.workers.title">Worker Saya</h2>
+        <span class="muted small" id="myworker-count"></span>
+      </div>
       <div id="myworker-list"></div>
+
+      <div class="card" style="margin-top:1rem">
+        <div class="card-body">
+          <div class="section-head" style="margin-bottom:.4rem">
+            <h2 data-i18n="worker.agent.title">Agent untuk Worker</h2>
+          </div>
+          <p class="muted small" data-i18n="worker.agent.desc">Pilih agent (Base URL + API key) milikmu yang dipakai worker.</p>
+          <p class="small" id="worker-agent-status" style="margin:.5rem 0"></p>
+          <div class="action-row">
+            <span></span>
+            <button id="worker-agent-open-btn" class="btn btn-ghost" type="button">
+              <span data-i18n="worker.agent.open">Atur Agent Pilihan</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div class="guide-card">
         <h2 data-i18n="guide.test.title">Cara tes worker</h2>
         <ol class="guide-steps">
           <li>
             <span class="step-num">1</span>
-            <p data-i18n-html="guide.test.s1">Pastikan worker kamu <strong>online</strong> di bagian <strong>Worker Saya</strong> di atas.</p>
+            <p data-i18n-html="guide.test.s1">Pastikan worker kamu <strong>online</strong> di daftar <strong>Worker Saya</strong> di atas.</p>
           </li>
           <li>
             <span class="step-num">2</span>
@@ -563,26 +616,6 @@
           </li>
         </ol>
       </div>
-
-      <div class="guide-card">
-        <h2 data-i18n="guide.howto.title">Cara pakai</h2>
-        <ol class="guide-steps">
-          <li>
-            <span class="step-num">1</span>
-            <p data-i18n-html="guide.my.s1">Klik <strong>Buat Key</strong> — pilih mode <strong>Provider</strong> (pakai provider yang tersedia) atau <strong>Worker</strong> (dijawab worker AI).</p>
-          </li>
-          <li>
-            <span class="step-num">2</span>
-            <p data-i18n-html="guide.my.s2">Untuk mode Worker: buat dulu worker di bagian <strong>Worker Saya</strong>, salin tokennya, lalu tempel instruksi yang diberikan ke akun AI milikmu supaya ia bekerja otomatis tiap 5 menit.</p>
-          </li>
-          <li>
-            <span class="step-num">3</span>
-            <p data-i18n-html="guide.my.s3">Di aplikasi AI di HP yang mendukung custom endpoint OpenAI: isi <strong>Base URL</strong> dengan<br><code id="my-guide-base-url">https://hestia-bridge-production.up.railway.app/v1</code><br>dan <strong>API Key</strong> dengan key <code>hesti-...</code> milikmu (klik <strong>info cURL</strong> di kartu key untuk salin cepat), lalu pakai seperti biasa lewat prompt.</p>
-          </li>
-        </ol>
-      </div>
-
-      <p class="foot-note muted">Hestia Bridge · <span id="my-foot-email"></span></p>
       </div>
     </section>
 
