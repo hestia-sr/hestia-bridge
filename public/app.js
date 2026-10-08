@@ -114,6 +114,10 @@ function gotoAuthTab(tab) {
 $('#nav-login-btn').addEventListener('click', () => gotoAuthTab('login'));
 $('#nav-register-btn').addEventListener('click', () => gotoAuthTab('register'));
 $('#hero-cta').addEventListener('click', () => gotoAuthTab('register'));
+$('#hero-guide-btn').addEventListener('click', () => {
+  const g = $('#landing-guide');
+  if (g) g.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
 $('#lang-btn-auth').addEventListener('click', () => $('#lang-btn').click());
 $('#login-form').addEventListener('submit', async e => {
   e.preventDefault();
@@ -1624,6 +1628,22 @@ const I18N = {
     'landing.hero.title': 'Hestia Bridge',
     'landing.hero.sub': 'Kelola API key AI kamu dari satu dashboard.',
     'landing.hero.cta': 'Mulai Gratis',
+    'landing.hero.guide': 'Lihat Cara Pakai',
+    'landing.hero.badge': 'Kelola semua AI dari satu tempat',
+    'landing.check.1': 'Satu kunci untuk banyak aplikasi',
+    'landing.check.2': 'Kompatibel OpenAI API',
+    'landing.check.3': 'Kuota dari akunmu sendiri',
+    'landing.code.title': 'Pakai seperti API biasa',
+    'landing.stat.1': 'kunci API untuk semua aplikasi',
+    'landing.stat.2': 'kompatibel OpenAI API',
+    'landing.stat.3': 'mode key: provider & worker',
+    'landing.guide.title': 'Cara pakai',
+    'landing.guide.1t': 'Daftar akun',
+    'landing.guide.1d': 'Buat akun dengan Gmail kamu, gratis.',
+    'landing.guide.2t': 'Buat API key',
+    'landing.guide.2d': 'Tambah key baru dan pilih provider AI milikmu.',
+    'landing.guide.3t': 'Sambungkan aplikasi',
+    'landing.guide.3d': 'Isi Base URL dan API key di aplikasi AI favoritmu, langsung pakai.',
     'landing.feat.title': 'Kenapa Hestia Bridge?',
     'landing.feat.1t': 'Satu Dashboard',
     'landing.feat.1d': 'Kelola semua API key AI kamu dari satu tempat yang rapi.',
@@ -1914,6 +1934,22 @@ const I18N = {
     'landing.hero.title': 'Hestia Bridge',
     'landing.hero.sub': 'Manage your AI API keys from one dashboard.',
     'landing.hero.cta': 'Start Free',
+    'landing.hero.guide': 'See How It Works',
+    'landing.hero.badge': 'Manage all AI from one place',
+    'landing.check.1': 'One key for many apps',
+    'landing.check.2': 'OpenAI API compatible',
+    'landing.check.3': 'Quota from your own account',
+    'landing.code.title': 'Use it like a regular API',
+    'landing.stat.1': 'API key for all apps',
+    'landing.stat.2': 'OpenAI API compatible',
+    'landing.stat.3': 'key modes: provider & worker',
+    'landing.guide.title': 'How to use',
+    'landing.guide.1t': 'Create an account',
+    'landing.guide.1d': 'Sign up with your Gmail, free.',
+    'landing.guide.2t': 'Create an API key',
+    'landing.guide.2d': 'Add a new key and pick your AI provider.',
+    'landing.guide.3t': 'Connect your app',
+    'landing.guide.3d': 'Fill in the Base URL and API key in your favorite AI app, ready to use.',
     'landing.feat.title': 'Why Hestia Bridge?',
     'landing.feat.1t': 'One Dashboard',
     'landing.feat.1d': 'Manage all your AI API keys from one tidy place.',
