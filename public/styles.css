@@ -162,6 +162,17 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 }
 .stat-num { font-size: 2rem; font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .stat-label { font-size: .88rem; color: var(--muted); margin-top: .3rem; }
+/* pricing */
+.landing-pricing { max-width: 1080px; margin: 0 auto; padding: 2.5rem 1.25rem 0; text-align: center; }
+.landing-pricing h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 1.2rem; }
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.pricing-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1.4rem 1rem; text-align: center; box-shadow: var(--shadow);
+}
+.pricing-duration { font-size: .95rem; font-weight: 700; }
+.pricing-price { font-size: 2rem; font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; margin: .3rem 0; }
+.pricing-note { font-size: .85rem; color: var(--muted); }
 /* guide steps */
 .landing-guide { max-width: 1080px; margin: 0 auto; padding: 3rem 1.25rem; }
 .landing-guide h2 { text-align: center; margin-bottom: 1.5rem; font-size: 1.5rem; }
@@ -191,6 +202,7 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 @media (max-width: 720px) {
   .feat-grid { grid-template-columns: 1fr; }
   .stat-grid { grid-template-columns: 1fr; }
+  .pricing-grid { grid-template-columns: 1fr; }
   .landing-hero { padding: 3rem 1rem 2.5rem; }
   .landing-hero h1 { font-size: 1.9rem; }
   .landing-hero-sub { font-size: .95rem; }
