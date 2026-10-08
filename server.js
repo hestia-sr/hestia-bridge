@@ -1,6 +1,7 @@
 'use strict';
 /* ==========================================================================
  * Hestia Bridge — lightweight OpenAI-compatible API key bridge dashboard.
+ * Build: 2026-10-08 allowlist (47 paid / 5 free).
  *
  * Connect any OpenAI-compatible AI provider (Base URL + API key), then issue
  * bridge keys ("hb-...") bound 1 key = 1 provider. Use the bridge key from
