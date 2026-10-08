@@ -437,7 +437,7 @@ function closeDrawer() {
 }
 $('#drawer-btn').addEventListener('click', openDrawer);
 $('#drawer-backdrop').addEventListener('click', closeDrawer);
-const VIEW_TITLES = { home: 'nav.home', keys: 'topbar.keys', providers: 'nav.providers', users: 'nav.users', activities: 'nav.activities', mykeys: 'nav.mykeys', settings: 'nav.settings' };
+const VIEW_TITLES = { home: 'nav.home', keys: 'topbar.keys', providers: 'nav.providers', users: 'nav.users', activities: 'nav.activities', mykeys: 'nav.mykeys', myworkers: 'nav.myworkers', settings: 'nav.settings' };
 function switchView(name) {
   document.querySelectorAll('.drawer-btn[data-view]').forEach(b =>
     b.classList.toggle('active', b.dataset.view === name));
@@ -448,6 +448,7 @@ function switchView(name) {
   if (name === 'users') loadUsers();
   if (name === 'activities') loadActivities(true);
   if (name === 'settings') loadMySettings();
+  if (name === 'myworkers') { loadMyWorkers(); refreshWorkerAgentCard(); }
 }
 document.querySelectorAll('.drawer-btn[data-view]').forEach(btn => {
   btn.addEventListener('click', () => switchView(btn.dataset.view));
@@ -1078,6 +1079,24 @@ $('#my-new-worker-btn').addEventListener('click', () => {
 });
 $('#myworker-modal-close').addEventListener('click', () => $('#myworker-modal').classList.add('hidden'));
 $('#myworker-done').addEventListener('click', () => { $('#myworker-modal').classList.add('hidden'); loadMyWorkers(); loadMyKeys(); });
+/* ---- worker view: refresh + agent card ---- */
+const _mwr = $('#myworkers-refresh-btn');
+if (_mwr) _mwr.addEventListener('click', async () => { await loadMyWorkers(); await refreshWorkerAgentCard(); toast(t('toast.refreshed')); });
+const _wao = $('#worker-agent-open-btn');
+if (_wao) _wao.addEventListener('click', () => switchView('settings'));
+async function refreshWorkerAgentCard() {
+  const el = $('#worker-agent-status');
+  if (!el) return;
+  try {
+    const s = await api('/api/my-provider');
+    if (s.configured) {
+      el.innerHTML = '<strong>' + esc(s.baseUrl || '') + '</strong>' +
+        (s.model ? ' · <span class="muted">' + esc(s.model) + '</span>' : '');
+    } else {
+      el.innerHTML = '<span class="muted">' + t('worker.agent.notset') + '</span>';
+    }
+  } catch (e) { el.innerHTML = ''; }
+}
 $('#myworker-modal').addEventListener('click', e => {
   if (e.target.id === 'myworker-modal') $('#myworker-modal').classList.add('hidden');
 });
@@ -1490,6 +1509,11 @@ const I18N = {
     'nav.providers': 'Provider',
     'nav.users': 'Pengguna',
     'nav.mykeys': 'Key Saya',
+    'nav.myworkers': 'Worker',
+    'worker.agent.title': 'Agent untuk Worker',
+    'worker.agent.desc': 'Pilih agent (Base URL + API key) milikmu yang dipakai worker.',
+    'worker.agent.open': 'Atur Agent Pilihan',
+    'worker.agent.notset': 'Belum diatur — klik "Atur Agent Pilihan".',
     'nav.settings': 'Agent Pilihan',
     'hero.settings': 'Agent Pilihan',
     'hero.settings.sub': 'Pakai API key AI milikmu sendiri — kuota terpakai dari akunmu, bukan admin.',
@@ -1670,12 +1694,12 @@ const I18N = {
     'guide.howto.s3': 'Di aplikasi AI di HP yang mendukung custom endpoint OpenAI: isi <strong>Base URL</strong> dengan<br><code id="guide-base-url">https://hestia-bridge-production.up.railway.app/v1</code><br>dan <strong>API Key</strong> dengan key <code>hesti-...</code> yang baru dibuat (klik <strong>info cURL</strong> di kartu key untuk salin cepat), lalu pakai seperti biasa lewat prompt.',
     'guide.howto.s4': 'Pantau pemakaian tiap key di dashboard ini — jumlah request dan token tercatat otomatis.',
     'guide.test.title': 'Cara tes worker',
-    'guide.test.s1': 'Pastikan worker kamu <strong>online</strong> di bagian <strong>Worker Saya</strong> di atas.',
+    'guide.test.s1': 'Pastikan worker kamu <strong>online</strong> di daftar <strong>Worker Saya</strong> di atas.',
     'guide.test.s2': 'Klik <strong>Buat Key</strong>, pilih mode <strong>Worker</strong>, lalu <strong>Buat Key</strong>.',
     'guide.test.s3': 'Klik <strong>Cara sambung</strong> di kartu key, salin <strong>Base URL</strong> dan <strong>API Key</strong> ke aplikasi AI di HP, lalu chat seperti biasa.',
     'guide.test.s4': 'Kalau ada jawaban, berarti worker kamu jalan. Kalau tidak dijawab, cek lagi worker-nya online atau tidak.',
     'guide.my.s1': 'Klik <strong>Buat Key</strong> — pilih mode <strong>Provider</strong> (pakai provider yang tersedia) atau <strong>Worker</strong> (dijawab worker AI).',
-    'guide.my.s2': 'Untuk mode Worker: buat dulu worker di bagian <strong>Worker Saya</strong>, salin tokennya, lalu tempel instruksi yang diberikan ke akun AI milikmu supaya ia siaga dan menjawab otomatis begitu ada chat masuk.',
+    'guide.my.s2': 'Untuk mode Worker: buat dulu worker di menu <strong>Worker</strong>, salin tokennya, lalu tempel instruksi yang diberikan ke akun AI milikmu supaya ia siaga dan menjawab otomatis begitu ada chat masuk.',
     'guide.my.s3': 'Di aplikasi AI di HP yang mendukung custom endpoint OpenAI: isi <strong>Base URL</strong> dengan<br><code id="my-guide-base-url">https://hestia-bridge-production.up.railway.app/v1</code><br>dan <strong>API Key</strong> dengan key <code>hesti-...</code> milikmu (klik <strong>info cURL</strong> di kartu key untuk salin cepat), lalu pakai seperti biasa lewat prompt.',
     'form.name': 'Nama',
     'form.name.ph': 'cth: Provider A',
@@ -1802,6 +1826,11 @@ const I18N = {
     'nav.providers': 'Providers',
     'nav.users': 'Users',
     'nav.mykeys': 'My Keys',
+    'nav.myworkers': 'Worker',
+    'worker.agent.title': 'Agent for Worker',
+    'worker.agent.desc': 'Choose your own agent (Base URL + API key) used by the worker.',
+    'worker.agent.open': 'Set Chosen Agent',
+    'worker.agent.notset': 'Not set yet — click "Set Chosen Agent".',
     'nav.settings': 'Chosen Agent',
     'hero.settings': 'Chosen Agent',
     'hero.settings.sub': 'Use your own AI API key — usage is billed to your account, not the admin.',
@@ -1982,12 +2011,12 @@ const I18N = {
     'guide.howto.s3': 'In an AI app on your phone that supports custom OpenAI endpoints: fill <strong>Base URL</strong> with<br><code id="guide-base-url">https://hestia-bridge-production.up.railway.app/v1</code><br>and <strong>API Key</strong> with your new <code>hesti-...</code> key (click <strong>How to connect</strong> on the key card for quick copy), then use it via prompt as usual.',
     'guide.howto.s4': 'Monitor each key\'s usage on this dashboard — request and token counts are recorded automatically.',
     'guide.test.title': 'How to test your worker',
-    'guide.test.s1': 'Make sure your worker is <strong>online</strong> in the <strong>My Workers</strong> section above.',
+    'guide.test.s1': 'Make sure your worker is <strong>online</strong> in the <strong>My Workers</strong> list above.',
     'guide.test.s2': 'Click <strong>Create Key</strong>, choose <strong>Worker</strong> mode, then <strong>Create Key</strong>.',
     'guide.test.s3': 'Click <strong>How to connect</strong> on the key card, copy the <strong>Base URL</strong> and <strong>API Key</strong> into the AI app on your phone, then chat as usual.',
     'guide.test.s4': 'If you get an answer, your worker is running. If not, check whether your worker is online.',
     'guide.my.s1': 'Click <strong>Create Key</strong> — choose <strong>Provider</strong> mode (use an available provider) or <strong>Worker</strong> (answered by an AI worker).',
-    'guide.my.s2': 'For Worker mode: first create a worker in the <strong>My Workers</strong> section, copy its token, then paste the given instructions into your AI account so it works automatically every 30 seconds.',
+    'guide.my.s2': 'For Worker mode: first create a worker in the <strong>Worker</strong> menu, copy its token, then paste the given instructions into your AI account so it works automatically every 30 seconds.',
     'guide.my.s3': 'In an AI app on your phone that supports custom OpenAI endpoints: fill <strong>Base URL</strong> with<br><code id="my-guide-base-url">https://hestia-bridge-production.up.railway.app/v1</code><br>and <strong>API Key</strong> with your <code>hesti-...</code> key (click <strong>How to connect</strong> on the key card for quick copy), then use it via prompt as usual.',
     'form.name': 'Name',
     'form.name.ph': 'e.g.: Provider A',
