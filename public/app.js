@@ -783,7 +783,7 @@ function myKeyCard(k, maxReq) {
     '</div>' +
     '<div><span class="key-masked">' + esc(k.masked) + '</span></div>' +
     '<div class="key-info">' +
-      '<div class="row"><span class="k">' + (k.mode === 'worker' ? t('card.worker') : t('card.provider')) + '</span><span class="v">' + via + '</span></div>' +
+      (k.mode === 'worker' ? '<div class="row"><span class="k">' + t('card.worker') + '</span><span class="v">' + via + '</span></div>' : '') +
       (k.mode === 'worker' ? '<div class="row"><span class="k">' + t('card.worker.status') + '</span><span class="v">' + (k.workerOnline ? t('card.online') : t('card.offline')) + '</span></div>' : '') +
       (k.model ? '<div class="row"><span class="k">' + t('card.model') + '</span><span class="v">' + esc(k.model) + '</span></div>' : '') +
       '<div class="row"><span class="k">' + t('card.request') + '</span><span class="v">' + fmtNum(k.stats.requests) + '</span></div>' +
