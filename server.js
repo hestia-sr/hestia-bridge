@@ -1762,11 +1762,10 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
   if (!upstream.ok) {
     clearTimeout(timer);
     const text = await upstream.text().catch(() => '');
-    // Sanitasi pesan error upstream agar tidak membocorkan identitas provider asli.
     let rawMsg = '';
     try { const j = JSON.parse(text); if (j.error && j.error.message) rawMsg = String(j.error.message); } catch (e) {}
-    let msg = sanitizeUpstreamError(rawMsg, upstream.status);
-    // Catat untuk pantauan admin.
+    // DEBUG: tampilkan error asli sementara.
+    let msg = 'UPSTREAM(' + upstream.status + '): ' + (rawMsg || text).slice(0, 300);
     if (req.provider) recordProviderError(req.provider.id, upstream.status, rawMsg || msg);
     return bridgeError(res, upstream.status === 401 ? 502 : upstream.status, msg);
   }
