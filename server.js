@@ -1573,13 +1573,15 @@ app.get('/api/stats', requireAdmin, (req, res) => {
 app.get('/v1/models', requireBridgeKey, (req, res) => {
   logKeyUsage(req, req.bridgeKey, 'models');
   if (req.bridgeKey.mode === 'worker' || !req.provider) {
-    // Worker-mode: khusus Muse — 1 model tetap supaya konsisten di semua aplikasi.
+    // Worker-mode: tampilkan model default key worker.
+    const wid = req.bridgeKey.model || 'worker';
     return res.json({ object: 'list', data: [{
-      id: 'muse-spark', object: 'model', created: Math.floor(Date.now() / 1000), owned_by: 'muse'
+      id: wid, object: 'model', created: Math.floor(Date.now() / 1000), owned_by: 'hestia'
     }] });
   }
+  // Gateway: tampilkan model yang support di key ini, tanpa nama provider asli.
   const models = (req.provider.models || []).map(id => ({
-    id, object: 'model', created: Math.floor(Date.now() / 1000), owned_by: req.provider.name
+    id, object: 'model', created: Math.floor(Date.now() / 1000), owned_by: 'hestia'
   }));
   res.json({ object: 'list', data: models });
 });
