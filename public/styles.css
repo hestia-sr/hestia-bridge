@@ -167,12 +167,28 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 .landing-pricing h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 1.2rem; }
 .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
 .pricing-card {
-  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 1.4rem 1rem; text-align: center; box-shadow: var(--shadow);
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1rem 1.1rem; text-align: left;
+  box-shadow: var(--shadow); position: relative; overflow: hidden;
+  transition: transform .15s, box-shadow .15s, border-color .15s;
 }
-.pricing-duration { font-size: .95rem; font-weight: 700; }
-.pricing-price { font-size: 2rem; font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; margin: .3rem 0; }
-.pricing-note { font-size: .85rem; color: var(--muted); }
+.pricing-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: var(--grad); opacity: 0; transition: opacity .15s;
+}
+.pricing-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.12); border-color: var(--accent); }
+.pricing-card:hover::before { opacity: 1; }
+.pricing-card.duration-best {
+  background: var(--grad); border: none; color: #fff;
+  box-shadow: 0 6px 20px rgba(0,0,0,.15);
+}
+.pricing-card.duration-best::before { display: none; }
+.pricing-card.duration-best .duration-name { color: #fff; }
+.pricing-card.duration-best .duration-sub { color: rgba(255,255,255,.85); }
+.pricing-card.duration-best .pill-unlimited { background: rgba(255,255,255,.25); color: #fff; }
+.pricing-card.duration-best .duration-price { background: none; -webkit-background-clip: unset; background-clip: unset; color: #fff; }
+.pricing-card.duration-best .duration-badge { background: rgba(255,255,255,.95); color: var(--accent); }
 /* guide steps */
 .landing-guide { max-width: 1080px; margin: 0 auto; padding: 3rem 1.25rem; }
 .landing-guide h2 { text-align: center; margin-bottom: 1.5rem; font-size: 1.5rem; }
