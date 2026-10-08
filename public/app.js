@@ -796,7 +796,7 @@ function myKeyCard(k, maxReq) {
     '</div>' +
     '<div class="key-actions">' +
       '<button class="btn btn-sm btn-primary" data-act="connect" data-id="' + k.id + '">' + t('btn.connect') + '</button>' +
-      (k.mode === 'provider' ? '<button class="btn btn-sm" data-act="editmodel" data-id="' + k.id + '">' + t('btn.editmodel') + '</button>' : '') +
+      '' +
       '<button class="btn btn-sm btn-danger" data-act="del" data-id="' + k.id + '">' + t('btn.delete') + '</button>' +
     '</div>' +
     '<div class="key-meta">' + t('card.created') + ' ' + fmtDate(k.createdAt) + ' · ' + t('card.lastused') + ' ' + timeAgo(k.lastUsedAt) + '</div>' +
