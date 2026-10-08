@@ -1605,12 +1605,12 @@ app.get('/v1/models', requireBridgeKey, (req, res) => {
     // Worker-mode: tampilkan model default key worker.
     const wid = req.bridgeKey.model || 'worker';
     return res.json({ object: 'list', data: [{
-      id: wid, object: 'model', created: Math.floor(Date.now() / 1000), owned_by: 'hestia'
+      id: wid, object: 'model', created: Math.floor(Date.now() / 1000), owned_by: 'Hestia'
     }] });
   }
   // Gateway: tampilkan model yang support di key ini, tanpa nama provider asli.
   const models = (req.provider.models || []).map(id => ({
-    id, object: 'model', created: Math.floor(Date.now() / 1000), owned_by: 'hestia'
+    id, object: 'model', created: Math.floor(Date.now() / 1000), owned_by: 'Hestia'
   }));
   res.json({ object: 'list', data: models });
 });
