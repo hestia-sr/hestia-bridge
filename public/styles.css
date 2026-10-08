@@ -376,17 +376,39 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   transition: transform .15s, box-shadow .15s, border-color .15s;
   position: relative; overflow: hidden;
 }
+.duration-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: var(--grad); opacity: 0; transition: opacity .15s;
+}
 .duration-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.12); border-color: var(--accent); }
+.duration-card:hover::before { opacity: 1; }
 .duration-card:active { transform: translateY(0); }
+.duration-left { display: flex; flex-direction: column; gap: .25rem; }
 .duration-name { font-weight: 700; color: var(--text); font-size: 1rem; }
-.duration-sub { font-size: .78rem; color: var(--muted); margin-top: .15rem; }
-.duration-price { font-weight: 800; font-size: 1.15rem; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.duration-sub { font-size: .78rem; color: var(--muted); }
+.pill-unlimited {
+  display: inline-block; font-size: .68rem; font-weight: 700;
+  background: var(--chip); color: var(--accent);
+  padding: .1rem .5rem; border-radius: 999px;
+}
+.duration-price { font-weight: 800; font-size: 1.15rem; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; white-space: nowrap; }
 .duration-badge {
   position: absolute; top: 0; right: 0;
   background: var(--grad); color: #fff;
   font-size: .68rem; font-weight: 700; padding: .2rem .7rem;
   border-radius: 0 16px 0 12px;
 }
+/* best value card */
+.duration-card.duration-best {
+  background: var(--grad); border: none; color: #fff;
+  box-shadow: 0 6px 20px rgba(0,0,0,.15);
+}
+.duration-card.duration-best::before { display: none; }
+.duration-card.duration-best .duration-name { color: #fff; }
+.duration-card.duration-best .duration-sub { color: rgba(255,255,255,.85); }
+.duration-card.duration-best .pill-unlimited { background: rgba(255,255,255,.25); color: #fff; }
+.duration-card.duration-best .duration-price { background: none; -webkit-background-clip: unset; background-clip: unset; color: #fff; }
+.duration-card.duration-best .duration-badge { background: rgba(255,255,255,.95); color: var(--accent); }
 .account-note {
   margin-top: .6rem; font-size: .85rem; color: var(--muted);
   text-align: center;
