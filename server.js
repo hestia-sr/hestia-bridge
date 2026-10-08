@@ -136,6 +136,35 @@ function stripReasoning(data) {
   }
   return data;
 }
+// Normalisasi respons chat dari provider mana pun ke format OpenAI standar yang bersih.
+function normalizeChatResponse(data, fallbackModel) {
+  if (!data || typeof data !== 'object') return data;
+  const src = data.choices && data.choices[0];
+  const msg = (src && (src.message || src.delta)) || {};
+  const clean = {
+    id: data.id || ('chatcmpl-' + Date.now().toString(36)),
+    object: 'chat.completion',
+    created: data.created || Math.floor(Date.now() / 1000),
+    model: data.model || fallbackModel || 'unknown',
+    choices: [{
+      index: 0,
+      message: {
+        role: msg.role || 'assistant',
+        content: typeof msg.content === 'string' ? msg.content : ''
+      },
+      finish_reason: (src && (src.finish_reason || src.stop_reason)) || 'stop'
+    }],
+    usage: null
+  };
+  if (data.usage && typeof data.usage === 'object') {
+    clean.usage = {
+      prompt_tokens: data.usage.prompt_tokens || 0,
+      completion_tokens: data.usage.completion_tokens || 0,
+      total_tokens: data.usage.total_tokens || ((data.usage.prompt_tokens || 0) + (data.usage.completion_tokens || 0))
+    };
+  }
+  return clean;
+}
 function parseCookies(req) {
   const out = {};
   const h = req.headers.cookie;
@@ -1656,7 +1685,7 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
     }
     recordUsage(req.bridgeKey.id, model, pt, ct, false);
     logKeyUsage(req, req.bridgeKey, 'chat', model, pt, ct);
-    return res.json(stripReasoning(data));
+    return res.json(normalizeChatResponse(data, model));
   }
 
   // Streaming: forward SSE untouched, estimate tokens from bytes on finish.
