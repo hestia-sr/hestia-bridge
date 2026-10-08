@@ -878,6 +878,12 @@ function fillMykeyModels() {
 }
 $('#mykey-provider').addEventListener('change', fillMykeyModels);
 $('#my-new-key-btn').addEventListener('click', async () => {
+  await openMyKeyModal('provider');
+});
+$('#my-new-workerkey-btn').addEventListener('click', async () => {
+  await openMyKeyModal('worker');
+});
+async function openMyKeyModal(presetMode) {
   $('#mykey-form').classList.remove('hidden');
   $('#mykey-result').classList.add('hidden');
   $('#mykey-error').classList.add('hidden');
@@ -891,19 +897,28 @@ $('#my-new-key-btn').addEventListener('click', async () => {
     $('#mykey-worker').innerHTML = wonline.length
       ? wonline.map(x => '<option value="' + x.id + '">' + esc(x.name) + t('opt.online') + '</option>').join('')
       : '<option value="">' + t('opt.no.worker') + '</option>';
-    $('#mykey-mode').value = 'provider';
-    $('#mykey-provider-wrap').classList.remove('hidden');
-    $('#mykey-model-wrap').classList.remove('hidden');
-    $('#mykey-worker-wrap').classList.add('hidden');
-    fillMykeyModels();
+    const mode = presetMode || 'provider';
+    $('#mykey-mode').value = mode;
+    onMyKeyModeChange(mode);
     $('#mykey-modal').classList.remove('hidden');
   } catch (ex) { if (ex.message !== 'auth') toast(t('toast.failed') + ex.message); }
-});
-$('#mykey-mode').addEventListener('change', () => {
-  const isWorker = $('#mykey-mode').value === 'worker';
+}
+function onMyKeyModeChange(mode) {
+  const isWorker = mode === 'worker';
   $('#mykey-provider-wrap').classList.toggle('hidden', isWorker);
   $('#mykey-model-wrap').classList.toggle('hidden', isWorker);
   $('#mykey-worker-wrap').classList.toggle('hidden', !isWorker);
+  if (!isWorker) fillMykeyModels();
+  // Sembunyikan opsi mode yang tidak relevan sesuai asal tombol
+  const sel = $('#mykey-mode');
+  for (const opt of sel.options) {
+    if (mode === 'provider' && opt.value === 'worker') opt.hidden = true;
+    else if (mode === 'worker' && opt.value === 'provider') opt.hidden = true;
+    else opt.hidden = false;
+  }
+}
+$('#mykey-mode').addEventListener('change', () => {
+  onMyKeyModeChange($('#mykey-mode').value);
 });
 $('#mykey-modal-close').addEventListener('click', () => $('#mykey-modal').classList.add('hidden'));
 $('#mykey-done').addEventListener('click', () => { $('#mykey-modal').classList.add('hidden'); loadMyKeys(); });
@@ -1627,6 +1642,7 @@ const I18N = {
     'home.how.s2': 'Buka aplikasi AI pilihanmu, cari pengaturan <strong>custom endpoint</strong> / <strong>BYOK</strong>.',
     'home.how.s3': 'Isi <strong>Base URL</strong> dengan alamat Bridge dan <strong>API Key</strong> dengan key <code>hesti-...</code> / <code>sr-...</code> milikmu.',
     'btn.createworker': 'Buat Worker',
+    'btn.createworkerkey': 'Buat Key Worker',
     'btn.copy': 'Salin',
     'btn.copy.instructions': 'Salin instruksi',
     'btn.done': 'Selesai',
@@ -1698,8 +1714,8 @@ const I18N = {
     'guide.test.s2': 'Klik <strong>Buat Key</strong>, pilih mode <strong>Worker</strong>, lalu <strong>Buat Key</strong>.',
     'guide.test.s3': 'Klik <strong>Cara sambung</strong> di kartu key, salin <strong>Base URL</strong> dan <strong>API Key</strong> ke aplikasi AI di HP, lalu chat seperti biasa.',
     'guide.test.s4': 'Kalau ada jawaban, berarti worker kamu jalan. Kalau tidak dijawab, cek lagi worker-nya online atau tidak.',
-    'guide.my.s1': 'Klik <strong>Buat Key</strong> — pilih mode <strong>Provider</strong> (pakai provider yang tersedia) atau <strong>Worker</strong> (dijawab worker AI).',
-    'guide.my.s2': 'Untuk mode Worker: buat dulu worker di menu <strong>Worker</strong>, salin tokennya, lalu tempel instruksi yang diberikan ke akun AI milikmu supaya ia siaga dan menjawab otomatis begitu ada chat masuk.',
+    'guide.my.s1': 'Klik <strong>Buat Key</strong> untuk membuat key gateway (dijawab provider AI dengan model yang tersedia).',
+    'guide.my.s2': 'Untuk key worker: buka menu <strong>Worker</strong>, buat worker dulu lalu klik <strong>Buat Key Worker</strong>.',
     'guide.my.s3': 'Di aplikasi AI di HP yang mendukung custom endpoint OpenAI: isi <strong>Base URL</strong> dengan<br><code id="my-guide-base-url">https://hestia-bridge-production.up.railway.app/v1</code><br>dan <strong>API Key</strong> dengan key <code>hesti-...</code> milikmu (klik <strong>info cURL</strong> di kartu key untuk salin cepat), lalu pakai seperti biasa lewat prompt.',
     'form.name': 'Nama',
     'form.name.ph': 'cth: Provider A',
@@ -1936,6 +1952,7 @@ const I18N = {
     'home.how.s2': 'Open your chosen AI app, find <strong>custom endpoint</strong> / <strong>BYOK</strong> settings.',
     'home.how.s3': 'Fill <strong>Base URL</strong> with the Bridge address and <strong>API Key</strong> with your <code>hesti-...</code> / <code>sr-...</code> key.',
     'btn.createworker': 'Create Worker',
+    'btn.createworkerkey': 'Create Worker Key',
     'btn.copy': 'Copy',
     'btn.copy.instructions': 'Copy instructions',
     'btn.done': 'Done',
@@ -2015,8 +2032,8 @@ const I18N = {
     'guide.test.s2': 'Click <strong>Create Key</strong>, choose <strong>Worker</strong> mode, then <strong>Create Key</strong>.',
     'guide.test.s3': 'Click <strong>How to connect</strong> on the key card, copy the <strong>Base URL</strong> and <strong>API Key</strong> into the AI app on your phone, then chat as usual.',
     'guide.test.s4': 'If you get an answer, your worker is running. If not, check whether your worker is online.',
-    'guide.my.s1': 'Click <strong>Create Key</strong> — choose <strong>Provider</strong> mode (use an available provider) or <strong>Worker</strong> (answered by an AI worker).',
-    'guide.my.s2': 'For Worker mode: first create a worker in the <strong>Worker</strong> menu, copy its token, then paste the given instructions into your AI account so it works automatically every 30 seconds.',
+    'guide.my.s1': 'Click <strong>Create Key</strong> to create a gateway key (answered by the AI provider with available models).',
+    'guide.my.s2': 'For worker keys: open the <strong>Worker</strong> menu, create a worker first, then click <strong>Create Worker Key</strong>.',
     'guide.my.s3': 'In an AI app on your phone that supports custom OpenAI endpoints: fill <strong>Base URL</strong> with<br><code id="my-guide-base-url">https://hestia-bridge-production.up.railway.app/v1</code><br>and <strong>API Key</strong> with your <code>hesti-...</code> key (click <strong>How to connect</strong> on the key card for quick copy), then use it via prompt as usual.',
     'form.name': 'Name',
     'form.name.ph': 'e.g.: Provider A',
