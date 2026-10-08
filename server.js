@@ -68,6 +68,72 @@ const PLAN_NAMES = {
   '3hari': '3 Hari',
   '1minggu': '1 Minggu',
 };
+/* Model gateway Hestia: gratis vs paket berbayar (daftar dari Hestia, 2026-10-08). */
+const FREE_MODELS = [
+  'qwen/qwen3.5-flash:free',
+  'qwen/qwen3.7-flash:free',
+  'qwen/qwen3.5-plus:free',
+  'qwen/qwen3.6-plus:free',
+  'qwen/qwen3-max:free'
+];
+const PAID_MODELS = [
+  'cohere/aya-expanse-32b',
+  'cohere/aya-vision-32b',
+  'cohere/command-a',
+  'cohere/command-a-plus',
+  'cohere/command-a-translate',
+  'cohere/command-a-vision',
+  'cohere/command-r-08-2024',
+  'cohere/command-r-plus-08-2024',
+  'cohere/command-r7b-12-2024',
+  'cohere/north-small-translate',
+  'cohere/tiny-aya-earth',
+  'cohere/tiny-aya-fire',
+  'cohere/tiny-aya-global',
+  'cohere/tiny-aya-water',
+  'minimax/minimax-m3',
+  'mistralai/codestral-2508',
+  'mistralai/devstral-medium',
+  'mistralai/ministral-14b',
+  'mistralai/ministral-3b',
+  'mistralai/ministral-8b',
+  'mistralai/mistral-large-2512',
+  'mistralai/mistral-large-4-0',
+  'mistralai/mistral-medium-3.5',
+  'mistralai/mistral-small-2603',
+  'nvidia/nemotron-3-nano-omni',
+  'nvidia/nemotron-3-ultra',
+  'qwen/qwen-plus-2025-07-28:free',
+  'qwen/qwen3-coder-plus:free',
+  'qwen/qwen3-max:free',
+  'qwen/qwen3-omni-flash:free',
+  'qwen/qwen3-vl-plus:free',
+  'qwen/qwen3.5-397b-a17b:free',
+  'qwen/qwen3.5-flash:free',
+  'qwen/qwen3.5-omni-flash:free',
+  'qwen/qwen3.5-omni-plus:free',
+  'qwen/qwen3.5-plus:free',
+  'qwen/qwen3.6-27b:free',
+  'qwen/qwen3.6-35b-a3b:free',
+  'qwen/qwen3.6-max-preview:free',
+  'qwen/qwen3.6-plus:free',
+  'qwen/qwen3.7-flash:free',
+  'qwen/qwen3.7-max:free',
+  'qwen/qwen3.7-plus:free',
+  'qwen/qwen3.8-max:free',
+  'qwen/qwen3.8-omni-flash:free',
+  'sensenova/sensenova-6.8-flash-lite',
+  'x-ai/grok-4.5'
+];
+/* Model yang boleh dipakai untuk suatu paket. Key admin (tanpa userId) boleh semua. */
+function allowedModelsForPlan(plan) {
+  return (plan && plan !== 'gratis' ? PAID_MODELS : FREE_MODELS).slice();
+}
+function allowedModelsForKey(key) {
+  if (!key || !key.userId) return [...new Set([...FREE_MODELS, ...PAID_MODELS])];
+  const owner = db.users.find(u => u.id === key.userId);
+  return allowedModelsForPlan(owner ? owner.plan : 'gratis');
+}
 const db = loadDb();
 // Kesehatan provider gateway (in-memory, khusus pantauan admin).
 const providerHealth = {};
@@ -87,6 +153,8 @@ function recordProviderOk(providerId) {
   h.okStreak = (h.okStreak || 0) + 1;
   if (h.okStreak >= 5) { h.errors = 0; h.okStreak = 0; h.lastError = null; }
 }
+// Dideklarasikan sebelum seed agar saveDb() bisa dipanggil dari dalam seed.
+let saveTimer = null;
 // Seed provider gateway untuk coba-coba (dari Hestia). Ganti/hapus kalau sudah ada provider resmi.
 (function seedGatewayProvider() {
   try {
@@ -99,13 +167,8 @@ function recordProviderOk(providerId) {
       'deepseek-v4.1-flash': { context: '1.000.000 konteks', caps: ['Reasoning', 'Text Generation', 'Vision'], popular: true }
     };
     let gp = db.providers.find(p => p.id === 'gateway-test');
-    const xkiroModels = [
-      'qwen/qwen3.5-flash:free',
-      'qwen/qwen3.7-flash:free',
-      'qwen/qwen3.5-plus:free',
-      'qwen/qwen3.6-plus:free',
-      'qwen/qwen3-max:free'
-    ];
+    // Katalog jualan = gabungan model gratis + paket berbayar (filter per paket saat dipakai).
+    const xkiroModels = [...new Set([...FREE_MODELS, ...PAID_MODELS])];
     const xkiroMeta = {
       'qwen/qwen3.5-flash:free': { context: 'Konteks besar', caps: ['Text Generation'], popular: true },
       'qwen/qwen3.7-flash:free': { context: 'Konteks besar', caps: ['Text Generation'], popular: true },
@@ -136,7 +199,6 @@ function recordProviderOk(providerId) {
     }
   } catch (e) { console.error('seed gateway gagal:', e.message); }
 })();
-let saveTimer = null;
 function saveDb() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
@@ -1027,12 +1089,14 @@ app.post('/api/keys/:id/bind', requireAdmin, (req, res) => {
 function userKeyShape(k) {
   const w = k.workerId ? db.workers.find(x => x.id === k.workerId) : null;
   const p = k.providerId ? db.providers.find(x => x.id === k.providerId) : null;
+  // Gateway: tampilkan model sesuai paket user; BYOK: model provider milik user.
+  const supportedModels = !p ? [] : (k.providerId === 'custom' ? (p.models || []) : allowedModelsForKey(k));
   return {
     id: k.id, name: k.name, masked: maskKey(k.token),
     mode: k.mode || 'provider',
     providerId: k.providerId,
     model: k.model || null,
-    supportedModels: p ? (p.models || []) : [],
+    supportedModels,
     modelMeta: p ? (p.modelMeta || {}) : {},
     workerId: k.workerId || null, workerName: w ? w.name : null,
     workerOnline: w ? workerOnline(w) : null,
@@ -1073,8 +1137,9 @@ app.post('/api/my-keys', requireUser, (req, res) => {
     if (!p) return res.status(400).json({ error: providerId === 'custom' ? 'custom_provider_not_configured' : 'provider_not_found' });
     pid = providerId === 'custom' ? 'custom' : p.id;
     // Validate model against provider's model list if provided.
+    // Gateway: batasi sesuai paket user yang buat key.
     if (model && String(model).trim()) {
-      const models = p.models || [];
+      const models = pid === 'custom' ? (p.models || []) : allowedModelsForPlan(req.user ? req.user.plan : 'gratis');
       if (models.length && !models.includes(String(model).trim())) {
         return res.status(400).json({ error: 'model_not_found' });
       }
@@ -1665,8 +1730,12 @@ app.get('/v1/models', requireBridgeKey, (req, res) => {
       id: wid, object: 'model', created: Math.floor(Date.now() / 1000), owned_by: 'Hestia'
     }] });
   }
-  // Gateway: tampilkan model yang support di key ini, tanpa nama provider asli.
-  const models = (req.provider.models || []).map(id => ({
+  // Gateway: tampilkan model sesuai paket pemilik key, tanpa nama provider asli.
+  // BYOK (custom): tampilkan model provider milik user sendiri.
+  const listIds = (req.bridgeKey.providerId === 'custom' && req.provider)
+    ? (req.provider.models || [])
+    : allowedModelsForKey(req.bridgeKey);
+  const models = listIds.map(id => ({
     id, object: 'model', created: Math.floor(Date.now() / 1000), owned_by: 'Hestia'
   }));
   res.json({ object: 'list', data: models });
@@ -1737,14 +1806,26 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
     return handleWorkerChat(req, res);
   }
   const body = req.body || {};
+  // Model yang boleh dipakai key ini.
+  // BYOK (custom): model provider milik user sendiri; gateway: sesuai paket pemilik key.
+  let allowed = [];
+  if (req.bridgeKey.providerId === 'custom') {
+    allowed = (req.provider && req.provider.models) || [];
+  } else {
+    allowed = allowedModelsForKey(req.bridgeKey);
+  }
   // Use the key's default model if the request doesn't specify one.
-  // Gateway: fallback ke model pertama provider (model jualan Hestia).
+  // Gateway: fallback ke model pertama yang boleh dipakai paket ini.
   if (!body.model) {
-    if (req.bridgeKey.model) {
+    if (req.bridgeKey.model && (!allowed.length || allowed.includes(req.bridgeKey.model))) {
       body.model = req.bridgeKey.model;
-    } else if (req.provider && Array.isArray(req.provider.models) && req.provider.models.length) {
-      body.model = req.provider.models[0];
+    } else if (allowed.length) {
+      body.model = allowed[0];
     }
+  }
+  // Tolak model di luar jatah paket (hanya kalau daftar modelnya jelas).
+  if (body.model && allowed.length && !allowed.includes(body.model)) {
+    return bridgeError(res, 403, 'Model ini tidak termasuk paket kamu. Cek daftar model via GET /v1/models.');
   }
   const wantStream = body.stream === true;
   const target = req.provider.baseUrl + '/chat/completions';
