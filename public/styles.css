@@ -620,6 +620,11 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 .model-pop {
   font-size: .72rem; font-weight: 700; color: #b7791f; margin-top: .15rem;
 }
+.model-copy {
+  flex-shrink: 0; padding: .25rem; border-radius: .4rem;
+  background: transparent; border: none; cursor: pointer; color: var(--muted);
+}
+.model-copy:hover { color: var(--text); background: var(--pink-soft); }
 .badge {
   font-size: .72rem; font-weight: 700; padding: .2rem .55rem;
   border-radius: 999px; white-space: nowrap;
