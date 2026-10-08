@@ -956,13 +956,11 @@ app.post('/api/keys/:id/bind', requireAdmin, (req, res) => {
 
 /* ==================== user: my keys (self-service, no limits) ============ */
 function userKeyShape(k) {
-  const p = k.providerId === 'custom' ? null : db.providers.find(x => x.id === k.providerId);
   const w = k.workerId ? db.workers.find(x => x.id === k.workerId) : null;
-  const pname = k.providerId === 'custom' ? 'Provider Saya' : (p ? p.name : '(deleted)');
   return {
     id: k.id, name: k.name, masked: maskKey(k.token),
     mode: k.mode || 'provider',
-    providerId: k.providerId, providerName: pname,
+    providerId: k.providerId,
     model: k.model || null,
     workerId: k.workerId || null, workerName: w ? w.name : null,
     workerOnline: w ? workerOnline(w) : null,
@@ -1652,8 +1650,13 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
   }
   const body = req.body || {};
   // Use the key's default model if the request doesn't specify one.
-  if (!body.model && req.bridgeKey.model) {
-    body.model = req.bridgeKey.model;
+  // Gateway: fallback ke model pertama provider (model jualan Hestia).
+  if (!body.model) {
+    if (req.bridgeKey.model) {
+      body.model = req.bridgeKey.model;
+    } else if (req.provider && Array.isArray(req.provider.models) && req.provider.models.length) {
+      body.model = req.provider.models[0];
+    }
   }
   const wantStream = body.stream === true;
   const target = req.provider.baseUrl + '/chat/completions';
