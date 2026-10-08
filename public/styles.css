@@ -589,21 +589,36 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   border: 1px solid var(--border);
   color: var(--text);
 }
-.model-list { display: flex; flex-direction: column; gap: .45rem; margin: .3rem 0 .6rem; }
+.model-list { display: flex; flex-direction: column; gap: .55rem; margin: .3rem 0 .6rem; }
 .model-item {
-  display: flex; align-items: center; gap: .55rem;
   background: var(--bg); border: 1px solid var(--border);
-  border-radius: .7rem; padding: .55rem .75rem;
+  border-radius: .8rem; padding: .7rem .8rem;
+}
+.model-item-top {
+  display: flex; align-items: center; gap: .55rem; margin-bottom: .35rem;
 }
 .model-dot {
   width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
   background: linear-gradient(135deg, var(--pink), var(--purple));
 }
-.model-name { font-weight: 700; font-size: .85rem; flex: 1; min-width: 0; word-break: break-word; }
+.model-name { font-weight: 800; font-size: .88rem; flex: 1; min-width: 0; word-break: break-word; }
 .model-avail {
   font-size: .68rem; font-weight: 700; padding: .18rem .55rem;
   border-radius: 999px; white-space: nowrap;
   background: #e6f9ec; color: #1a7a3a; border: 1px solid #bfe8cb;
+}
+.model-caps { display: flex; flex-wrap: wrap; gap: .3rem; margin-bottom: .3rem; }
+.cap-tag {
+  font-size: .68rem; font-weight: 600; padding: .15rem .5rem;
+  border-radius: 999px; background: var(--pink-soft); border: 1px solid var(--border);
+}
+.model-ctx {
+  display: inline-block; font-size: .72rem; font-weight: 700;
+  padding: .2rem .6rem; border-radius: .5rem;
+  background: var(--card); border: 1px solid var(--border); margin-bottom: .25rem;
+}
+.model-pop {
+  font-size: .72rem; font-weight: 700; color: #b7791f; margin-top: .15rem;
 }
 .badge {
   font-size: .72rem; font-weight: 700; padding: .2rem .55rem;
