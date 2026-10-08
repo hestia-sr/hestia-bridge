@@ -786,10 +786,18 @@ function myKeyCard(k, maxReq) {
       (k.mode === 'worker' ? '<div class="row"><span class="k">' + t('card.worker.status') + '</span><span class="v">' + (k.workerOnline ? t('card.online') : t('card.offline')) + '</span></div>' : '') +
       (k.mode === 'provider' && k.supportedModels && k.supportedModels.length
         ? '<div class="row"><span class="k">' + t('card.supportedmodels') + '</span></div><div class="model-list">' +
-          k.supportedModels.map(m =>
-            '<div class="model-item"><span class="model-dot"></span><span class="model-name">' + esc(m) + '</span>' +
-            '<span class="model-avail">' + t('card.available') + '</span></div>'
-          ).join('') + '</div>'
+          k.supportedModels.map(m => {
+            const meta = (k.modelMeta && k.modelMeta[m]) || {};
+            const caps = (meta.caps || []).map(c => '<span class="cap-tag">' + esc(c) + '</span>').join('');
+            return '<div class="model-item">' +
+              '<div class="model-item-top"><span class="model-dot"></span>' +
+              '<span class="model-name">' + esc(m) + '</span>' +
+              '<span class="model-avail">' + t('card.available') + '</span></div>' +
+              (caps ? '<div class="model-caps">' + caps + '</div>' : '') +
+              (meta.context ? '<div class="model-ctx">' + esc(meta.context) + '</div>' : '') +
+              (meta.popular ? '<div class="model-pop">★ ' + t('card.popular') + '</div>' : '') +
+            '</div>';
+          }).join('') + '</div>'
         : '') +
     '</div>' +
     '<div class="key-actions">' +
@@ -1750,6 +1758,7 @@ const I18N = {
     'card.provider': 'Provider',
     'card.supportedmodels': 'Model yang didukung',
     'card.available': 'Tersedia',
+    'card.popular': 'Paling banyak dipakai',
     'card.model': 'Model',
     'card.request': 'Request',
     'card.tokens.in': 'Token masuk',
@@ -2085,6 +2094,7 @@ const I18N = {
     'card.models': 'models',
     'card.supportedmodels': 'Supported models',
     'card.available': 'Available',
+    'card.popular': 'Most used',
     'card.keys': 'Keys',
     'card.registered': 'Registered',
     'card.heartbeat': 'Last heartbeat',
