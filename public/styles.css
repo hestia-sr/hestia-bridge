@@ -189,6 +189,11 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 .pricing-card.duration-best .pill-unlimited { background: rgba(255,255,255,.25); color: #fff; }
 .pricing-card.duration-best .duration-price { background: none; -webkit-background-clip: unset; background-clip: unset; color: #fff; }
 .pricing-card.duration-best .duration-badge { background: rgba(255,255,255,.95); color: var(--accent); }
+/* landing apps */
+.landing-apps { max-width: 1080px; margin: 0 auto; padding: 2.5rem 1.25rem 0; text-align: center; }
+.landing-apps h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: .5rem; }
+.landing-apps-sub { color: var(--muted); font-size: .92rem; margin-bottom: 1.2rem; }
+.landing-apps .apps-grid { text-align: left; }
 /* guide steps */
 .landing-guide { max-width: 1080px; margin: 0 auto; padding: 3rem 1.25rem; }
 .landing-guide h2 { text-align: center; margin-bottom: 1.5rem; font-size: 1.5rem; }
