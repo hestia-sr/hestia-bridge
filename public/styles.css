@@ -167,7 +167,7 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   display: flex; align-items: center; gap: .7rem;
   padding: 1.1rem 1.2rem; border-bottom: 1px solid var(--border);
 }
-.drawer-nav { padding: .8rem; display: flex; flex-direction: column; gap: .2rem; flex: 1; }
+.drawer-nav { padding: .8rem; display: flex; flex-direction: column; gap: .2rem; flex: 1; overflow-y: auto; }
 .drawer-btn {
   display: flex; align-items: center; gap: .8rem; width: 100%;
   border: none; background: none; cursor: pointer; text-align: left;
