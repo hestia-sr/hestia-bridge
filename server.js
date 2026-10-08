@@ -176,7 +176,7 @@ let saveTimer = null;
       'qwen/qwen3.6-plus:free': { context: 'Konteks besar', caps: ['Text Generation', 'Vision'], popular: false },
       'qwen/qwen3-max:free': { context: 'Konteks besar', caps: ['Text Generation'], popular: true }
     };
-    const xkiroKey = process.env.GATEWAY_API_KEY || 'sk-xt-969948801ee84a5f3026eb98a52e1cbe0d0c43ca818b3d89';
+    const xkiroKey = process.env.GATEWAY_API_KEY || '';
     if (!gp) {
       db.providers.push({
         id: 'gateway-test',
