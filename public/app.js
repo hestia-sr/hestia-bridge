@@ -102,6 +102,19 @@ document.querySelectorAll('.auth-tab').forEach(t => {
     $('#register-form').classList.toggle('hidden', isLogin);
   });
 });
+/* landing nav: switch tab + scroll to form */
+function gotoAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach(x => x.classList.toggle('active', x.dataset.tab === tab));
+  const isLogin = tab === 'login';
+  $('#login-form').classList.toggle('hidden', !isLogin);
+  $('#register-form').classList.toggle('hidden', isLogin);
+  const sec = $('#auth-form-section');
+  if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+$('#nav-login-btn').addEventListener('click', () => gotoAuthTab('login'));
+$('#nav-register-btn').addEventListener('click', () => gotoAuthTab('register'));
+$('#hero-cta').addEventListener('click', () => gotoAuthTab('register'));
+$('#lang-btn-auth').addEventListener('click', () => $('#lang-btn').click());
 $('#login-form').addEventListener('submit', async e => {
   e.preventDefault();
   const err = $('#login-error');
@@ -1606,6 +1619,18 @@ const I18N = {
     'auth.reg.otp.verified': 'Email terverifikasi. Silakan lanjutkan daftar.',
     'auth.example': 'contoh pakai',
     'auth.suspended': 'Pendaftaran diblokir: perangkat ini sudah terdaftar. 1 perangkat hanya untuk 1 Gmail.',
+    'landing.nav.login': 'Masuk',
+    'landing.nav.register': 'Daftar',
+    'landing.hero.title': 'Hestia Bridge',
+    'landing.hero.sub': 'Kelola API key AI kamu dari satu dashboard.',
+    'landing.hero.cta': 'Mulai Gratis',
+    'landing.feat.title': 'Kenapa Hestia Bridge?',
+    'landing.feat.1t': 'Satu Dashboard',
+    'landing.feat.1d': 'Kelola semua API key AI kamu dari satu tempat yang rapi.',
+    'landing.feat.2t': 'Support Banyak Aplikasi',
+    'landing.feat.2d': 'Sambungkan aplikasi AI favoritmu lewat custom endpoint yang kompatibel OpenAI.',
+    'landing.feat.3t': 'Kuota Milik Sendiri',
+    'landing.feat.3d': 'Pakai provider dan API key milikmu sendiri — kuota terpakai dari akunmu, bukan orang lain.',
     'section.mykeys.title': 'Key saya',
     'section.providers.title': 'Daftar provider',
     'section.workers.title': 'Worker Saya',
@@ -1884,6 +1909,18 @@ const I18N = {
     'auth.forgot.toast': 'Reset code sent, check your Gmail.',
     'auth.example': 'usage example',
     'auth.suspended': 'Registration blocked: this device is already registered. 1 device is only for 1 Gmail.',
+    'landing.nav.login': 'Login',
+    'landing.nav.register': 'Sign up',
+    'landing.hero.title': 'Hestia Bridge',
+    'landing.hero.sub': 'Manage your AI API keys from one dashboard.',
+    'landing.hero.cta': 'Start Free',
+    'landing.feat.title': 'Why Hestia Bridge?',
+    'landing.feat.1t': 'One Dashboard',
+    'landing.feat.1d': 'Manage all your AI API keys from one tidy place.',
+    'landing.feat.2t': 'Many Apps Supported',
+    'landing.feat.2d': 'Connect your favorite AI apps via an OpenAI-compatible custom endpoint.',
+    'landing.feat.3t': 'Your Own Quota',
+    'landing.feat.3d': 'Use your own provider and API key — quota comes from your account, not someone else\'s.',
     'section.mykeys.title': 'My keys',
     'section.providers.title': 'Provider list',
     'section.workers.title': 'My Workers',
@@ -2044,6 +2081,8 @@ function applyLang() {
   });
   const lbl = document.getElementById('lang-label');
   if (lbl) lbl.textContent = LANG.toUpperCase();
+  const lblAuth = document.getElementById('lang-label-auth');
+  if (lblAuth) lblAuth.textContent = LANG.toUpperCase();
   document.documentElement.lang = LANG;
   localStorage.setItem('hb-lang', LANG);
 }
@@ -2055,7 +2094,7 @@ document.getElementById('lang-btn').addEventListener('click', () => {
   if (gb) gb.textContent = BRIDGE_BASE;
   const mgb = $('#my-guide-base-url');
   if (mgb) mgb.textContent = BRIDGE_BASE;
-  if (typeof refreshAll === 'function') refreshAll();
+  if (typeof refreshAll === 'function') refreshAll().catch(() => {});
   if (typeof loadActivities === 'function' && !$('#view-activities').classList.contains('hidden')) {
     $('#act-filter-type').innerHTML = '';
     loadActivities(true);
