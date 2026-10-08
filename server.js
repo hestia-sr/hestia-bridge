@@ -957,11 +957,13 @@ app.post('/api/keys/:id/bind', requireAdmin, (req, res) => {
 /* ==================== user: my keys (self-service, no limits) ============ */
 function userKeyShape(k) {
   const w = k.workerId ? db.workers.find(x => x.id === k.workerId) : null;
+  const p = k.providerId ? db.providers.find(x => x.id === k.providerId) : null;
   return {
     id: k.id, name: k.name, masked: maskKey(k.token),
     mode: k.mode || 'provider',
     providerId: k.providerId,
     model: k.model || null,
+    supportedModels: p ? (p.models || []) : [],
     workerId: k.workerId || null, workerName: w ? w.name : null,
     workerOnline: w ? workerOnline(w) : null,
     createdAt: k.createdAt, lastUsedAt: k.lastUsedAt || null,
