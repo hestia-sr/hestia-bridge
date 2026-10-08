@@ -203,7 +203,7 @@ function normalizeChatResponse(data, fallbackModel) {
   const src = data.choices && data.choices[0];
   const msg = (src && (src.message || src.delta)) || {};
   const clean = {
-    id: data.id || ('chatcmpl-' + Date.now().toString(36)),
+    id: 'hestia-' + (data.id || Date.now().toString(36)).replace(/^chatcmpl-/, ''),
     object: 'chat.completion',
     created: data.created || Math.floor(Date.now() / 1000),
     model: data.model || fallbackModel || 'unknown',
@@ -215,7 +215,8 @@ function normalizeChatResponse(data, fallbackModel) {
       },
       finish_reason: (src && (src.finish_reason || src.stop_reason)) || 'stop'
     }],
-    usage: null
+    usage: null,
+    provider: 'Hestia'
   };
   if (data.usage && typeof data.usage === 'object') {
     clean.usage = {
@@ -1782,6 +1783,7 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
     }
     recordUsage(req.bridgeKey.id, model, pt, ct, false);
     logKeyUsage(req, req.bridgeKey, 'chat', model, pt, ct);
+    res.set('X-Hestia-Gateway', 'true');
     return res.json(normalizeChatResponse(data, model));
   }
 
