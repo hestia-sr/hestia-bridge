@@ -682,6 +682,21 @@ $('#key-form').addEventListener('submit', async e => {
 /* ------------------------------ providers -------------------------------- */
 async function loadProviders() {
   const j = await api('/api/providers');
+  // Cek kesehatan provider (khusus admin).
+  try {
+    const h = await api('/api/admin/provider-health');
+    const box = $('#provider-health-alert');
+    const bad = (h.providers || []).filter(p => !p.healthy);
+    if (bad.length && box) {
+      box.innerHTML = bad.map(p =>
+        '<div class="alert alert-warn">⚠ Provider <b>' + esc(p.name) + '</b> bermasalah: ' +
+        esc(p.lastError || ('HTTP ' + p.lastStatus)) +
+        (p.lastAt ? ' <span class="muted">(' + esc(p.lastAt) + ')</span>' : '') + '</div>'
+      ).join('');
+    } else if (box) {
+      box.innerHTML = '';
+    }
+  } catch (e) { /* abaikan */ }
   const box = $('#prov-list');
   if (!j.providers.length) {
     box.innerHTML = '<div class="card"><div class="card-body empty muted">' + t('empty.providers') + '</div></div>';
