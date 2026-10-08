@@ -73,15 +73,27 @@ const db = loadDb();
 (function seedGatewayProvider() {
   try {
     if (!db.providers) db.providers = [];
-    if (!db.providers.find(p => p.id === 'gateway-test')) {
+    // Metadata model dari panel GateAI (screenshot Hestia). Jangan ngarang — update manual kalau berubah.
+    const gatewayModelMeta = {
+      'Atria-Dawn-Preview': { context: '265.000 konteks', caps: ['Reasoning', 'Text Generation'], popular: false },
+      'deepseek-v4-pro': { context: '1.000.000 konteks', caps: ['Reasoning', 'Text Generation', 'Vision'], popular: true },
+      'deepseek-v4-pro-0813': { context: '1.000.000 konteks', caps: ['Reasoning', 'Text Generation', 'Vision'], popular: true },
+      'deepseek-v4.1-flash': { context: '1.000.000 konteks', caps: ['Reasoning', 'Text Generation', 'Vision'], popular: true }
+    };
+    let gp = db.providers.find(p => p.id === 'gateway-test');
+    if (!gp) {
       db.providers.push({
         id: 'gateway-test',
         name: 'Gateway Test (GateAI)',
         baseUrl: 'https://gateai.id/v1',
         apiKey: 'sk-live-c4cba35f6649dae633043ce5580889e7601c270e7481ccfa4a566f9fa38bc57f',
         models: ['Atria-Dawn-Preview', 'deepseek-v4-pro', 'deepseek-v4-pro-0813', 'deepseek-v4.1-flash'],
+        modelMeta: gatewayModelMeta,
         createdAt: nowIso()
       });
+      saveDb();
+    } else if (!gp.modelMeta) {
+      gp.modelMeta = gatewayModelMeta;
       saveDb();
     }
   } catch (e) { console.error('seed gateway gagal:', e.message); }
@@ -964,6 +976,7 @@ function userKeyShape(k) {
     providerId: k.providerId,
     model: k.model || null,
     supportedModels: p ? (p.models || []) : [],
+    modelMeta: p ? (p.modelMeta || {}) : {},
     workerId: k.workerId || null, workerName: w ? w.name : null,
     workerOnline: w ? workerOnline(w) : null,
     createdAt: k.createdAt, lastUsedAt: k.lastUsedAt || null,
