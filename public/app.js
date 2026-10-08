@@ -118,7 +118,7 @@ $('#hero-guide-btn').addEventListener('click', () => {
   const g = $('#landing-guide');
   if (g) g.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
-$('#lang-btn-auth').addEventListener('click', () => $('#lang-btn').click());
+const _lba = $('#lang-btn-auth'); if (_lba) _lba.addEventListener('click', () => $('#lang-btn').click());
 $('#login-form').addEventListener('submit', async e => {
   e.preventDefault();
   const err = $('#login-error');
