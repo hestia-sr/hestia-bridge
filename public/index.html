@@ -20,8 +20,52 @@
   <p>Hestia Bridge</p>
 </div>
 
-<!-- ============ AUTH VIEW ============ -->
-<div id="auth-view" class="center-wrap hidden">
+<!-- ============ AUTH VIEW (landing) ============ -->
+<div id="auth-view" class="hidden">
+  <nav class="landing-nav">
+    <div class="landing-nav-inner">
+      <div class="landing-brand">
+        <img class="logo-img" src="logo.jpg" alt="Hestia Bridge" width="32" height="32">
+        <span class="brand-name">Hestia Bridge</span>
+      </div>
+      <div class="landing-nav-actions">
+        <button id="lang-btn-auth" class="lang-btn" data-i18n-aria="lang.switch" aria-label="Ganti bahasa">
+          <span class="lang-globe">🌐</span><span id="lang-label-auth">ID</span>
+        </button>
+        <button class="btn" id="nav-login-btn" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5z" fill="currentColor"/></svg>
+          <span data-i18n="landing.nav.login">Masuk</span>
+        </button>
+        <button class="btn btn-primary" id="nav-register-btn" type="button" data-i18n="landing.nav.register">Daftar</button>
+      </div>
+    </div>
+  </nav>
+
+  <section class="landing-hero">
+    <h1 data-i18n="landing.hero.title">Hestia Bridge</h1>
+    <p class="landing-hero-sub" data-i18n="landing.hero.sub">Kelola API key AI kamu dari satu dashboard.</p>
+    <button class="btn btn-primary btn-lg" id="hero-cta" type="button" data-i18n="landing.hero.cta">Mulai Gratis</button>
+  </section>
+
+  <section class="landing-features">
+    <h2 data-i18n="landing.feat.title">Kenapa Hestia Bridge?</h2>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <h3 data-i18n="landing.feat.1t">Satu Dashboard</h3>
+        <p class="muted" data-i18n="landing.feat.1d">Kelola semua API key AI kamu dari satu tempat yang rapi.</p>
+      </div>
+      <div class="feat-card">
+        <h3 data-i18n="landing.feat.2t">Support Banyak Aplikasi</h3>
+        <p class="muted" data-i18n="landing.feat.2d">Sambungkan aplikasi AI favoritmu lewat custom endpoint yang kompatibel OpenAI.</p>
+      </div>
+      <div class="feat-card">
+        <h3 data-i18n="landing.feat.3t">Kuota Milik Sendiri</h3>
+        <p class="muted" data-i18n="landing.feat.3d">Pakai provider dan API key milikmu sendiri — kuota terpakai dari akunmu, bukan orang lain.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="auth-form-section" class="center-wrap">
   <div class="login-card">
     <div class="brand">
       <img class="logo-img" src="logo.jpg" alt="Hestia Bridge" width="40" height="40">
@@ -116,6 +160,7 @@
   -d '{"model":"model-id","messages":[{"role":"user","content":"Halo"}]}'</pre>
     </div>
   </div>
+  </section>
 </div>
 
 <!-- ============ APP VIEW ============ -->
