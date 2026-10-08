@@ -773,8 +773,7 @@ async function loadMyKeys() {
   box.innerHTML = myKeysCache.map(k => myKeyCard(k, maxReq)).join('');
 }
 function myKeyCard(k, maxReq) {
-  const pct = Math.min(100, Math.round((k.stats.requests / maxReq) * 100));
-  const via = k.mode === 'worker' ? esc(k.workerName || '-') : esc(k.providerName);
+  const via = k.mode === 'worker' ? esc(k.workerName || '-') : '';
   return '<div class="key-card">' +
     '<div class="key-top">' +
       '<span class="key-dot' + (k.revoked ? ' off' : '') + '"></span>' +
@@ -785,14 +784,10 @@ function myKeyCard(k, maxReq) {
     '<div class="key-info">' +
       (k.mode === 'worker' ? '<div class="row"><span class="k">' + t('card.worker') + '</span><span class="v">' + via + '</span></div>' : '') +
       (k.mode === 'worker' ? '<div class="row"><span class="k">' + t('card.worker.status') + '</span><span class="v">' + (k.workerOnline ? t('card.online') : t('card.offline')) + '</span></div>' : '') +
-      (k.model ? '<div class="row"><span class="k">' + t('card.model') + '</span><span class="v">' + esc(k.model) + '</span></div>' : '') +
-      '<div class="row"><span class="k">' + t('card.request') + '</span><span class="v">' + fmtNum(k.stats.requests) + '</span></div>' +
-      '<div class="row"><span class="k">' + t('card.tokens.in') + '</span><span class="v">' + fmtNum(k.stats.promptTokens) + '</span></div>' +
-      '<div class="row"><span class="k">' + t('card.tokens.out') + '</span><span class="v">' + fmtNum(k.stats.completionTokens) + '</span></div>' +
-      '<div class="row"><span class="k">' + t('card.tokens.total') + '</span><span class="v">' + fmtNum(k.stats.totalTokens) + '</span></div>' +
-      (k.tokenQuota ? '<div class="row"><span class="k">' + t('card.quota') + '</span><span class="v">' + fmtNum(k.tokenQuota) + '</span></div>' +
-      '<div class="row"><span class="k">' + t('card.remaining') + '</span><span class="v">' + fmtNum(Math.max(0, k.tokenQuota - k.stats.totalTokens)) + '</span></div>' : '') +
-      '<div class="usage-bar"><i style="width:' + pct + '%"></i></div>' +
+      (k.mode === 'provider' && k.supportedModels && k.supportedModels.length
+        ? '<div class="row"><span class="k">' + t('card.supportedmodels') + '</span></div><div class="model-chips">' +
+          k.supportedModels.map(m => '<span class="model-chip">' + esc(m) + '</span>').join('') + '</div>'
+        : '') +
     '</div>' +
     '<div class="key-actions">' +
       '<button class="btn btn-sm btn-primary" data-act="connect" data-id="' + k.id + '">' + t('btn.connect') + '</button>' +
@@ -1750,6 +1745,7 @@ const I18N = {
     'card.active': 'AKTIF',
     'card.disabled': 'NONAKTIF',
     'card.provider': 'Provider',
+    'card.supportedmodels': 'Model yang didukung',
     'card.model': 'Model',
     'card.request': 'Request',
     'card.tokens.in': 'Token masuk',
@@ -2083,6 +2079,7 @@ const I18N = {
     'card.lastused': 'last used',
     'card.added': 'Added',
     'card.models': 'models',
+    'card.supportedmodels': 'Supported models',
     'card.keys': 'Keys',
     'card.registered': 'Registered',
     'card.heartbeat': 'Last heartbeat',
