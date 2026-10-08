@@ -99,7 +99,7 @@ function recordProviderOk(providerId) {
       'deepseek-v4.1-flash': { context: '1.000.000 konteks', caps: ['Reasoning', 'Text Generation', 'Vision'], popular: true }
     };
     let gp = db.providers.find(p => p.id === 'gateway-test');
-    const gatewayApiKey = 'sk-live-c4cba35f6649dae633043ce5580889e7601c270e7481ccfa4a566f9fa38bc57f';
+    const gatewayApiKey = 'sk-live-7d673486398b19837c44e4bb656afe161c6082f8e3158f2f3932bb3a736e705a';
     if (!gp) {
       db.providers.push({
         id: 'gateway-test',
@@ -1728,8 +1728,6 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
   }
   const wantStream = body.stream === true;
   const target = req.provider.baseUrl + '/chat/completions';
-  // DEBUG sementara: log target dan status apiKey (bukan nilainya).
-  console.log('[DEBUG] target=' + target + ' hasKey=' + !!req.provider.apiKey + ' keyLen=' + (req.provider.apiKey || '').length);
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 120000);
   // If the client disconnects mid-proxy, cancel the upstream request.
