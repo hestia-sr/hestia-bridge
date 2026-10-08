@@ -99,7 +99,8 @@ function recordProviderOk(providerId) {
       'deepseek-v4.1-flash': { context: '1.000.000 konteks', caps: ['Reasoning', 'Text Generation', 'Vision'], popular: true }
     };
     let gp = db.providers.find(p => p.id === 'gateway-test');
-    const gatewayApiKey = 'sk-live-7d673486398b19837c44e4bb656afe161c6082f8e3158f2f3932bb3a736e705a';
+    // API key dari env var (lebih aman), fallback ke hardcoded untuk coba-coba.
+    const gatewayApiKey = process.env.GATEWAY_API_KEY || 'sk-live-7d673486398b19837c44e4bb656afe161c6082f8e3158f2f3932bb3a736e705a';
     if (!gp) {
       db.providers.push({
         id: 'gateway-test',
@@ -381,6 +382,10 @@ function requireBridgeKey(req, res, next) {
     return next();
   }
   if (!provider) return bridgeError(res, 401, 'The provider bound to this key no longer exists.');
+  // Gateway: selalu pakai API key dari env var (paling update).
+  if (provider.id === 'gateway-test' && process.env.GATEWAY_API_KEY) {
+    provider = { ...provider, apiKey: process.env.GATEWAY_API_KEY };
+  }
   req.bridgeKey = key;
   req.provider = provider;
   next();
