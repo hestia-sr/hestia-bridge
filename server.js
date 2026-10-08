@@ -69,6 +69,24 @@ const PLAN_NAMES = {
   '1minggu': '1 Minggu',
 };
 const db = loadDb();
+// Kesehatan provider gateway (in-memory, khusus pantauan admin).
+const providerHealth = {};
+function recordProviderError(providerId, status, msg) {
+  if (!providerId) return;
+  if (!providerHealth[providerId]) providerHealth[providerId] = { errors: 0, lastError: null, lastStatus: null, lastAt: null };
+  const h = providerHealth[providerId];
+  h.errors++;
+  h.lastError = String(msg || '').slice(0, 200);
+  h.lastStatus = status;
+  h.lastAt = nowIso();
+}
+function recordProviderOk(providerId) {
+  if (!providerId || !providerHealth[providerId]) return;
+  // Reset error count kalau sudah pulih (sukses 5x berturut-turut).
+  const h = providerHealth[providerId];
+  h.okStreak = (h.okStreak || 0) + 1;
+  if (h.okStreak >= 5) { h.errors = 0; h.okStreak = 0; h.lastError = null; }
+}
 // Seed provider gateway untuk coba-coba (dari Hestia). Ganti/hapus kalau sudah ada provider resmi.
 (function seedGatewayProvider() {
   try {
@@ -1578,8 +1596,7 @@ app.get('/api/usage', requireAdmin, (req, res) => {
   res.json({ rows, total: rows.length });
 });
 app.get('/api/stats', requireAdmin, (req, res) => {
-  const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
-  let req24 = 0, tok24 = 0, tokAll = 0;
+  const dayAgo = Date.now() - 24 * 60 * 60 * 1000;  let req24 = 0, tok24 = 0, tokAll = 0;
   for (const u of db.usage) {
     const t = new Date(u.ts).getTime();
     const tot = (u.promptTokens || 0) + (u.completionTokens || 0);
@@ -1596,6 +1613,21 @@ app.get('/api/stats', requireAdmin, (req, res) => {
     totalRequests: db.usage.length,
     limitedKeysToday: db.keys.filter(k => limitedToday.get(k.id) === todayStr()).length
   });
+});
+// Kesehatan provider gateway — khusus admin.
+app.get('/api/admin/provider-health', requireAdmin, (req, res) => {
+  const out = db.providers.map(p => {
+    const h = providerHealth[p.id] || {};
+    return {
+      id: p.id, name: p.name,
+      errors: h.errors || 0,
+      lastError: h.lastError || null,
+      lastStatus: h.lastStatus || null,
+      lastAt: h.lastAt || null,
+      healthy: (h.errors || 0) < 3
+    };
+  });
+  res.json({ providers: out });
 });
 
 /* ================== OpenAI-compatible bridge endpoints =================== */
@@ -1724,8 +1756,12 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
     let rawMsg = '';
     try { const j = JSON.parse(text); if (j.error && j.error.message) rawMsg = String(j.error.message); } catch (e) {}
     let msg = sanitizeUpstreamError(rawMsg, upstream.status);
+    // Catat untuk pantauan admin.
+    if (req.provider) recordProviderError(req.provider.id, upstream.status, rawMsg || msg);
     return bridgeError(res, upstream.status === 401 ? 502 : upstream.status, msg);
   }
+  // Sukses — catat untuk reset error count.
+  if (req.provider) recordProviderOk(req.provider.id);
 
   const model = body.model || 'unknown';
   const promptText = JSON.stringify(body.messages || []);
