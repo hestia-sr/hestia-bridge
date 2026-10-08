@@ -160,6 +160,7 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   background: #fff; box-shadow: var(--shadow);
   transform: translateX(-105%); transition: transform .22s ease;
   display: flex; flex-direction: column;
+  overscroll-behavior: contain;
 }
 .drawer.open { transform: none; }
 .drawer-head {
