@@ -779,7 +779,7 @@ function myKeyCard(k, maxReq) {
     '<div class="key-top">' +
       '<span class="key-dot' + (k.revoked ? ' off' : '') + '"></span>' +
       '<span class="key-name">' + esc(k.name) + '</span>' +
-      '<span class="badge ' + (k.mode === 'worker' ? 'on' : 'off') + '">' + (k.mode === 'worker' ? 'WORKER' : 'PROVIDER') + '</span>' +
+      (k.mode === 'worker' ? '<span class="badge on">WORKER</span>' : '') +
     '</div>' +
     '<div><span class="key-masked">' + esc(k.masked) + '</span></div>' +
     '<div class="key-info">' +
