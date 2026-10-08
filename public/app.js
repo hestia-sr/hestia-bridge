@@ -59,6 +59,7 @@ function showAuth() {
   $('#app-view').classList.add('hidden');
   $('#auth-view').classList.remove('hidden');
   closeDrawer();
+  renderApps();
 }
 /* Masuk ke dashboard sesuai peran: admin = dashboard penuh, user = Key Saya. */
 function enterApp(me) {
