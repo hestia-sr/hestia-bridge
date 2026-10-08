@@ -579,6 +579,16 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 }
 .key-dot.off { background: var(--muted); }
 .key-name { font-weight: 800; font-size: 1rem; flex: 1; min-width: 0; word-break: break-word; }
+.model-chips {
+  display: flex; flex-wrap: wrap; gap: .4rem; margin: .3rem 0 .6rem;
+}
+.model-chip {
+  font-size: .75rem; font-weight: 600; padding: .3rem .7rem;
+  border-radius: 999px; white-space: nowrap;
+  background: linear-gradient(135deg, var(--pink-soft), var(--purple-soft));
+  border: 1px solid var(--border);
+  color: var(--text);
+}
 .badge {
   font-size: .72rem; font-weight: 700; padding: .2rem .55rem;
   border-radius: 999px; white-space: nowrap;
