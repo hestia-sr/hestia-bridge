@@ -99,24 +99,39 @@ function recordProviderOk(providerId) {
       'deepseek-v4.1-flash': { context: '1.000.000 konteks', caps: ['Reasoning', 'Text Generation', 'Vision'], popular: true }
     };
     let gp = db.providers.find(p => p.id === 'gateway-test');
-    // API key dari env var (lebih aman), fallback ke hardcoded untuk coba-coba.
-    const gatewayApiKey = process.env.GATEWAY_API_KEY || 'sk-live-7d673486398b19837c44e4bb656afe161c6082f8e3158f2f3932bb3a736e705a';
+    const xkiroModels = [
+      'qwen/qwen3.5-flash:free',
+      'qwen/qwen3.7-flash:free',
+      'qwen/qwen3.5-plus:free',
+      'qwen/qwen3.6-plus:free',
+      'qwen/qwen3-max:free'
+    ];
+    const xkiroMeta = {
+      'qwen/qwen3.5-flash:free': { context: 'Konteks besar', caps: ['Text Generation'], popular: true },
+      'qwen/qwen3.7-flash:free': { context: 'Konteks besar', caps: ['Text Generation'], popular: true },
+      'qwen/qwen3.5-plus:free': { context: 'Konteks besar', caps: ['Text Generation', 'Vision'], popular: false },
+      'qwen/qwen3.6-plus:free': { context: 'Konteks besar', caps: ['Text Generation', 'Vision'], popular: false },
+      'qwen/qwen3-max:free': { context: 'Konteks besar', caps: ['Text Generation'], popular: true }
+    };
+    const xkiroKey = process.env.GATEWAY_API_KEY || 'sk-xt-969948801ee84a5f3026eb98a52e1cbe0d0c43ca818b3d89';
     if (!gp) {
       db.providers.push({
         id: 'gateway-test',
-        name: 'Gateway Test (GateAI)',
-        baseUrl: 'https://gateai.id/v1',
-        apiKey: gatewayApiKey,
-        models: ['Atria-Dawn-Preview', 'deepseek-v4-pro', 'deepseek-v4-pro-0813', 'deepseek-v4.1-flash'],
-        modelMeta: gatewayModelMeta,
+        name: 'Hestia Gateway',
+        baseUrl: 'https://api.xkiro.com/v1',
+        apiKey: xkiroKey,
+        models: xkiroModels,
+        modelMeta: xkiroMeta,
         createdAt: nowIso()
       });
       saveDb();
     } else {
-      // Pastikan selalu sinkron (apiKey, modelMeta, models).
       let dirty = false;
-      if (gp.apiKey !== gatewayApiKey) { gp.apiKey = gatewayApiKey; dirty = true; }
-      if (!gp.modelMeta) { gp.modelMeta = gatewayModelMeta; dirty = true; }
+      if (gp.baseUrl !== 'https://api.xkiro.com/v1') { gp.baseUrl = 'https://api.xkiro.com/v1'; dirty = true; }
+      if (gp.apiKey !== xkiroKey) { gp.apiKey = xkiroKey; dirty = true; }
+      gp.models = xkiroModels; dirty = true;
+      gp.modelMeta = xkiroMeta; dirty = true;
+      gp.name = 'Hestia Gateway'; dirty = true;
       if (dirty) saveDb();
     }
   } catch (e) { console.error('seed gateway gagal:', e.message); }
@@ -1762,10 +1777,11 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
   if (!upstream.ok) {
     clearTimeout(timer);
     const text = await upstream.text().catch(() => '');
+    // Sanitasi pesan error upstream agar tidak membocorkan identitas provider asli.
     let rawMsg = '';
     try { const j = JSON.parse(text); if (j.error && j.error.message) rawMsg = String(j.error.message); } catch (e) {}
-    // DEBUG: tampilkan error asli sementara.
-    let msg = 'UPSTREAM(' + upstream.status + '): ' + (rawMsg || text).slice(0, 300);
+    let msg = sanitizeUpstreamError(rawMsg, upstream.status);
+    // Catat untuk pantauan admin.
     if (req.provider) recordProviderError(req.provider.id, upstream.status, rawMsg || msg);
     return bridgeError(res, upstream.status === 401 ? 502 : upstream.status, msg);
   }
