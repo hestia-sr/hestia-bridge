@@ -589,6 +589,22 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
   border: 1px solid var(--border);
   color: var(--text);
 }
+.model-list { display: flex; flex-direction: column; gap: .45rem; margin: .3rem 0 .6rem; }
+.model-item {
+  display: flex; align-items: center; gap: .55rem;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: .7rem; padding: .55rem .75rem;
+}
+.model-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+}
+.model-name { font-weight: 700; font-size: .85rem; flex: 1; min-width: 0; word-break: break-word; }
+.model-avail {
+  font-size: .68rem; font-weight: 700; padding: .18rem .55rem;
+  border-radius: 999px; white-space: nowrap;
+  background: #e6f9ec; color: #1a7a3a; border: 1px solid #bfe8cb;
+}
 .badge {
   font-size: .72rem; font-weight: 700; padding: .2rem .55rem;
   border-radius: 999px; white-space: nowrap;
