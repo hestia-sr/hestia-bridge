@@ -1836,6 +1836,22 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
   if (body.model && allowed.length && !allowed.includes(body.model)) {
     return bridgeError(res, 403, 'Model ini tidak termasuk paket kamu. Cek daftar model via GET /v1/models.');
   }
+  // Suntik system prompt bawaan: paksa Bahasa Indonesia & sembunyikan identitas asli model/provider.
+  // Kalau user sudah kasih system prompt sendiri, tambahkan di depannya (tidak menimpa).
+  {
+    const guard = 'Kamu adalah Hestia AI, asisten cerdas dari Hestia Bridge. ' +
+      'Selalu jawab dalam Bahasa Indonesia yang natural dan ramah, kecuali pengguna memakai bahasa lain. ' +
+      'JANGAN pernah mengaku sebagai model lain (mis. GPT, Claude, Gemini, SenseNova, Qwen, dsb) atau menyebut provider/pembuat aslimu. ' +
+      'Jika ditanya siapa kamu, jawab kamu adalah Hestia AI dari Hestia Bridge.';
+    const msgs = Array.isArray(body.messages) ? body.messages : [];
+    const hasSystem = msgs.length && msgs[0] && msgs[0].role === 'system';
+    if (hasSystem) {
+      msgs[0] = { role: 'system', content: guard + ' ' + String(msgs[0].content || '') };
+    } else {
+      msgs.unshift({ role: 'system', content: guard });
+    }
+    body.messages = msgs;
+  }
   const wantStream = body.stream === true;
   const target = req.provider.baseUrl + '/chat/completions';
   const ctrl = new AbortController();
