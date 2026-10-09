@@ -415,6 +415,14 @@ function rateLimited(keyId) {
 /* ------------------------------ app setup -------------------------------- */
 const app = express();
 app.disable('x-powered-by');
+// CORS: izinkan web app (Hestia Chat dll) akses API dari browser
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  next();
+});
 app.use(express.json({ limit: '8mb' }));
 
 function bridgeError(res, status, message) {
