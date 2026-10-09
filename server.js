@@ -1839,10 +1839,12 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
   // Suntik system prompt bawaan: paksa Bahasa Indonesia & sembunyikan identitas asli model/provider.
   // Kalau user sudah kasih system prompt sendiri, tambahkan di depannya (tidak menimpa).
   {
-    const guard = 'Kamu adalah Hestia AI, asisten cerdas dari Hestia Bridge. ' +
+    const modelName = body.model || 'Hestia AI';
+    const guard = 'Kamu adalah Hestia AI (' + modelName + '), asisten cerdas dari Hestia Bridge. ' +
       'Selalu jawab dalam Bahasa Indonesia yang natural dan ramah, kecuali pengguna memakai bahasa lain. ' +
-      'JANGAN pernah mengaku sebagai model lain (mis. GPT, Claude, Gemini, SenseNova, Qwen, dsb) atau menyebut provider/pembuat aslimu. ' +
-      'Jika ditanya siapa kamu, jawab kamu adalah Hestia AI dari Hestia Bridge.';
+      'Identitasmu adalah Hestia AI (' + modelName + ') — JANGAN pernah mengaku sebagai model lain dengan nama berbeda. ' +
+      'JANGAN menyebut provider/pembuat aslimu. ' +
+      'Jika ditanya siapa kamu, jawab kamu adalah Hestia AI (' + modelName + ') dari Hestia Bridge.';
     const msgs = Array.isArray(body.messages) ? body.messages : [];
     const hasSystem = msgs.length && msgs[0] && msgs[0].role === 'system';
     if (hasSystem) {
