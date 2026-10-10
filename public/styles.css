@@ -1025,3 +1025,46 @@ body.dark .act-type.admin_action { background: #713f12; color: #fef08a; }
   margin-top: .3rem;
   gap: .4rem;
 }
+
+/* Xkiro-style API key table */
+.key-table-wrap {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+.key-table-head {
+  display: grid;
+  grid-template-columns: 1.2fr 1.5fr 1fr 1.2fr .8fr .5fr;
+  gap: .8rem;
+  padding: .8rem 1rem;
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  min-width: 600px;
+}
+.key-table-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1.5fr 1fr 1.2fr .8fr .5fr;
+  gap: .8rem;
+  padding: .8rem 1rem;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  min-width: 600px;
+}
+.key-table-row:last-child {
+  border-bottom: none;
+}
+.key-table-row .k-name {
+  font-weight: 600;
+}
+.key-table-row .k-key {
+  font-family: monospace;
+  font-size: .8rem;
+  color: var(--muted);
+}
+.key-table-row .k-date {
+  font-size: .85rem;
+  color: var(--muted);
+}
