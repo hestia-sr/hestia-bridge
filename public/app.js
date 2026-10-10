@@ -2481,8 +2481,8 @@ if ($('#models-list')) renderModels('gratis');
     photoInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
-        if (file.size > 500 * 1024) {
-          toast('Foto maksimal 500KB', false);
+        if (file.size > 1024 * 1024) {
+          toast('Foto maksimal 1MB', false);
           photoInput.value = '';
           return;
         }
