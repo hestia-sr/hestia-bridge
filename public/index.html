@@ -219,6 +219,25 @@
   -H "Authorization: Bearer hb-xxxx" \
   -H "Content-Type: application/json" \
   -d '{"model":"model-id","messages":[{"role":"user","content":"Halo"}]}'</pre>
+      <div class="term-head" style="margin-top:.5rem"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title">hasil JSON</span></div>
+<pre class="term-body">{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "model": "model-id",
+  "choices": [{
+    "index": 0,
+    "message": {
+      "role": "assistant",
+      "content": "Halo! Ada yang bisa saya bantu?"
+    },
+    "finish_reason": "stop"
+  }],
+  "usage": {
+    "prompt_tokens": 9,
+    "completion_tokens": 12,
+    "total_tokens": 21
+  }
+}</pre>
     </div>
   </div>
   </section>
@@ -393,15 +412,6 @@
         <div class="models-marquee"><div class="models-track track-1" id="models-track-1"></div></div>
         <div class="models-marquee"><div class="models-track track-2" id="models-track-2"></div></div>
         <div class="models-marquee"><div class="models-track track-3" id="models-track-3"></div></div>
-
-        <div class="guide-card anim-fade-up">
-          <h2 data-i18n="home.how.title">Cara menyambungkan</h2>
-          <ol class="guide-steps">
-            <li><span class="step-num">1</span><p data-i18n-html="home.how.s1"></p></li>
-            <li><span class="step-num">2</span><p data-i18n-html="home.how.s2"></p></li>
-            <li><span class="step-num">3</span><p data-i18n-html="home.how.s3"></p></li>
-          </ol>
-        </div>
       </div>
     </section>
 
