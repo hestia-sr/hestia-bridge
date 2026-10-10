@@ -770,6 +770,10 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 .password-input-row { display: flex; gap: .5rem; align-items: center; }
 .password-input-row input { flex: 1; }
 .password-input-row .pw-toggle { white-space: nowrap; flex-shrink: 0; padding: .5rem .7rem; font-size: 1.1rem; }
+.password-input-wrap { position: relative; }
+.password-input-wrap input { width: 100%; padding-right: 2.5rem; box-sizing: border-box; }
+.pw-toggle-inside { position: absolute; right: .5rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem; color: #888; padding: .25rem; line-height: 1; }
+.pw-toggle-inside:hover { color: #555; }
 .btn:disabled {
   opacity: .45; cursor: not-allowed; filter: grayscale(.4);
 }
