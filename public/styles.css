@@ -1240,3 +1240,15 @@ body.dark .act-type.admin_action { background: #713f12; color: #fef08a; }
   color: var(--muted);
   line-height: 1.4;
 }
+
+.model-shortid {
+  display: inline-block;
+  margin-top: .3rem;
+  font-family: monospace;
+  font-size: .75rem;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .2rem .5rem;
+}
