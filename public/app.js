@@ -2387,15 +2387,22 @@ function modelCard(m, showCopy) {
     : '<span class="ctx-badge ctx-segera">konteks segera</span>';
   const providerHtml = m.provider
     ? '<span class="provider-badge">' + esc(m.provider) + '</span>' : '';
-  const logos = {
-    'Qwen': '<img src="logos/qwen.png" alt="Qwen" style="width:28px;height:28px;object-fit:contain;border-radius:8px;">',
-    'Stealth': '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2l3 7h7l-5.5 4.5L18.5 21 12 16.5 5.5 21l2-7.5L2 9h7z"/></svg>',
-    'Sensenova': '<img src="logos/sensenova.png" alt="Sensenova" style="width:28px;height:28px;object-fit:contain;border-radius:8px;">'
+  const logoImgs = {
+    'Qwen': 'logos/qwen.png',
+    'Sensenova': 'logos/sensenova.png'
   };
-  const logoSvg = logos[m.provider] || '<span style="font-weight:800;font-size:1.1rem">' + esc(m.name.charAt(0).toUpperCase()) + '</span>';
+  let logoHtml;
+  if (logoImgs[m.provider]) {
+    logoHtml = '<div class="mc-logo-img"><img src="' + logoImgs[m.provider] + '" alt="' + esc(m.provider) + '"></div>';
+  } else {
+    const fallbackSvg = m.provider === 'Stealth'
+      ? '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2l3 7h7l-5.5 4.5L18.5 21 12 16.5 5.5 21l2-7.5L2 9h7z"/></svg>'
+      : '<span style="font-weight:800;font-size:1.1rem">' + esc(m.name.charAt(0).toUpperCase()) + '</span>';
+    logoHtml = '<div class="mc-logo">' + fallbackSvg + '</div>';
+  }
   return '<div class="model-card-gate">' +
     '<div class="mc-top">' +
-      '<div class="mc-logo">' + logoSvg + '</div>' +
+      logoHtml +
       '<div class="mc-idwrap"><code class="mc-id">' + esc(shortId) + '</code>' + copyBtn + '</div>' +
       tersedia +
     '</div>' +
