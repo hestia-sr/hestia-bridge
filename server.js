@@ -71,14 +71,10 @@ const PLAN_NAMES = {
 };
 /* Model gateway Hestia: gratis vs paket berbayar (daftar dari Hestia, 2026-10-08). */
 const FREE_MODELS = [
-  'qwen/qwen3.5-flash:free',
-  'qwen/qwen3.7-flash:free',
-  'qwen/qwen3.5-plus:free',
-  'qwen/qwen3.6-plus:free',
-  'qwen/qwen3-max:free',
-  'inclusionai/ling-3.0-flash-sante:free',
   'qwen/qwen-plus-2025-07-28:free',
-  'liquid/lfm-2.5-2.6b:free'
+  'qwen/qwen3-max:free',
+  'stealth/space-bunny-alpha:free',
+  'sensenova/sensenova-6.8-flash-lite'
 ];
 const PAID_MODELS = [
   'cohere/aya-expanse-32b',
