@@ -2659,11 +2659,11 @@ function renderWorkerKeyList() {
   }
   box.innerHTML = list.map(k => {
     const created = k.createdAt ? timeAgo(k.createdAt) : '-';
-    const keyPrefix = k.token ? k.token.slice(0, 10) : (k.prefix || '');
+    const keyPrefix = k.masked ? k.masked.slice(0, 12) : (k.prefix || '-');
     return '<div class="key-table-row">' +
-      '<div><div style="font-weight:600">' + escapeHtml(k.name) + '</div>' +
-      '<div class="muted small">Worker: ' + escapeHtml(k.workerName || '-') + '</div></div>' +
-      '<div class="muted small">' + escapeHtml(keyPrefix) + '...</div>' +
+      '<div><div style="font-weight:600">' + esc(k.name) + '</div>' +
+      '<div class="muted small">Worker: ' + esc(k.workerName || '-') + '</div></div>' +
+      '<div class="muted small">' + esc(keyPrefix) + '</div>' +
       '<div class="muted small">' + created + '</div>' +
       '</div>';
   }).join('');
