@@ -521,6 +521,7 @@
       </div>
 
       <div class="hero-body">
+      <!-- Form buat API key -->
       <div class="card">
         <div class="card-body">
           <h3 style="margin:0 0 .8rem">Buat API Key</h3>
@@ -532,6 +533,7 @@
         </div>
       </div>
 
+      <!-- Notif key baru -->
       <div id="mykey-new-notif" class="hidden" style="margin-top:1rem">
         <div class="swipe-card">
           <div class="swipe-inner">
@@ -542,7 +544,17 @@
         <p class="muted small" style="margin:.5rem 0 0">Key hanya ditampilkan sekali. Salin sekarang.</p>
       </div>
 
-      <div id="mykey-list" style="margin-top:1rem"></div>
+      <!-- Daftar key ala GateAI -->
+      <div style="margin-top:1.5rem">
+        <h3 id="mykey-count" style="margin:0 0 .8rem">0 key · 0 aktif</h3>
+        <input type="text" id="mykey-search" placeholder="Cari nama / prefix..." style="width:100%;margin-bottom:.8rem">
+        <div class="filter-tabs" style="margin-bottom:1rem">
+          <button class="filter-tab active" data-filter="all">Semua</button>
+          <button class="filter-tab" data-filter="active">Aktif</button>
+          <button class="filter-tab" data-filter="inactive">Nonaktif</button>
+        </div>
+        <div id="mykey-list"></div>
+      </div>
       </div>
     </section>
 
