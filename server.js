@@ -342,7 +342,7 @@ function createSessionObj(s) {
 }
 function setSessionCookie(res, token) {
   res.setHeader('Set-Cookie',
-    'hb_session=' + token + '; Path=/; HttpOnly; SameSite=Lax; Max-Age=' + Math.floor(SESSION_TTL_MS / 1000));
+    'hb_session=' + token + '; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=' + Math.floor(SESSION_TTL_MS / 1000));
 }
 function sessionOf(req) {
   const token = parseCookies(req).hb_session;
