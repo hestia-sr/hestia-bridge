@@ -2388,9 +2388,9 @@ function modelCard(m, showCopy) {
   const providerHtml = m.provider
     ? '<span class="provider-badge">' + esc(m.provider) + '</span>' : '';
   const logos = {
-    'Qwen': '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>',
+    'Qwen': '<img src="logos/qwen.png" alt="Qwen" style="width:28px;height:28px;object-fit:contain;border-radius:8px;">',
     'Stealth': '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2l3 7h7l-5.5 4.5L18.5 21 12 16.5 5.5 21l2-7.5L2 9h7z"/></svg>',
-    'Sensenova': '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>'
+    'Sensenova': '<img src="logos/sensenova.png" alt="Sensenova" style="width:28px;height:28px;object-fit:contain;border-radius:8px;">'
   };
   const logoSvg = logos[m.provider] || '<span style="font-weight:800;font-size:1.1rem">' + esc(m.name.charAt(0).toUpperCase()) + '</span>';
   return '<div class="model-card-gate">' +
