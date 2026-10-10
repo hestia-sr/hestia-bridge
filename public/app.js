@@ -477,7 +477,8 @@ document.querySelectorAll('.drawer-btn[data-view]').forEach(btn => {
   btn.addEventListener('click', () => switchView(btn.dataset.view));
 });
 $('#refresh-btn').addEventListener('click', async () => { await refreshAll(); toast(t('toast.refreshed')); });
-$('#my-refresh-btn').addEventListener('click', async () => { await refreshMine(); toast(t('toast.refreshed')); });
+const myRefreshBtn = $('#my-refresh-btn');
+if (myRefreshBtn) myRefreshBtn.addEventListener('click', async () => { await refreshMine(); toast(t('toast.refreshed')); });
 $('#users-refresh-btn').addEventListener('click', async () => { await loadUsers(); toast(t('toast.refreshed')); });
 $('#activities-refresh-btn').addEventListener('click', async () => { await loadActivities(true); toast(t('toast.refreshed')); });
 
