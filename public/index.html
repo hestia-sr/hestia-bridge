@@ -388,8 +388,8 @@
         <div class="models-marquee"><div class="models-track track-3" id="models-track-3"></div></div>
 
         <div class="terminal-card anim-fade-up" style="margin-top:1.5rem">
-          <div class="term-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title">curl</span></div>
-<pre class="term-body">curl /v1/chat/completions \
+          <div class="term-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title">bash</span><button class="btn btn-sm" id="dash-curl-copy" style="margin-left:auto" data-i18n="btn.copy">Salin</button></div>
+<pre class="term-body" id="dash-curl">curl /v1/chat/completions \
   -H "Authorization: Bearer hb-xxxx" \
   -H "Content-Type: application/json" \
   -d '{"model":"model-id","messages":[{"role":"user","content":"Halo"}]}'</pre>
