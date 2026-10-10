@@ -999,3 +999,29 @@ body.dark .act-type.admin_action { background: #713f12; color: #fef08a; }
   color: #d00;
   border: 1px solid rgba(255, 50, 50, .3);
 }
+
+/* Compact API Key page */
+#view-mykeys .card-body {
+  padding: .8rem;
+}
+#view-mykeys .card-body h3 {
+  font-size: 1rem;
+  margin-bottom: .5rem !important;
+}
+#view-mykeys .card-body label {
+  margin-bottom: .5rem;
+}
+#view-mykeys .card-body input {
+  padding: .5rem .7rem;
+}
+#view-mykeys .btn-block {
+  padding: .6rem;
+  margin-top: .5rem !important;
+}
+.key-row {
+  padding: .7rem 0;
+}
+.key-row-meta {
+  margin-top: .3rem;
+  gap: .4rem;
+}
