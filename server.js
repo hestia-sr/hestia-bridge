@@ -322,7 +322,7 @@ function parseCookies(req) {
 }
 function maskKey(k) {
   if (!k || k.length < 10) return '***';
-  return k.slice(0, 6) + '...' + k.slice(-4);
+  return k.slice(0, 10);
 }
 
 /* ------------------------ sessions (admin + users) ----------------------- */
