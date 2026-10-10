@@ -2349,3 +2349,16 @@ async function refreshMine() {
   if (dashBashTitle) dashBashTitle.textContent = 'Bash ' + BRIDGE_BASE + '/v1';
   api('/api/auth/me').then(enterApp).catch(() => showAuth());
 })();
+
+// Models view - tab switching (isi menyusul)
+document.querySelectorAll('[data-mfilter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-mfilter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filter = btn.dataset.mfilter;
+    const list = $('#models-list');
+    if (list) {
+      list.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">Isi ' + filter + ' menyusul.</div>';
+    }
+  });
+});
