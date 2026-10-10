@@ -1226,6 +1226,20 @@ app.delete('/api/my-keys/:id', requireUser, (req, res) => {
   });
   res.json({ ok: true });
 });
+app.post('/api/my-keys/:id/revoke', requireUser, (req, res) => {
+  const k = ownKey(req, res);
+  if (!k) return;
+  k.revoked = true;
+  saveDb();
+  logActivity('key_revoked', {
+    userId: req.user ? req.user.id : null,
+    email: req.user ? req.user.email : null,
+    ip: clientIp(req),
+    keyId: k.id, keyName: k.name,
+    detail: 'Revoke key "' + k.name + '"'
+  });
+  res.json({ ok: true });
+});
 app.patch('/api/my-keys/:id', requireUser, (req, res) => {
   const k = ownKey(req, res);
   if (!k) return;
