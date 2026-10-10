@@ -972,7 +972,17 @@ if (myInlineBtn) myInlineBtn.addEventListener('click', async () => {
     const newBtn2 = $('#my-inline-create-btn2');
     if (formCard) formCard.classList.add('hidden');
     if (newBtn2) newBtn2.classList.remove('hidden');
-    await loadMyKeys();
+    // Tambahkan key baru ke cache dengan masked yang benar
+    const newKey = {
+      id: j.id,
+      name: j.name,
+      masked: j.token.slice(0, 6) + '...' + j.token.slice(-4),
+      createdAt: new Date().toISOString(),
+      lastUsedAt: null,
+      revoked: false
+    };
+    myKeysCache.unshift(newKey);
+    renderMyKeyList();
   } catch (ex) {
     if (ex.message === 'auth') return;
     err.textContent = 'Gagal: ' + ex.message;
