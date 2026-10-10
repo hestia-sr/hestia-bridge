@@ -1489,6 +1489,13 @@ function renderApps() {
   if (t2) t2.innerHTML = mk(AI_MODELS.slice(5, 11));
   const t3 = document.getElementById('models-track-3');
   if (t3) t3.innerHTML = mk(AI_MODELS.slice(10).concat(AI_MODELS.slice(0, 2)));
+  // Landing page models (same content)
+  const lt1 = document.getElementById('landing-models-track-1');
+  if (lt1) lt1.innerHTML = mk(AI_MODELS.slice(0, 6));
+  const lt2 = document.getElementById('landing-models-track-2');
+  if (lt2) lt2.innerHTML = mk(AI_MODELS.slice(5, 11));
+  const lt3 = document.getElementById('landing-models-track-3');
+  if (lt3) lt3.innerHTML = mk(AI_MODELS.slice(10).concat(AI_MODELS.slice(0, 2)));
   const grid = document.getElementById('apps-grid');
   if (grid) grid.innerHTML = '';
   const gridLanding = document.getElementById('apps-grid-landing');
