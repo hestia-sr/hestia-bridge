@@ -2554,9 +2554,10 @@ if ($('#models-list')) renderModels('gratis');
   btn.addEventListener('click', async () => {
     // Load workers into select
     try {
-      const workers = await api('/api/my-workers');
+      const data = await api('/api/my-workers');
+      const workers = (data && data.workers) || [];
       workerSelect.innerHTML = '';
-      if (workers && workers.length) {
+      if (workers.length) {
         workers.forEach(w => {
           const opt = document.createElement('option');
           opt.value = w.id;
