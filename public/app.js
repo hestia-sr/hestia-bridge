@@ -242,6 +242,17 @@ const otpRow = $('#otp-row');
 const otpSendBtn = $('#otp-send');
 const otpStatus = $('#otp-status');
 
+// Password visibility toggle
+document.querySelectorAll('.pw-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const input = document.getElementById(btn.dataset.target);
+    if (!input) return;
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.textContent = show ? '🙈' : '👁';
+  });
+});
+
 $('#reg-email').addEventListener('input', () => {
   otpVerified = false;
   otpRow.classList.remove('hidden');
@@ -305,13 +316,23 @@ $('#register-form').addEventListener('submit', async e => {
     err.classList.remove('hidden');
     return;
   }
+  const pw = $('#reg-password').value;
+  const pw2 = $('#reg-password-confirm').value;
+  if (pw !== pw2) {
+    err.textContent = 'Konfirmasi sandi tidak cocok.';
+    err.classList.remove('hidden');
+    return;
+  }
   regSubmitBtn.classList.add('loading'); regSubmitBtn.disabled = true;
   try {
     const j = await api('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify({
         email: $('#reg-email').value,
-        password: $('#reg-password').value,
+        firstName: $('#reg-firstname').value.trim(),
+        lastName: $('#reg-lastname').value.trim(),
+        username: $('#reg-username').value.trim(),
+        password: pw,
         fingerprint: deviceFingerprint()
       })
     });
