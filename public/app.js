@@ -2613,8 +2613,8 @@ if ($('#models-list')) renderModels('gratis');
         body: JSON.stringify({ name, mode: 'worker', workerId })
       });
       
-      if (res && res.key) {
-        document.getElementById('myworkerkey-once-value').textContent = res.key;
+      if (res && res.token) {
+        document.getElementById('myworkerkey-once-value').textContent = res.token;
         form.classList.add('hidden');
         result.classList.remove('hidden');
         errorDiv.classList.add('hidden');
