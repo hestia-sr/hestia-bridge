@@ -785,12 +785,22 @@ app.post('/api/auth/reset-password', async (req, res) => {
   res.json({ ok: true });
 });
 app.post('/api/auth/register', async (req, res) => {
-  const { email, password, fingerprint } = req.body || {};
+  const { email, password, fingerprint, firstName, lastName, username } = req.body || {};
   const chk = emailCheck(email);
   if (!chk.ok) return res.status(400).json({ error: chk.msg });
   const em = chk.email;
   if (!password || String(password).length < 6) {
     return res.status(400).json({ error: 'Sandi minimal 6 karakter.' });
+  }
+  const fn = String(firstName || '').trim();
+  const ln = String(lastName || '').trim();
+  const un = String(username || '').trim();
+  if (!fn) return res.status(400).json({ error: 'Nama depan wajib diisi.' });
+  if (!ln) return res.status(400).json({ error: 'Nama belakang wajib diisi.' });
+  if (!un || un.length < 3) return res.status(400).json({ error: 'Username minimal 3 karakter.' });
+  if (!/^[a-zA-Z0-9_.-]+$/.test(un)) return res.status(400).json({ error: 'Username hanya boleh huruf, angka, titik, strip, underscore.' });
+  if (db.users.some(u => u.username && u.username.toLowerCase() === un.toLowerCase())) {
+    return res.status(400).json({ error: 'Username sudah dipakai.' });
   }
   if (db.users.some(u => u.email === em)) {
     return res.status(400).json({ error: 'Email sudah terdaftar. Silakan masuk.' });
@@ -810,6 +820,9 @@ app.post('/api/auth/register', async (req, res) => {
   const user = {
     id: uid('user_'),
     email: em,
+    firstName: fn,
+    lastName: ln,
+    username: un,
     passwordHash: bcrypt.hashSync(String(password), 10),
     role: (ADMIN_EMAIL && em === ADMIN_EMAIL) ? 'admin' : 'user',
     deviceFingerprint: fp || null,
