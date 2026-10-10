@@ -1373,3 +1373,21 @@ body.dark .act-type.admin_action { background: #713f12; color: #fef08a; }
   background: var(--bg);
   color: var(--primary);
 }
+
+.mc-logo-img {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.mc-logo-img img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
