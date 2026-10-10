@@ -2366,19 +2366,14 @@ const MODELS_MATI = [
 ];
 
 function modelCard(m, showCopy) {
-  const cleanId = m.id.replace(':free', '');
   const copyBtn = showCopy !== false
-    ? '<button class="btn btn-sm" data-copy-model="' + esc(m.id) + '">Salin</button>'
+    ? '<button class="icon-btn model-copy" data-copy-model="' + esc(m.id) + '" title="Salin ID" aria-label="Salin ID">' +
+      '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>'
     : '';
   return '<div class="model-card">' +
-    '<div class="model-card-head">' +
-      '<div class="model-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9z"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg></div>' +
-      '<div><h3 class="model-name">' + esc(m.name) + '</h3>' +
-      '<p class="model-desc">' + esc(m.desc) + '</p></div>' +
-    '</div>' +
-    '<div class="model-foot">' +
-      '<code class="model-id">' + esc(cleanId) + '</code>' + copyBtn +
-    '</div>' +
+    '<div class="model-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9z"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg></div>' +
+    '<div class="model-info"><h3 class="model-name">' + esc(m.name) + copyBtn + '</h3>' +
+    '<p class="model-desc">' + esc(m.desc) + '</p></div>' +
   '</div>';
 }
 
