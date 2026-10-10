@@ -838,10 +838,13 @@ function myKeyCard(k) {
     '<span class="k-date">' + esc(created) + '</span>' +
     '<span class="k-date">' + esc(lastUsed) + '</span>' +
     '<span><span class="key-status ' + statusClass + '">' + statusText + '</span></span>' +
-    '<span>' +
+    '<span style="display:flex;gap:.4rem;align-items:center">' +
       (isAktif
         ? '<button class="btn btn-sm" data-act="revoke" data-id="' + k.id + '">Revoke</button>'
-        : '<button class="btn btn-sm btn-danger" data-act="del" data-id="' + k.id + '">Hapus</button>') +
+        : '') +
+      '<button class="icon-btn" data-act="del" data-id="' + k.id + '" title="Hapus" aria-label="Hapus" style="color:#d00">' +
+        '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/></svg>' +
+      '</button>' +
     '</span>' +
   '</div>';
 }
