@@ -75,7 +75,10 @@ const FREE_MODELS = [
   'qwen/qwen3.7-flash:free',
   'qwen/qwen3.5-plus:free',
   'qwen/qwen3.6-plus:free',
-  'qwen/qwen3-max:free'
+  'qwen/qwen3-max:free',
+  'inclusionai/ling-3.0-flash-sante:free',
+  'qwen/qwen-plus-2025-07-28:free',
+  'liquid/lfm-2.5-2.6b:free'
 ];
 const PAID_MODELS = [
   'cohere/aya-expanse-32b',
