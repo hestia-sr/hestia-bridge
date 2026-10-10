@@ -243,13 +243,13 @@ const otpSendBtn = $('#otp-send');
 const otpStatus = $('#otp-status');
 
 // Password visibility toggle
-document.querySelectorAll('.pw-toggle').forEach(btn => {
+document.querySelectorAll('.pw-toggle-inside').forEach(btn => {
   btn.addEventListener('click', () => {
     const input = document.getElementById(btn.dataset.target);
     if (!input) return;
     const show = input.type === 'password';
     input.type = show ? 'text' : 'password';
-    btn.textContent = show ? 'Tutup' : 'Lihat';
+    btn.textContent = show ? '◎' : '◉';
   });
 });
 
