@@ -14,7 +14,7 @@ const ICON = {
 };
 
 async function api(path, opts) {
-  const r = await fetch(path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts || {}));
+  const r = await fetch(path, Object.assign({ credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } }, opts || {}));
   if (r.status === 401) { showAuth(); throw new Error('auth'); }
   let j = null;
   try { j = await r.json(); } catch (e) { /* non-json */ }
