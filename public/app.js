@@ -2281,7 +2281,14 @@ async function refreshMine() {
   if (guideEl) guideEl.textContent = BRIDGE_BASE;
   const loginCurl = $('#login-curl');
   if (loginCurl) loginCurl.textContent =
-    'curl ' + BRIDGE_BASE + '/chat/completions \\\n' +
+    'curl ' + BRIDGE_BASE + '/v1/chat/completions \\\n' +
+    '  -H "Authorization: Bearer hb-xxxx" \\\n' +
+    '  -H "Content-Type: application/json" \\\n' +
+    '  -d \'{"model":"model-id","messages":[{"role":"user","content":"Halo"}]}\'';
+  // Dashboard bash curl with full URL
+  const dashCurl = $('#dash-curl');
+  if (dashCurl) dashCurl.textContent =
+    'curl ' + BRIDGE_BASE + '/v1/chat/completions \\\n' +
     '  -H "Authorization: Bearer hb-xxxx" \\\n' +
     '  -H "Content-Type: application/json" \\\n' +
     '  -d \'{"model":"model-id","messages":[{"role":"user","content":"Halo"}]}\'';
