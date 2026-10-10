@@ -2292,5 +2292,8 @@ async function refreshMine() {
     '  -H "Authorization: Bearer hb-xxxx" \\\n' +
     '  -H "Content-Type: application/json" \\\n' +
     '  -d \'{"model":"model-id","messages":[{"role":"user","content":"Halo"}]}\'';
+  // Dashboard bash title with URL
+  const dashBashTitle = $('#dash-bash-title');
+  if (dashBashTitle) dashBashTitle.textContent = 'Bash ' + BRIDGE_BASE + '/v1';
   api('/api/auth/me').then(enterApp).catch(() => showAuth());
 })();
