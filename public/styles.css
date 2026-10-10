@@ -1089,3 +1089,14 @@ body.dark .act-type.admin_action { background: #713f12; color: #fef08a; }
     padding: .8rem;
   }
 }
+
+/* Fix: Model tabs harus selalu tampil, active = ungu */
+#view-models .filter-tabs .filter-tab {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+#view-models .filter-tabs .filter-tab.active {
+  background: linear-gradient(135deg, #a855f7, #7c3aed) !important;
+  color: #fff !important;
+}
