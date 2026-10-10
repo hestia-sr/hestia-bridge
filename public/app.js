@@ -2352,10 +2352,10 @@ async function refreshMine() {
 
 // Models view - data & rendering
 const MODELS_GRATIS = [
-  { id: 'qwen/qwen-plus-2025-07-28:free', name: 'Qwen Plus 2025', desc: 'Model Qwen terbaru dengan performa tinggi untuk chat.' },
-  { id: 'qwen/qwen3-max:free', name: 'Qwen3 Max', desc: 'Varian Max dari Qwen3, powerful untuk berbagai tugas.' },
-  { id: 'stealth/space-bunny-alpha:free', name: 'Space Bunny Alpha', desc: 'Model eksperimental yang cepat dan responsif.' },
-  { id: 'sensenova/sensenova-6.8-flash-lite', name: 'Sensenova 6.8 Flash Lite', desc: 'Model ringan dan cepat dari Sensenova.' },
+  { id: 'qwen/qwen-plus-2025-07-28:free', name: 'Qwen Plus 2025', desc: 'Model Qwen terbaru dengan performa tinggi untuk chat.', provider: 'Qwen', context: null, caps: { reasoning: true, text: true, vision: false } },
+  { id: 'qwen/qwen3-max:free', name: 'Qwen3 Max', desc: 'Varian Max dari Qwen3, powerful untuk berbagai tugas.', provider: 'Qwen', context: null, caps: { reasoning: true, text: true, vision: false } },
+  { id: 'stealth/space-bunny-alpha:free', name: 'Space Bunny Alpha', desc: 'Model eksperimental yang cepat dan responsif.', provider: 'Stealth', context: null, caps: { reasoning: false, text: true, vision: false } },
+  { id: 'sensenova/sensenova-6.8-flash-lite', name: 'Sensenova 6.8 Flash Lite', desc: 'Model ringan dan cepat dari Sensenova.', provider: 'Sensenova', context: null, caps: { reasoning: false, text: true, vision: false } },
 ];
 const MODELS_VOUCHER = [];
 const MODELS_MATI = [
@@ -2366,19 +2366,37 @@ const MODELS_MATI = [
 ];
 
 function modelCard(m, showCopy) {
-  // Nama pendek: buang prefix provider dan suffix :free (contoh: qwen-plus-2025-07-28)
   let shortId = m.id.replace(':free', '');
   const slashIdx = shortId.indexOf('/');
   if (slashIdx !== -1) shortId = shortId.slice(slashIdx + 1);
   const copyBtn = showCopy !== false
     ? '<button class="icon-btn model-copy" data-copy-model="' + esc(m.id) + '" title="Salin ID" aria-label="Salin ID">' +
-      '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>'
+      '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>'
     : '';
-  return '<div class="model-card">' +
-    '<div class="model-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9z"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg></div>' +
-    '<div class="model-info"><h3 class="model-name">' + esc(m.name) + copyBtn + '</h3>' +
-    '<p class="model-desc">' + esc(m.desc) + '</p>' +
-    '<code class="model-shortid">' + esc(shortId) + '</code></div>' +
+  const tersedia = showCopy !== false
+    ? '<span class="badge-tersedia">Tersedia</span>' : '';
+  // Capability badges
+  let capsHtml = '';
+  if (m.caps) {
+    if (m.caps.reasoning) capsHtml += '<span class="cap-badge cap-reasoning"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> Reasoning</span>';
+    if (m.caps.text) capsHtml += '<span class="cap-badge">Text Generation</span>';
+    if (m.caps.vision) capsHtml += '<span class="cap-badge">Vision</span>';
+  }
+  const contextHtml = m.context
+    ? '<span class="ctx-badge">' + esc(m.context) + ' konteks</span>'
+    : '<span class="ctx-badge ctx-segera">konteks segera</span>';
+  const providerHtml = m.provider
+    ? '<span class="provider-badge">' + esc(m.provider) + '</span>' : '';
+  return '<div class="model-card-gate">' +
+    '<div class="mc-top">' +
+      '<div class="mc-logo">' + esc(m.name.charAt(0).toUpperCase()) + '</div>' +
+      '<div class="mc-idwrap"><code class="mc-id">' + esc(shortId) + '</code>' + copyBtn + '</div>' +
+      tersedia +
+    '</div>' +
+    (capsHtml ? '<div class="mc-caps">' + capsHtml + '</div>' : '') +
+    '<div class="mc-name">' + esc(m.name) + '</div>' +
+    (providerHtml ? '<div class="mc-provider">' + providerHtml + '</div>' : '') +
+    '<div class="mc-ctx">' + contextHtml + '</div>' +
   '</div>';
 }
 
