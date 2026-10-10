@@ -819,47 +819,30 @@ async function loadMyKeys() {
 }
 function renderMyKeyList() {
   const box = $('#mykey-list');
-  const countEl = $('#mykey-count');
-  // Update count
-  const total = myKeysCache.length;
-  const aktif = myKeysCache.filter(k => !k.revoked).length;
-  if (countEl) countEl.textContent = total + ' key · ' + aktif + ' aktif';
-  // Filter
   let list = myKeysCache;
-  if (myKeyFilter === 'active') list = list.filter(k => !k.revoked);
-  else if (myKeyFilter === 'inactive') list = list.filter(k => k.revoked);
-  if (myKeySearch) {
-    const q = myKeySearch.toLowerCase();
-    list = list.filter(k => (k.name || '').toLowerCase().includes(q) || (k.masked || '').toLowerCase().includes(q));
-  }
   if (!list.length) {
-    box.innerHTML = '<div class="card"><div class="card-body empty muted">Belum ada key.</div></div>';
+    box.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">Belum ada key.</div>';
     return;
   }
-  box.innerHTML = '<div class="key-table">' + list.map(k => myKeyCard(k)).join('') + '</div>';
+  box.innerHTML = list.map(k => myKeyCard(k)).join('');
 }
 function myKeyCard(k) {
   const isAktif = !k.revoked;
-  const statusText = isAktif ? 'Aktif' : 'Nonaktif';
+  const statusText = isAktif ? 'Aktif' : 'Dicabut';
   const statusClass = isAktif ? 'on' : 'off';
-  const lastUsed = k.lastUsedAt ? fmtDate(k.lastUsedAt) : '-';
-  const usage = k.stats ? (k.stats.requests || 0) + ' req' : '-';
-  return '<div class="key-row">' +
-    '<div class="key-row-main">' +
-      '<div class="key-row-name">' + esc(k.name) + '</div>' +
-      '<div class="key-row-prefix">' + esc(k.masked) + '</div>' +
-      '<div class="key-row-meta">' +
-        '<span class="key-badge">Semua model</span>' +
-        '<span class="key-badge">' + esc(usage) + '</span>' +
-        '<span class="key-badge">' + esc(lastUsed) + '</span>' +
-        '<span class="key-status ' + statusClass + '">' + statusText + '</span>' +
-      '</div>' +
-    '</div>' +
-    '<div>' +
+  const created = k.createdAt ? timeAgo(k.createdAt) : '-';
+  const lastUsed = k.lastUsedAt ? timeAgo(k.lastUsedAt) : 'Never';
+  return '<div class="key-table-row">' +
+    '<span class="k-name">' + esc(k.name) + '</span>' +
+    '<span class="k-key">' + esc(k.masked) + '</span>' +
+    '<span class="k-date">' + esc(created) + '</span>' +
+    '<span class="k-date">' + esc(lastUsed) + '</span>' +
+    '<span><span class="key-status ' + statusClass + '">' + statusText + '</span></span>' +
+    '<span>' +
       (isAktif
         ? '<button class="btn btn-sm" data-act="revoke" data-id="' + k.id + '">Revoke</button>'
         : '<button class="btn btn-sm btn-danger" data-act="del" data-id="' + k.id + '">Hapus</button>') +
-    '</div>' +
+    '</span>' +
   '</div>';
 }
 // Search handler
@@ -953,6 +936,18 @@ function fillMykeyModels() {
   $('#mykey-model-wrap').classList.toggle('hidden', $('#mykey-mode').value === 'worker');
 }
 $('#mykey-provider').addEventListener('change', fillMykeyModels);
+// Show/hide form
+const myFormCard = $('#mykey-form-card');
+const myNewBtn2 = $('#my-inline-create-btn2');
+if (myNewBtn2) myNewBtn2.addEventListener('click', () => {
+  if (myFormCard) myFormCard.classList.remove('hidden');
+  myNewBtn2.classList.add('hidden');
+});
+const myFormCancel = $('#mykey-form-cancel');
+if (myFormCancel) myFormCancel.addEventListener('click', () => {
+  if (myFormCard) myFormCard.classList.add('hidden');
+  if (myNewBtn2) myNewBtn2.classList.remove('hidden');
+});
 // Inline create key (simplified - gateway only)
 const myInlineBtn = $('#my-inline-create-btn');
 if (myInlineBtn) myInlineBtn.addEventListener('click', async () => {
@@ -969,6 +964,11 @@ if (myInlineBtn) myInlineBtn.addEventListener('click', async () => {
     if (valEl) valEl.textContent = j.token;
     if (notif) notif.classList.remove('hidden');
     nameInput.value = '';
+    // Sembunyikan form, tampilkan tombol buat lagi
+    const formCard = $('#mykey-form-card');
+    const newBtn2 = $('#my-inline-create-btn2');
+    if (formCard) formCard.classList.add('hidden');
+    if (newBtn2) newBtn2.classList.remove('hidden');
     await loadMyKeys();
   } catch (ex) {
     if (ex.message === 'auth') return;
