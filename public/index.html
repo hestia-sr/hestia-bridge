@@ -267,6 +267,10 @@
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M13 2 4.5 13.5H11L9.5 22 19 9.5h-6.5L13 2z" fill="currentColor"/></svg>
         <span data-i18n="nav.myworkers">Worker</span>
       </button>
+      <button class="drawer-btn user-only" data-view="models">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm1 2v2h4V7H5zm12 0v2h-4V7h4zM5 12v4h14v-4H5z" fill="currentColor"/></svg>
+        <span>Model</span>
+      </button>
       <button class="drawer-btn user-only" data-view="settings">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" fill="currentColor"/></svg>
         <span data-i18n="nav.settings">Agent Pilihan</span>
@@ -627,6 +631,21 @@
       </div>
       </div>
     </section>
+    <section id="view-models" class="view hidden">
+      <div class="hero-body" style="padding-top:1rem">
+        <h2 style="margin:0 0 .3rem">Models</h2>
+        <p class="muted small" style="margin:0 0 1rem">Daftar model AI yang tersedia.</p>
+        <div class="filter-tabs" style="margin-bottom:1rem">
+          <button class="filter-tab active" data-mfilter="gratis">Gratis</button>
+          <button class="filter-tab" data-mfilter="voucher">Voucher</button>
+          <button class="filter-tab" data-mfilter="mati">Mati</button>
+        </div>
+        <div id="models-list">
+          <div style="padding:2rem;text-align:center;color:var(--muted)">Isi menyusul.</div>
+        </div>
+      </div>
+    </section>
+
 
     <!-- ===== SETTINGS VIEW (pengguna: BYOK provider sendiri) ===== -->
     <section id="view-settings" class="view hidden">
