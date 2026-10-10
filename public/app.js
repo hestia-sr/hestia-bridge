@@ -2535,3 +2535,95 @@ if ($('#models-list')) renderModels('gratis');
     observer.observe(accountPanel, { attributes: true, attributeFilter: ['hidden'] });
   }
 })();
+
+// Buat Key Worker - modal & handler
+(function() {
+  const btn = document.getElementById('my-new-workerkey-btn');
+  const modal = document.getElementById('myworkerkey-modal');
+  const closeBtn = document.getElementById('myworkerkey-modal-close');
+  const form = document.getElementById('myworkerkey-form');
+  const result = document.getElementById('myworkerkey-result');
+  const errorDiv = document.getElementById('myworkerkey-error');
+  const nameInput = document.getElementById('myworkerkey-name');
+  const workerSelect = document.getElementById('myworkerkey-worker');
+  const doneBtn = document.getElementById('myworkerkey-done');
+  const copyBtn = document.getElementById('myworkerkey-once-copy');
+  
+  if (!btn || !modal) return;
+  
+  btn.addEventListener('click', async () => {
+    // Load workers into select
+    try {
+      const workers = await api('/api/my-workers');
+      workerSelect.innerHTML = '';
+      if (workers && workers.length) {
+        workers.forEach(w => {
+          const opt = document.createElement('option');
+          opt.value = w.id;
+          opt.textContent = w.name + (w.online ? ' (online)' : ' (offline)');
+          workerSelect.appendChild(opt);
+        });
+      } else {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'Belum ada worker';
+        workerSelect.appendChild(opt);
+      }
+    } catch (e) {}
+    
+    form.classList.remove('hidden');
+    result.classList.add('hidden');
+    errorDiv.classList.add('hidden');
+    nameInput.value = '';
+    modal.classList.remove('hidden');
+  });
+  
+  if (closeBtn) closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+  if (doneBtn) doneBtn.addEventListener('click', () => {
+    modal.classList.add('hidden');
+    if (typeof loadMyKeys === 'function') loadMyKeys();
+  });
+  
+  if (copyBtn) copyBtn.addEventListener('click', () => {
+    const val = document.getElementById('myworkerkey-once-value').textContent;
+    navigator.clipboard.writeText(val).then(() => toast('Disalin!', true));
+  });
+  
+  if (form) form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = nameInput.value.trim();
+    const workerId = workerSelect.value;
+    
+    if (!name) {
+      errorDiv.textContent = 'Nama key wajib diisi';
+      errorDiv.classList.remove('hidden');
+      return;
+    }
+    if (!workerId) {
+      errorDiv.textContent = 'Pilih worker dulu';
+      errorDiv.classList.remove('hidden');
+      return;
+    }
+    
+    try {
+      const res = await api('/api/my-keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, mode: 'worker', workerId })
+      });
+      
+      if (res && res.key) {
+        document.getElementById('myworkerkey-once-value').textContent = res.key;
+        form.classList.add('hidden');
+        result.classList.remove('hidden');
+        errorDiv.classList.add('hidden');
+      } else {
+        errorDiv.textContent = (res && res.error) || 'Gagal membuat key';
+        errorDiv.classList.remove('hidden');
+      }
+    } catch (err) {
+      errorDiv.textContent = 'Gagal membuat key';
+      errorDiv.classList.remove('hidden');
+    }
+  });
+})();
