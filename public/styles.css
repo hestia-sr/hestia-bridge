@@ -467,6 +467,15 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 .app-desc { font-size: .78rem; color: var(--muted); margin-top: .35rem; line-height: 1.45; }
 @media (min-width: 720px) { .apps-grid { grid-template-columns: repeat(3, 1fr); } }
 
+/* Models marquee: logos bergerak dari kiri ke kanan */
+.models-marquee { overflow: hidden; margin-bottom: .5rem; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.models-track { display: flex; gap: 1rem; width: max-content; animation: modelsScroll 22s linear infinite; }
+.models-track:hover { animation-play-state: paused; }
+@keyframes modelsScroll { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+.model-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: .9rem 1.1rem; text-align: center; box-shadow: var(--shadow); min-width: 110px; display: flex; flex-direction: column; align-items: center; gap: .4rem; }
+.model-logo { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.3rem; color: #fff; }
+.model-name { font-weight: 800; font-size: .85rem; }
+
 
 /* ===== QRIS MODAL ===== */
 .qris-amount {
