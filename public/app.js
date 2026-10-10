@@ -1480,10 +1480,14 @@ const AI_MODELS = [
 ];
 function renderApps() {
   const card = m => '<div class="model-card"><div class="model-logo" style="background:' + m.color + '">' + m.logo + '</div><div class="model-name">' + m.name + '</div></div>';
-  const html = AI_MODELS.map(card).join('');
-  const doubled = html + html; // seamless loop
-  const track = document.getElementById('models-track');
-  if (track) track.innerHTML = doubled;
+  const mk = list => { const h = list.map(card).join(''); return h + h; };
+  // Bagi model ke 3 baris dengan pergerakan berbeda
+  const t1 = document.getElementById('models-track-1');
+  if (t1) t1.innerHTML = mk(AI_MODELS.slice(0, 6));
+  const t2 = document.getElementById('models-track-2');
+  if (t2) t2.innerHTML = mk(AI_MODELS.slice(5, 11));
+  const t3 = document.getElementById('models-track-3');
+  if (t3) t3.innerHTML = mk(AI_MODELS.slice(10).concat(AI_MODELS.slice(0, 2)));
   const grid = document.getElementById('apps-grid');
   if (grid) grid.innerHTML = '';
   const gridLanding = document.getElementById('apps-grid-landing');
