@@ -819,69 +819,34 @@ async function loadMyKeys() {
   box.innerHTML = myKeysCache.map(k => myKeyCard(k, maxReq)).join('');
 }
 function myKeyCard(k, maxReq) {
-  const via = k.mode === 'worker' ? esc(k.workerName || '-') : '';
+  const aktif = k.revoked ? 'Nonaktif' : 'Aktif';
+  const aktifClass = k.revoked ? 'off' : 'on';
   return '<div class="key-card">' +
-    '<div class="key-top">' +
-      '<span class="key-dot' + (k.revoked ? ' off' : '') + '"></span>' +
-      '<span class="key-name">' + esc(k.name) + '</span>' +
-      (k.mode === 'worker' ? '<span class="badge on">WORKER</span>' : '') +
-    '</div>' +
-    '<div><span class="key-masked">' + esc(k.masked) + '</span></div>' +
     '<div class="key-info">' +
-      (k.mode === 'worker' ? '<div class="row"><span class="k">' + t('card.worker') + '</span><span class="v">' + via + '</span></div>' : '') +
-      (k.mode === 'worker' ? '<div class="row"><span class="k">' + t('card.worker.status') + '</span><span class="v">' + (k.workerOnline ? t('card.online') : t('card.offline')) + '</span></div>' : '') +
-      (k.mode === 'provider' && k.supportedModels && k.supportedModels.length
-        ? '<div class="row"><span class="k">' + t('card.supportedmodels') + '</span></div><div class="model-list">' +
-          k.supportedModels.map(m => {
-            const meta = (k.modelMeta && k.modelMeta[m]) || {};
-            const caps = (meta.caps || []).map(c => '<span class="cap-tag">' + esc(c) + '</span>').join('');
-            return '<div class="model-item">' +
-              '<div class="model-item-top"><span class="model-dot"></span>' +
-              '<span class="model-name">' + esc(m) + '</span>' +
-              '<button class="icon-btn model-copy" data-model="' + esc(m) + '" title="' + t('card.copymodel') + '" aria-label="' + t('card.copymodel') + '">' +
-                '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z" fill="currentColor"/></svg>' +
-              '</button>' +
-              '<span class="model-avail">' + t('card.available') + '</span></div>' +
-              (caps ? '<div class="model-caps">' + caps + '</div>' : '') +
-              (meta.context ? '<div class="model-ctx">' + esc(meta.context) + '</div>' : '') +
-              (meta.popular ? '<div class="model-pop">★ ' + t('card.popular') + '</div>' : '') +
-            '</div>';
-          }).join('') + '</div>'
-        : '') +
+      '<div class="row"><span class="k">Nama</span><span class="v">' + esc(k.name) + '</span></div>' +
+      '<div class="row"><span class="k">API Key</span><span class="v"><code>' + esc(k.masked) + '</code></span></div>' +
+      '<div class="row"><span class="k">TTL</span><span class="v">' + esc(k.ttl || '-') + '</span></div>' +
+      '<div class="row"><span class="k">Aktif</span><span class="v"><span class="badge ' + aktifClass + '">' + aktif + '</span></span></div>' +
     '</div>' +
     '<div class="key-actions">' +
-      '<button class="btn btn-sm btn-primary" data-act="connect" data-id="' + k.id + '">' + t('btn.connect') + '</button>' +
-      '' +
-      '<button class="btn btn-sm btn-danger" data-act="del" data-id="' + k.id + '">' + t('btn.delete') + '</button>' +
+      '<button class="btn btn-sm btn-danger" data-act="del" data-id="' + k.id + '">Hapus</button>' +
     '</div>' +
-    '<div class="key-meta">' + t('card.created') + ' ' + fmtDate(k.createdAt) + ' · ' + t('card.lastused') + ' ' + timeAgo(k.lastUsedAt) + '</div>' +
   '</div>';
 }
+
 $('#mykey-list').addEventListener('click', async e => {
-  const copyBtn = e.target.closest('button.model-copy');
-  if (copyBtn && copyBtn.dataset.model) {
-    try {
-      await navigator.clipboard.writeText(copyBtn.dataset.model);
-      toast(t('toast.model.copied'));
-    } catch (ex) { toast(t('toast.failed')); }
-    return;
-  }
   const btn = e.target.closest('button[data-act]');
   if (!btn) return;
   const id = btn.dataset.id, act = btn.dataset.act;
   const k = myKeysCache.find(x => x.id === id);
   try {
     if (act === 'del') {
-      if (!confirm(t('confirm.key.delete').replace('{name}', k ? k.name : id))) return;
+      if (!confirm('Hapus key "' + (k ? k.name : id) + '"?')) return;
       await api('/api/my-keys/' + id, { method: 'DELETE' });
-      toast(t('toast.key.deleted'));
+      toast('Key dihapus');
       await loadMyKeys();
-    } else if (act === 'connect') {
-      await openConnectModal(id, '/api/my-keys', k ? k.name : '', k ? k.model : '');
-    } else if (act === 'editmodel') {
-      await openEditModelModal(id);
     }
-  } catch (ex) { if (ex.message !== 'auth') toast(t('toast.failed') + ex.message); }
+  } catch (ex) { if (ex.message !== 'auth') toast('Gagal: ' + ex.message); }
 });
 
 /* edit model modal (ganti model key yang sudah dibuat) */
@@ -940,11 +905,37 @@ function fillMykeyModels() {
   $('#mykey-model-wrap').classList.toggle('hidden', $('#mykey-mode').value === 'worker');
 }
 $('#mykey-provider').addEventListener('change', fillMykeyModels);
-$('#my-new-key-btn').addEventListener('click', async () => {
-  await openMyKeyModal('provider');
+// Inline create key (simplified - gateway only)
+const myInlineBtn = $('#my-inline-create-btn');
+if (myInlineBtn) myInlineBtn.addEventListener('click', async () => {
+  const nameInput = $('#mykey-inline-name');
+  const err = $('#my-inline-error');
+  const notif = $('#mykey-new-notif');
+  err.classList.add('hidden');
+  if (notif) notif.classList.add('hidden');
+  const name = nameInput.value.trim() || 'contoh';
+  try {
+    const j = await api('/api/my-keys', { method: 'POST', body: JSON.stringify({ name, mode: 'provider' }) });
+    // Tampilkan notif swipeable dengan key baru
+    const valEl = $('#mykey-new-value');
+    if (valEl) valEl.textContent = j.token;
+    if (notif) notif.classList.remove('hidden');
+    nameInput.value = '';
+    await loadMyKeys();
+  } catch (ex) {
+    if (ex.message === 'auth') return;
+    err.textContent = 'Gagal: ' + ex.message;
+    err.classList.remove('hidden');
+  }
 });
-$('#my-new-workerkey-btn').addEventListener('click', async () => {
-  await openMyKeyModal('worker');
+// Copy button untuk notif key baru
+const myNewCopy = $('#mykey-new-copy');
+if (myNewCopy) myNewCopy.addEventListener('click', async () => {
+  const el = $('#mykey-new-value');
+  if (el) {
+    await navigator.clipboard.writeText(el.textContent);
+    toast('Disalin!');
+  }
 });
 async function openMyKeyModal(presetMode) {
   $('#mykey-form').classList.remove('hidden');
