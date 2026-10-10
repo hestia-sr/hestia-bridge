@@ -918,7 +918,7 @@ app.patch('/api/auth/profile', (req, res) => {
     if (clean && taken) return res.status(400).json({ error: 'username_taken' });
     u.username = clean;
   }
-  if (typeof avatar === 'string' && avatar.startsWith('data:image/') && avatar.length <= 700000) {
+  if (typeof avatar === 'string' && avatar.startsWith('data:image/') && avatar.length <= 1500000) {
     u.avatar = avatar;
   }
   saveDb();
