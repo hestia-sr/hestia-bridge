@@ -2352,10 +2352,10 @@ async function refreshMine() {
 
 // Models view - data & rendering
 const MODELS_GRATIS = [
-  { id: 'qwen/qwen-plus-2025-07-28:free', name: 'Qwen Plus 2025', desc: 'Model Qwen terbaru dengan performa tinggi untuk chat.', provider: 'Qwen', context: null, caps: { reasoning: true, text: true, vision: false } },
-  { id: 'qwen/qwen3-max:free', name: 'Qwen3 Max', desc: 'Varian Max dari Qwen3, powerful untuk berbagai tugas.', provider: 'Qwen', context: null, caps: { reasoning: true, text: true, vision: false } },
-  { id: 'stealth/space-bunny-alpha:free', name: 'Space Bunny Alpha', desc: 'Model eksperimental yang cepat dan responsif.', provider: 'Stealth', context: null, caps: { reasoning: false, text: true, vision: false } },
-  { id: 'sensenova/sensenova-6.8-flash-lite', name: 'Sensenova 6.8 Flash Lite', desc: 'Model ringan dan cepat dari Sensenova.', provider: 'Sensenova', context: null, caps: { reasoning: false, text: true, vision: false } },
+  { id: 'qwen/qwen-plus-2025-07-28:free', name: 'Qwen Plus 2025', desc: 'Model Qwen terbaru dengan performa tinggi untuk chat.', provider: 'Qwen', context: '131.072', caps: { reasoning: true, text: true, vision: false } },
+  { id: 'qwen/qwen3-max:free', name: 'Qwen3 Max', desc: 'Varian Max dari Qwen3, powerful untuk berbagai tugas.', provider: 'Qwen', context: '262.144', caps: { reasoning: true, text: true, vision: false } },
+  { id: 'stealth/space-bunny-alpha:free', name: 'Space Bunny Alpha', desc: 'Model eksperimental yang cepat dan responsif.', provider: 'Stealth', context: '1.000.000', caps: { reasoning: false, text: true, vision: false } },
+  { id: 'sensenova/sensenova-6.8-flash-lite', name: 'Sensenova 6.8 Flash Lite', desc: 'Model ringan dan cepat dari Sensenova.', provider: 'Sensenova', context: '262.144', caps: { reasoning: false, text: true, vision: false } },
 ];
 const MODELS_VOUCHER = [];
 const MODELS_MATI = [
