@@ -1395,6 +1395,7 @@ app.get('/api/users', requireAdmin, (req, res) => {
   res.json({
     users: db.users.map(u => ({
       id: u.id, email: u.email, role: u.role,
+      firstName: u.firstName || null, lastName: u.lastName || null, username: u.username || null,
       createdAt: u.createdAt, suspended: !!u.suspended,
       plan: u.plan || 'gratis', planName: PLAN_NAMES[u.plan] || 'Gratis',
       planExpiresAt: u.planExpiresAt || null,
