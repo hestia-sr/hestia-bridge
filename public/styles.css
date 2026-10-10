@@ -478,6 +478,7 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 @keyframes modelsScrollLeft { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .model-card { padding: .5rem; text-align: center; min-width: 90px; display: flex; flex-direction: column; align-items: center; gap: .4rem; background: transparent; border: none; box-shadow: none; }
 .model-logo { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.3rem; color: #fff; }
+.model-logo-img { width: 52px; height: 52px; border-radius: 14px; object-fit: contain; background: #fff; padding: 6px; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
 .model-name { font-weight: 800; font-size: .85rem; }
 
 
