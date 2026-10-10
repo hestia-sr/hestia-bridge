@@ -937,6 +937,7 @@ body.dark .act-type.admin_action { background: #713f12; color: #fef08a; }
   border-radius: calc(var(--radius) - 4px);
   cursor: pointer;
   font-weight: 600;
+  color: var(--text);
 }
 .filter-tab.active {
   background: var(--primary);
