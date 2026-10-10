@@ -2443,3 +2443,102 @@ document.querySelectorAll('[data-mfilter]').forEach(btn => {
 });
 // Render initial
 if ($('#models-list')) renderModels('gratis');
+
+// Profile edit - photo preview & save
+(function() {
+  const photoInput = document.getElementById('profile-photo-input');
+  const photoPreview = document.getElementById('profile-photo-preview');
+  const saveBtn = document.getElementById('profile-save-btn');
+  
+  if (photoInput && photoPreview) {
+    photoInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          photoPreview.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+  
+  // Load existing profile
+  async function loadProfile() {
+    try {
+      const res = await api('/api/auth/me');
+      if (res.ok) {
+        const user = await res.json();
+        const fn = document.getElementById('profile-firstname');
+        const ln = document.getElementById('profile-lastname');
+        const un = document.getElementById('profile-username');
+        if (fn && user.firstName) fn.value = user.firstName;
+        if (ln && user.lastName) ln.value = user.lastName;
+        if (un && user.username) un.value = user.username;
+        if (photoPreview && user.avatar) photoPreview.src = user.avatar;
+      }
+    } catch (e) {}
+  }
+  
+  let photoDataUrl = null;
+  if (photoInput && photoPreview) {
+    // Store data URL when photo selected
+    const origHandler = photoInput.onchange;
+    photoInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        if (file.size > 500 * 1024) {
+          toast('Foto maksimal 500KB', false);
+          photoInput.value = '';
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          photoDataUrl = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+  
+  if (saveBtn) {
+    saveBtn.addEventListener('click', async () => {
+      const firstName = document.getElementById('profile-firstname')?.value?.trim() || '';
+      const lastName = document.getElementById('profile-lastname')?.value?.trim() || '';
+      const username = document.getElementById('profile-username')?.value?.trim() || '';
+      
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Menyimpan...';
+      
+      try {
+        const res = await api('/api/auth/profile', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ firstName, lastName, username, avatar: photoDataUrl })
+        });
+        
+        if (res.ok) {
+          toast('Profil berhasil disimpan!', true);
+          photoDataUrl = null;
+        } else {
+          const err = await res.json().catch(() => ({}));
+          toast(err.error || 'Gagal menyimpan profil', false);
+        }
+      } catch (e) {
+        toast('Gagal menyimpan profil', false);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Simpan Perubahan';
+      }
+    });
+  }
+  
+  // Load when account panel opens
+  const accountPanel = document.getElementById('account-panel');
+  if (accountPanel) {
+    const observer = new MutationObserver(() => {
+      if (!accountPanel.hidden) loadProfile();
+    });
+    observer.observe(accountPanel, { attributes: true, attributeFilter: ['hidden'] });
+  }
+})();
