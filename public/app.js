@@ -807,33 +807,73 @@ $('#provider-form').addEventListener('submit', async e => {
 
 /* ------------------------- my keys (pengguna) ---------------------------- */
 let myKeysCache = [];
+let myKeyFilter = 'all';
+let myKeySearch = '';
 async function loadMyKeys() {
   const j = await api('/api/my-keys');
   myKeysCache = j.keys;
+  renderMyKeyList();
+}
+function renderMyKeyList() {
   const box = $('#mykey-list');
-  if (!myKeysCache.length) {
-    box.innerHTML = '<div class="card"><div class="card-body empty muted">' + t('empty.mykeys') + '</div></div>';
+  const countEl = $('#mykey-count');
+  // Update count
+  const total = myKeysCache.length;
+  const aktif = myKeysCache.filter(k => !k.revoked).length;
+  if (countEl) countEl.textContent = total + ' key · ' + aktif + ' aktif';
+  // Filter
+  let list = myKeysCache;
+  if (myKeyFilter === 'active') list = list.filter(k => !k.revoked);
+  else if (myKeyFilter === 'inactive') list = list.filter(k => k.revoked);
+  if (myKeySearch) {
+    const q = myKeySearch.toLowerCase();
+    list = list.filter(k => (k.name || '').toLowerCase().includes(q) || (k.masked || '').toLowerCase().includes(q));
+  }
+  if (!list.length) {
+    box.innerHTML = '<div class="card"><div class="card-body empty muted">Belum ada key.</div></div>';
     return;
   }
-  const maxReq = Math.max(1, ...myKeysCache.map(k => k.stats.requests));
-  box.innerHTML = myKeysCache.map(k => myKeyCard(k, maxReq)).join('');
+  box.innerHTML = '<div class="key-table">' + list.map(k => myKeyCard(k)).join('') + '</div>';
 }
-function myKeyCard(k, maxReq) {
-  const aktif = k.revoked ? 'Nonaktif' : 'Aktif';
-  const aktifClass = k.revoked ? 'off' : 'on';
-  return '<div class="key-card">' +
-    '<div class="key-info">' +
-      '<div class="row"><span class="k">Nama</span><span class="v">' + esc(k.name) + '</span></div>' +
-      '<div class="row"><span class="k">API Key</span><span class="v"><code>' + esc(k.masked) + '</code></span></div>' +
-      '<div class="row"><span class="k">TTL</span><span class="v">' + esc(k.ttl || '-') + '</span></div>' +
-      '<div class="row"><span class="k">Aktif</span><span class="v"><span class="badge ' + aktifClass + '">' + aktif + '</span></span></div>' +
+function myKeyCard(k) {
+  const isAktif = !k.revoked;
+  const statusText = isAktif ? 'Aktif' : 'Nonaktif';
+  const statusClass = isAktif ? 'on' : 'off';
+  const lastUsed = k.lastUsedAt ? fmtDate(k.lastUsedAt) : '-';
+  const usage = k.stats ? (k.stats.requests || 0) + ' req' : '-';
+  return '<div class="key-row">' +
+    '<div class="key-row-main">' +
+      '<div class="key-row-name">' + esc(k.name) + '</div>' +
+      '<div class="key-row-prefix">' + esc(k.masked) + '</div>' +
+      '<div class="key-row-meta">' +
+        '<span class="key-badge">Semua model</span>' +
+        '<span class="key-badge">' + esc(usage) + '</span>' +
+        '<span class="key-badge">' + esc(lastUsed) + '</span>' +
+        '<span class="key-status ' + statusClass + '">' + statusText + '</span>' +
+      '</div>' +
     '</div>' +
-    '<div class="key-actions">' +
-      '<button class="btn btn-sm btn-danger" data-act="del" data-id="' + k.id + '">Hapus</button>' +
+    '<div>' +
+      (isAktif
+        ? '<button class="btn btn-sm" data-act="revoke" data-id="' + k.id + '">Revoke</button>'
+        : '<button class="btn btn-sm btn-danger" data-act="del" data-id="' + k.id + '">Hapus</button>') +
     '</div>' +
   '</div>';
 }
-
+// Search handler
+const myKeySearchEl = $('#mykey-search');
+if (myKeySearchEl) myKeySearchEl.addEventListener('input', e => {
+  myKeySearch = e.target.value;
+  renderMyKeyList();
+});
+// Filter tabs handler
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    myKeyFilter = tab.dataset.filter;
+    renderMyKeyList();
+  });
+});
 $('#mykey-list').addEventListener('click', async e => {
   const btn = e.target.closest('button[data-act]');
   if (!btn) return;
@@ -844,6 +884,11 @@ $('#mykey-list').addEventListener('click', async e => {
       if (!confirm('Hapus key "' + (k ? k.name : id) + '"?')) return;
       await api('/api/my-keys/' + id, { method: 'DELETE' });
       toast('Key dihapus');
+      await loadMyKeys();
+    } else if (act === 'revoke') {
+      if (!confirm('Revoke key "' + (k ? k.name : id) + '"? Key tidak bisa dipakai lagi.')) return;
+      await api('/api/my-keys/' + id + '/revoke', { method: 'POST' });
+      toast('Key di-revoke');
       await loadMyKeys();
     }
   } catch (ex) { if (ex.message !== 'auth') toast('Gagal: ' + ex.message); }
