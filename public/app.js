@@ -2657,16 +2657,16 @@ function renderWorkerKeyList() {
     box.innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--muted)">Belum ada key worker.</div>';
     return;
   }
-  box.innerHTML = list.map(k => {
+  box.innerHTML = '<div class="card"><div class="card-body" style="padding:0">' + list.map(k => {
     const created = k.createdAt ? timeAgo(k.createdAt) : '-';
-    const keyPrefix = k.masked ? k.masked.slice(0, 12) : (k.prefix || '-');
-    return '<div class="key-table-row">' +
-      '<div><div style="font-weight:600">' + esc(k.name) + '</div>' +
+    const keyPrefix = k.masked ? k.masked : '-';
+    return '<div class="key-table-row" style="padding:.9rem 1rem;border-bottom:1px solid var(--border)">' +
+      '<div style="min-width:0"><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(k.name) + '</div>' +
       '<div class="muted small">Worker: ' + esc(k.workerName || '-') + '</div></div>' +
-      '<div class="muted small">' + esc(keyPrefix) + '</div>' +
-      '<div class="muted small">' + created + '</div>' +
+      '<div class="muted small" style="font-family:monospace;font-size:.8rem">' + esc(keyPrefix) + '</div>' +
+      '<div class="muted small" style="white-space:nowrap">' + created + '</div>' +
       '</div>';
-  }).join('');
+  }).join('') + '</div></div>';
 }
 
 // Panggil renderWorkerKeyList setiap loadMyKeys selesai
