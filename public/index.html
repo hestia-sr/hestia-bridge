@@ -513,40 +513,36 @@
         <div class="hero-top">
           <div>
             <h1 class="hero-title" data-i18n="hero.mykeys">API Key</h1>
-            <p class="hero-sub" data-i18n="hero.mykeys.sub">Buat API key sendiri, tanpa batasan jumlah.</p>
           </div>
           <button id="my-refresh-btn" class="hero-refresh" aria-label="Refresh">
             <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5V1L6 7l6 6V9a8 8 0 1 1-8 8H2a10 10 0 1 0 10-12z" fill="currentColor"/></svg>
           </button>
         </div>
-        <button id="my-new-key-btn" class="btn btn-hero">
-          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" fill="currentColor"/></svg>
-          <span data-i18n="btn.createkey">Buat Key</span>
-        </button>
       </div>
 
       <div class="hero-body">
-      <div id="mykey-list"></div>
-
-      <div class="guide-card">
-        <h2 data-i18n="guide.howto.title">Cara pakai</h2>
-        <ol class="guide-steps">
-          <li>
-            <span class="step-num">1</span>
-            <p data-i18n-html="guide.my.s1">Klik <strong>Buat Key</strong> — pilih mode <strong>Provider</strong> (pakai provider yang tersedia) atau <strong>Worker</strong> (dijawab worker AI).</p>
-          </li>
-          <li>
-            <span class="step-num">2</span>
-            <p data-i18n-html="guide.my.s2">Untuk mode Worker: buat dulu worker di menu <strong>Worker</strong>, salin tokennya, lalu tempel instruksi yang diberikan ke akun AI milikmu supaya ia bekerja otomatis tiap 5 menit.</p>
-          </li>
-          <li>
-            <span class="step-num">3</span>
-            <p data-i18n-html="guide.my.s3">Di aplikasi AI di HP yang mendukung custom endpoint OpenAI: isi <strong>Base URL</strong> dengan<br><code id="my-guide-base-url">https://hestia-bridge-production.up.railway.app/v1</code><br>dan <strong>API Key</strong> dengan key <code>hesti-...</code> milikmu (klik <strong>info cURL</strong> di kartu key untuk salin cepat), lalu pakai seperti biasa lewat prompt.</p>
-          </li>
-        </ol>
+      <div class="card">
+        <div class="card-body">
+          <h3 style="margin:0 0 .8rem">Buat API Key</h3>
+          <label><span>Nama</span>
+            <input type="text" id="mykey-inline-name" placeholder="cth: contoh">
+          </label>
+          <button id="my-inline-create-btn" class="btn btn-primary btn-block" style="margin-top:.8rem">Buat Key</button>
+          <div id="my-inline-error" class="error hidden"></div>
+        </div>
       </div>
 
-      <p class="foot-note muted">Hestia Bridge · <span id="my-foot-email"></span></p>
+      <div id="mykey-new-notif" class="hidden" style="margin-top:1rem">
+        <div class="swipe-card">
+          <div class="swipe-inner">
+            <code id="mykey-new-value" class="swipe-text"></code>
+            <button class="btn btn-sm btn-primary" id="mykey-new-copy">Salin</button>
+          </div>
+        </div>
+        <p class="muted small" style="margin:.5rem 0 0">Key hanya ditampilkan sekali. Salin sekarang.</p>
+      </div>
+
+      <div id="mykey-list" style="margin-top:1rem"></div>
       </div>
     </section>
 
