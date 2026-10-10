@@ -1252,3 +1252,124 @@ body.dark .act-type.admin_action { background: #713f12; color: #fef08a; }
   border-radius: 8px;
   padding: .2rem .5rem;
 }
+
+/* Model cards GateAI-style */
+.model-card-gate {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1rem;
+  margin-bottom: .8rem;
+}
+.mc-top {
+  display: flex;
+  align-items: flex-start;
+  gap: .7rem;
+  margin-bottom: .6rem;
+}
+.mc-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mc-idwrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  min-width: 0;
+}
+.mc-id {
+  font-family: monospace;
+  font-size: .85rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.badge-tersedia {
+  font-size: .72rem;
+  font-weight: 700;
+  padding: .3rem .7rem;
+  border-radius: 8px;
+  background: rgba(16,185,129,.15);
+  color: #10b981;
+  border: 1px solid rgba(16,185,129,.3);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.mc-caps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin-bottom: .5rem;
+}
+.cap-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: .75rem;
+  font-weight: 600;
+  padding: .3rem .7rem;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.cap-reasoning {
+  background: rgba(168,85,247,.15);
+  border-color: rgba(168,85,247,.3);
+  color: #a855f7;
+}
+.mc-name {
+  font-size: .9rem;
+  color: var(--muted);
+  margin-bottom: .4rem;
+}
+.mc-provider {
+  margin-bottom: .5rem;
+}
+.provider-badge {
+  display: inline-block;
+  font-size: .75rem;
+  font-weight: 700;
+  padding: .3rem .8rem;
+  border-radius: 999px;
+  background: rgba(249,115,22,.15);
+  color: #f97316;
+}
+.mc-ctx {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+}
+.ctx-badge {
+  font-size: .78rem;
+  font-weight: 600;
+  padding: .35rem .8rem;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+.ctx-segera {
+  color: var(--muted);
+  font-style: italic;
+}
+.model-copy {
+  padding: .3rem;
+  border-radius: 8px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.model-copy:hover {
+  background: var(--bg);
+  color: var(--primary);
+}
