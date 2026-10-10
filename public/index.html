@@ -213,34 +213,6 @@
       <button type="submit" id="reg-submit-btn" class="btn btn-primary btn-block" data-i18n="auth.reg.submit" disabled>Daftar</button>
       <p class="muted small note" data-i18n="auth.reg.note">Hanya Gmail yang bisa daftar. Satu perangkat hanya untuk 1 akun.</p>
     </form>
-    <div class="terminal-card">
-      <div class="term-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title" data-i18n="auth.example">curl</span></div>
-<pre class="term-body" id="login-curl">curl /v1/chat/completions \
-  -H "Authorization: Bearer hb-xxxx" \
-  -H "Content-Type: application/json" \
-  -d '{"model":"model-id","messages":[{"role":"user","content":"Halo"}]}'</pre>
-    </div>
-    <div class="terminal-card" style="margin-top:1rem">
-      <div class="term-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="term-title">json</span></div>
-<pre class="term-body">{
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
-  "model": "model-id",
-  "choices": [{
-    "index": 0,
-    "message": {
-      "role": "assistant",
-      "content": "Halo! Ada yang bisa saya bantu?"
-    },
-    "finish_reason": "stop"
-  }],
-  "usage": {
-    "prompt_tokens": 9,
-    "completion_tokens": 12,
-    "total_tokens": 21
-  }
-}</pre>
-    </div>
   </div>
   </section>
 </div>
