@@ -249,7 +249,7 @@ document.querySelectorAll('.pw-toggle').forEach(btn => {
     if (!input) return;
     const show = input.type === 'password';
     input.type = show ? 'text' : 'password';
-    btn.textContent = show ? '🙈' : '👁';
+    btn.textContent = show ? 'Tutup' : 'Lihat';
   });
 });
 
