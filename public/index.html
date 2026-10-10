@@ -509,21 +509,32 @@
 
     <!-- ===== MY KEYS VIEW (pengguna) ===== -->
     <section id="view-mykeys" class="view hidden">
-      <div class="hero-body">
-      <!-- Form buat API key -->
-      <div class="card">
+      <div class="hero-body" style="padding-top:1rem">
+      <!-- Header -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem">
+        <div>
+          <h2 style="margin:0 0 .3rem">API Keys</h2>
+          <p class="muted small" style="margin:0">Kunci API mengautentikasi request Anda. Jaga kerahasiaannya.</p>
+        </div>
+        <button id="my-inline-create-btn2" class="btn btn-primary btn-sm" style="white-space:nowrap">+ Buat kunci baru</button>
+      </div>
+
+      <!-- Form buat (hidden by default) -->
+      <div id="mykey-form-card" class="card hidden" style="margin-bottom:1rem">
         <div class="card-body">
-          <h3 style="margin:0 0 .8rem">Buat API Key</h3>
           <label><span>Nama</span>
             <input type="text" id="mykey-inline-name" placeholder="cth: contoh">
           </label>
-          <button id="my-inline-create-btn" class="btn btn-primary btn-block" style="margin-top:.8rem">Buat Key</button>
+          <div style="display:flex;gap:.5rem;margin-top:.8rem">
+            <button id="my-inline-create-btn" class="btn btn-primary" style="flex:1">Buat Key</button>
+            <button id="mykey-form-cancel" class="btn">Batal</button>
+          </div>
           <div id="my-inline-error" class="error hidden"></div>
         </div>
       </div>
 
       <!-- Notif key baru -->
-      <div id="mykey-new-notif" class="hidden" style="margin-top:1rem">
+      <div id="mykey-new-notif" class="hidden" style="margin-bottom:1rem">
         <div class="swipe-card">
           <div class="swipe-inner">
             <code id="mykey-new-value" class="swipe-text"></code>
@@ -533,14 +544,15 @@
         <p class="muted small" style="margin:.5rem 0 0">Key hanya ditampilkan sekali. Salin sekarang.</p>
       </div>
 
-      <!-- Daftar key ala GateAI -->
-      <div style="margin-top:1.5rem">
-        <h3 id="mykey-count" style="margin:0 0 .8rem">0 key · 0 aktif</h3>
-        <input type="text" id="mykey-search" placeholder="Cari nama / prefix..." style="width:100%;margin-bottom:.8rem">
-        <div class="filter-tabs" style="margin-bottom:1rem">
-          <button class="filter-tab active" data-filter="all">Semua</button>
-          <button class="filter-tab" data-filter="active">Aktif</button>
-          <button class="filter-tab" data-filter="inactive">Nonaktif</button>
+      <!-- Tabel key -->
+      <div class="key-table-wrap">
+        <div class="key-table-head">
+          <span>Nama</span>
+          <span>Kunci</span>
+          <span>Dibuat</span>
+          <span>Terakhir digunakan</span>
+          <span>Status</span>
+          <span></span>
         </div>
         <div id="mykey-list"></div>
       </div>
