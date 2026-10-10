@@ -1459,31 +1459,28 @@ async function loadUserCredentials() {
   credState.loading = false;
 }
 
-/* --------------------------- home: apps grid --------------------------- */
-const SUPPORTED_APPS = [
-  { name: 'Muse AI', plat: 'Android · iOS · Web', desc_id: 'Didukung penuh oleh Bridge', desc_en: 'Fully supported by Bridge', logo: 'logos/muse.png', icon: null },
-  { name: 'ChatBox', plat: 'Android · iOS · Desktop', desc_id: 'Paling mudah untuk pemula', desc_en: 'Easiest for beginners', logo: 'logos/chatbox.png', icon: null },
-  { name: 'Cherry Studio', plat: 'Android · iOS · Desktop', desc_id: 'Populer di Asia', desc_en: 'Popular in Asia', logo: 'logos/cherry.png', icon: null },
-  { name: 'NextChat', plat: 'Web / PWA', desc_id: 'Ringan, install dari browser', desc_en: 'Lightweight, install from browser', logo: null, icon: '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M5 12h12l-4-4 1.5-1.5L21 12l-6.5 5.5L13 16l4-4H5z" fill="currentColor"/></svg>' },
-  { name: 'OpenChat', plat: 'iOS', desc_id: 'Native iOS, kunci di Keychain', desc_en: 'Native iOS, keys in Keychain', logo: null, icon: '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 3C6.5 3 2 6.9 2 11.7c0 2.7 1.4 5.1 3.7 6.6-.1 1-.8 3.3-2.7 4.7 2.9-.3 5.3-1.7 6.6-2.8 1.1.3 2.2.4 3.4.4 5.5 0 10-3.9 10-8.7S17.5 3 12 3z" fill="currentColor"/></svg>' },
-  { name: 'LibreChat', plat: 'Web', desc_id: 'Self-hosted, mirip ChatGPT', desc_en: 'Self-hosted, ChatGPT-like', logo: 'logos/librechat.svg', icon: null },
-  { name: 'Open WebUI', plat: 'Web', desc_id: 'Self-hosted, fitur lengkap', desc_en: 'Self-hosted, full features', logo: 'logos/openwebui.png', icon: null },
+/* --------------------------- home: AI models marquee --------------------- */
+const AI_MODELS = [
+  { name: 'GPT', color: '#10a37f', initial: 'G' },
+  { name: 'Claude', color: '#d97757', initial: 'C' },
+  { name: 'Muse', color: '#a855f7', initial: 'M' },
+  { name: 'Qwen', color: '#7c3aed', initial: 'Q' },
+  { name: 'DeepSeek', color: '#4f46e5', initial: 'D' },
+  { name: 'Gemini', color: '#4285f4', initial: 'G' },
+  { name: 'Mistral', color: '#ff7000', initial: 'M' },
+  { name: 'Llama', color: '#0668e1', initial: 'L' },
+  { name: 'Grok', color: '#111111', initial: 'X' },
 ];
 function renderApps() {
-  const html = SUPPORTED_APPS.map(a => {
-    const ico = a.logo
-      ? '<img src="' + a.logo + '" alt="' + a.name + '" class="app-logo">'
-      : '<div class="app-ico">' + a.icon + '</div>';
-    return '<div class="app-card">' + ico +
-    '<div class="app-name">' + a.name + '</div>' +
-    '<div class="app-plat">' + a.plat + '</div>' +
-    '<div class="app-desc">' + (LANG === 'en' ? a.desc_en : a.desc_id) + '</div>' +
-    '</div>';
-  }).join('');
+  const card = m => '<div class="model-card"><div class="model-logo" style="background:' + m.color + '">' + m.initial + '</div><div class="model-name">' + m.name + '</div></div>';
+  const html = AI_MODELS.map(card).join('');
+  const doubled = html + html; // seamless loop
+  const track = document.getElementById('models-track');
+  if (track) track.innerHTML = doubled;
   const grid = document.getElementById('apps-grid');
-  if (grid) grid.innerHTML = html;
+  if (grid) grid.innerHTML = '';
   const gridLanding = document.getElementById('apps-grid-landing');
-  if (gridLanding) gridLanding.innerHTML = html;
+  if (gridLanding) gridLanding.innerHTML = '';
 }
 
 /* --------------------------- theme (dark/light) ------------------------ */
