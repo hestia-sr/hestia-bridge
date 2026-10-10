@@ -2628,7 +2628,7 @@ if ($('#models-list')) renderModels('gratis');
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ${res.token}" \
   -d '{
-    "model": "muse-spark",
+    "model": "muse-spark-1.3",
     "messages": [{"role": "user", "content": "Halo!"}]
   }'`;
         document.getElementById('myworkerkey-curl').textContent = curl;
