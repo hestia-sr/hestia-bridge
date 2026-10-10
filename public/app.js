@@ -1569,12 +1569,7 @@ function applyTheme() {
   const th = localStorage.getItem('hb-theme') || 'light';
   document.documentElement.setAttribute('data-theme', th);
 }
-document.getElementById('theme-btn').addEventListener('click', () => {
-  const cur = document.documentElement.getAttribute('data-theme') || 'light';
-  const next = cur === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('hb-theme', next);
-});
+// theme-btn removed
 
 /* --------------------------- wallpaper --------------------------------- */
 function applyWallpaper() {
@@ -2466,9 +2461,8 @@ if ($('#models-list')) renderModels('gratis');
   // Load existing profile
   async function loadProfile() {
     try {
-      const res = await api('/api/auth/me');
-      if (res.ok) {
-        const user = await res.json();
+      const user = await api('/api/auth/me');
+      if (user && user.ok) {
         const fn = document.getElementById('profile-firstname');
         const ln = document.getElementById('profile-lastname');
         const un = document.getElementById('profile-username');
@@ -2511,18 +2505,17 @@ if ($('#models-list')) renderModels('gratis');
       saveBtn.textContent = 'Menyimpan...';
       
       try {
-        const res = await api('/api/auth/profile', {
+        const result = await api('/api/auth/profile', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ firstName, lastName, username, avatar: photoDataUrl })
         });
         
-        if (res.ok) {
+        if (result && result.ok) {
           toast('Profil berhasil disimpan!', true);
           photoDataUrl = null;
         } else {
-          const err = await res.json().catch(() => ({}));
-          toast(err.error || 'Gagal menyimpan profil', false);
+          toast((result && result.error) || 'Gagal menyimpan profil', false);
         }
       } catch (e) {
         toast('Gagal menyimpan profil', false);
