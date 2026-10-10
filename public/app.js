@@ -1461,25 +1461,26 @@ async function loadUserCredentials() {
 
 /* --------------------------- home: AI models marquee --------------------- */
 const AI_MODELS = [
-  { name: 'GPT', color: '#10a37f', logo: '<svg viewBox="0 0 24 24" width="30" height="30"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z" fill="#fff"/><circle cx="12" cy="12" r="4" fill="#fff"/></svg>' },
-  { name: 'Claude', color: '#d97757', logo: '<svg viewBox="0 0 24 24" width="30" height="30"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 7.7l5.4-.8z" fill="#fff"/></svg>' },
-  { name: 'Muse', color: '#a855f7', logo: '<svg viewBox="0 0 24 24" width="30" height="30"><circle cx="12" cy="12" r="9" fill="none" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="#fff"/></svg>' },
-  { name: 'Qwen', color: '#7c3aed', logo: '<svg viewBox="0 0 24 24" width="30" height="30"><rect x="4" y="4" width="16" height="16" rx="4" fill="#fff"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="#7c3aed">Q</text></svg>' },
-  { name: 'DeepSeek', color: '#4f46e5', logo: '<svg viewBox="0 0 24 24" width="30" height="30"><path d="M12 2L2 12l10 10 10-10z" fill="#fff"/><path d="M12 7L7 12l5 5 5-5z" fill="#4f46e5"/></svg>' },
-  { name: 'Gemini', color: '#4285f4', logo: '<svg viewBox="0 0 24 24" width="30" height="30"><path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#fff"/></svg>' },
-  { name: 'Mistral', color: '#ff7000', logo: '<svg viewBox="0 0 24 24" width="30" height="30"><path d="M4 6h16v3H4zM4 11h16v3H4zM4 16h16v3H4z" fill="#fff"/></svg>' },
-  { name: 'Llama', color: '#0668e1', logo: '<svg viewBox="0 0 24 24" width="30" height="30"><ellipse cx="12" cy="14" rx="7" ry="6" fill="#fff"/><circle cx="9" cy="12" r="1.5" fill="#0668e1"/><circle cx="15" cy="12" r="1.5" fill="#0668e1"/></svg>' },
-  { name: 'Grok', color: '#111111', logo: '<svg viewBox="0 0 24 24" width="30" height="30"><path d="M6 4l12 8-12 8z" fill="#fff"/></svg>' },
-  { name: 'Cohere', color: '#39594d', logo: '<svg viewBox="0 0 24 24" width="30" height="30"><circle cx="8" cy="12" r="4" fill="#fff"/><circle cx="16" cy="12" r="4" fill="#fff" opacity=".7"/></svg>' },
-  { name: 'Falcon', color: '#1a73e8', logo: '<svg viewBox="0 0 24 24" width="30" height="30"><path d="M12 2c3 4 3 8 0 12-3-4-3-8 0-12z" fill="#fff"/><path d="M12 14c2 2 2 4 0 6-2-2-2-4 0-6z" fill="#fff" opacity=".7"/></svg>' },
-  { name: 'PaLM', color: '#34a853', logo: '<svg viewBox="0 0 24 24" width="30" height="30"><path d="M12 4a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z" fill="#fff"/></svg>' },
-  { name: 'BLOOM', color: '#e91e63', logo: '<svg viewBox="0 0 24 24" width="30" height="30"><circle cx="12" cy="8" r="3" fill="#fff"/><circle cx="8" cy="14" r="3" fill="#fff" opacity=".8"/><circle cx="16" cy="14" r="3" fill="#fff" opacity=".8"/></svg>' },
-  { name: 'Vicuna', color: '#9c27b0', logo: '<svg viewBox="0 0 24 24" width="30" height="30"><rect x="6" y="6" width="12" height="12" rx="6" fill="#fff"/><rect x="9" y="9" width="6" height="6" rx="3" fill="#9c27b0"/></svg>' },
-  { name: 'Alpaca', color: '#795548', logo: '<svg viewBox="0 0 24 24" width="30" height="30"><path d="M12 3l7 9H5z" fill="#fff"/><rect x="8" y="12" width="8" height="8" fill="#fff" opacity=".8"/></svg>' },
-  { name: 'Orca', color: '#00bcd4', logo: '<svg viewBox="0 0 24 24" width="30" height="30"><ellipse cx="12" cy="12" rx="9" ry="5" fill="#fff"/><ellipse cx="12" cy="12" rx="5" ry="3" fill="#00bcd4"/></svg>' },
+  { name: 'GPT', logo: 'logos/models/openai.png' },
+  { name: 'Claude', logo: 'logos/models/claude.png' },
+  { name: 'Muse', color: '#a855f7', logo: null, initial: 'M' },
+  { name: 'Qwen', logo: 'logos/models/qwen.png' },
+  { name: 'DeepSeek', logo: 'logos/models/deepseek.png' },
+  { name: 'Gemini', logo: 'logos/models/gemini.png' },
+  { name: 'Mistral', logo: 'logos/models/mistral.png' },
+  { name: 'Llama', logo: 'logos/models/meta.png' },
+  { name: 'Grok', logo: 'logos/models/grok.png' },
+  { name: 'Cohere', logo: 'logos/models/cohere.png' },
+  { name: 'Anthropic', logo: 'logos/models/anthropic.png' },
+  { name: 'xAI', logo: 'logos/models/x.png' },
 ];
 function renderApps() {
-  const card = m => '<div class="model-card"><div class="model-logo" style="background:' + m.color + '">' + m.logo + '</div><div class="model-name">' + m.name + '</div></div>';
+  const card = m => {
+    const ico = m.logo
+      ? '<img src="' + m.logo + '" alt="' + m.name + '" class="model-logo-img">'
+      : '<div class="model-logo" style="background:' + (m.color || '#888') + '">' + (m.initial || m.name[0]) + '</div>';
+    return '<div class="model-card">' + ico + '<div class="model-name">' + m.name + '</div></div>';
+  };
   const mk = list => { const h = list.map(card).join(''); return h + h; };
   // Bagi model ke 3 baris dengan pergerakan berbeda
   const t1 = document.getElementById('models-track-1');
