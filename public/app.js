@@ -2350,15 +2350,67 @@ async function refreshMine() {
   api('/api/auth/me').then(enterApp).catch(() => showAuth());
 })();
 
-// Models view - tab switching (isi menyusul)
+// Models view - data & rendering
+const MODELS_GRATIS = [
+  { id: 'qwen/qwen-plus-2025-07-28:free', name: 'Qwen Plus 2025', desc: 'Model Qwen terbaru dengan performa tinggi untuk chat.' },
+  { id: 'qwen/qwen3-max:free', name: 'Qwen3 Max', desc: 'Varian Max dari Qwen3, powerful untuk berbagai tugas.' },
+  { id: 'stealth/space-bunny-alpha:free', name: 'Space Bunny Alpha', desc: 'Model eksperimental yang cepat dan responsif.' },
+  { id: 'sensenova/sensenova-6.8-flash-lite', name: 'Sensenova 6.8 Flash Lite', desc: 'Model ringan dan cepat dari Sensenova.' },
+];
+const MODELS_VOUCHER = [];
+const MODELS_MATI = [
+  { id: 'inclusionai/ling-3.0-flash-sante:free', name: 'Ling 3.0 Flash Sante', desc: 'Tidak aktif - server error.' },
+  { id: 'liquid/lfm-2.5-2.6b:free', name: 'LFM 2.5 2.6B', desc: 'Tidak aktif - server error.' },
+  { id: 'apodex/apodex-1.1-mini:free', name: 'Apodex 1.1 Mini', desc: 'Tidak aktif - server error.' },
+  { id: 'dots-studio/dots-3-note-preview:free', name: 'Dots 3 Note Preview', desc: 'Tidak aktif - server error.' },
+];
+
+function modelCard(m, showCopy) {
+  const cleanId = m.id.replace(':free', '');
+  const copyBtn = showCopy !== false
+    ? '<button class="btn btn-sm" data-copy-model="' + esc(m.id) + '">Salin</button>'
+    : '';
+  return '<div class="model-card">' +
+    '<div class="model-card-head">' +
+      '<div class="model-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9z"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg></div>' +
+      '<div><h3 class="model-name">' + esc(m.name) + '</h3>' +
+      '<p class="model-desc">' + esc(m.desc) + '</p></div>' +
+    '</div>' +
+    '<div class="model-foot">' +
+      '<code class="model-id">' + esc(cleanId) + '</code>' + copyBtn +
+    '</div>' +
+  '</div>';
+}
+
+function renderModels(filter) {
+  const list = $('#models-list');
+  if (!list) return;
+  let arr = [];
+  if (filter === 'gratis') arr = MODELS_GRATIS;
+  else if (filter === 'voucher') arr = MODELS_VOUCHER;
+  else if (filter === 'mati') arr = MODELS_MATI;
+  if (!arr.length) {
+    const label = filter === 'gratis' ? 'gratis' : filter === 'voucher' ? 'voucher' : 'mati';
+    list.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">Belum ada model ' + label + '.</div>';
+    return;
+  }
+  list.innerHTML = arr.map(m => modelCard(m, filter !== 'mati')).join('');
+  // Attach copy handlers
+  list.querySelectorAll('[data-copy-model]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mid = btn.getAttribute('data-copy-model');
+      if (navigator.clipboard) navigator.clipboard.writeText(mid);
+      toast('ID model disalin', true);
+    });
+  });
+}
+
 document.querySelectorAll('[data-mfilter]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('[data-mfilter]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    const filter = btn.dataset.mfilter;
-    const list = $('#models-list');
-    if (list) {
-      list.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">Isi ' + filter + ' menyusul.</div>';
-    }
+    renderModels(btn.dataset.mfilter);
   });
 });
+// Render initial
+if ($('#models-list')) renderModels('gratis');
