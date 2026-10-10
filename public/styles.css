@@ -212,6 +212,9 @@ label input, label select { margin-top: .3rem; font-weight: 400; }
 .guide-step p { margin: 0; font-size: .9rem; }
 .landing-features { max-width: 1080px; margin: 0 auto; padding: 1.25rem 1.25rem; }
 .landing-features h2 { text-align: center; margin-bottom: .7rem; font-size: 1.25rem; }
+.landing-models { max-width: 1080px; margin: 0 auto; padding: 1.25rem 1.25rem; overflow: hidden; }
+.landing-models h2 { text-align: center; margin-bottom: .5rem; font-size: 1.35rem; }
+.landing-models-sub { text-align: center; color: var(--muted); margin-bottom: 1rem; font-size: .92rem; }
 .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
 .feat-card {
   background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
