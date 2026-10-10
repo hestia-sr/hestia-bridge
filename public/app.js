@@ -2590,6 +2590,12 @@ if ($('#models-list')) renderModels('gratis');
     navigator.clipboard.writeText(val).then(() => toast('Disalin!', true));
   });
   
+  const curlCopyBtn = document.getElementById('myworkerkey-curl-copy');
+  if (curlCopyBtn) curlCopyBtn.addEventListener('click', () => {
+    const val = document.getElementById('myworkerkey-curl').textContent;
+    navigator.clipboard.writeText(val).then(() => toast('cURL disalin!', true));
+  });
+  
   if (form) form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = nameInput.value.trim();
@@ -2615,6 +2621,16 @@ if ($('#models-list')) renderModels('gratis');
       
       if (res && res.token) {
         document.getElementById('myworkerkey-once-value').textContent = res.token;
+        // Generate cURL example
+        const baseUrl = window.location.origin + '/v1';
+        const curl = `curl ${baseUrl}/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer ${res.token}" \
+  -d '{
+    "model": "muse-ai",
+    "messages": [{"role": "user", "content": "Halo!"}]
+  }'`;
+        document.getElementById('myworkerkey-curl').textContent = curl;
         form.classList.add('hidden');
         result.classList.remove('hidden');
         errorDiv.classList.add('hidden');
