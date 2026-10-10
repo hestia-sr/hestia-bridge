@@ -214,8 +214,26 @@
       <label><span data-i18n="auth.reg.email">Email (Gmail)</span>
         <input type="email" id="reg-email" placeholder="nama@gmail.com" autocomplete="username" required>
       </label>
-      <label><span data-i18n="auth.reg.password">Password (min 6 karakter)</span>
-        <input type="password" id="reg-password" data-i18n-ph="auth.reg.password.ph" placeholder="Min 6 karakter" autocomplete="new-password" minlength="6" required>
+      <label><span>Nama Depan</span>
+        <input type="text" id="reg-firstname" placeholder="Nama depan" autocomplete="given-name" required>
+      </label>
+      <label><span>Nama Belakang</span>
+        <input type="text" id="reg-lastname" placeholder="Nama belakang" autocomplete="family-name" required>
+      </label>
+      <label><span>Username</span>
+        <input type="text" id="reg-username" placeholder="Username" autocomplete="username" minlength="3" required>
+      </label>
+      <label><span data-i18n="auth.reg.password">Sandi (min 6 karakter)</span>
+        <div class="password-input-row">
+          <input type="password" id="reg-password" data-i18n-ph="auth.reg.password.ph" placeholder="Min 6 karakter" autocomplete="new-password" minlength="6" required>
+          <button type="button" class="btn btn-ghost pw-toggle" data-target="reg-password" aria-label="Lihat sandi">👁</button>
+        </div>
+      </label>
+      <label><span>Konfirmasi Sandi</span>
+        <div class="password-input-row">
+          <input type="password" id="reg-password-confirm" placeholder="Ulangi sandi" autocomplete="new-password" minlength="6" required>
+          <button type="button" class="btn btn-ghost pw-toggle" data-target="reg-password-confirm" aria-label="Lihat sandi">👁</button>
+        </div>
       </label>
       <div id="otp-row" class="hidden">
         <label><span data-i18n="auth.reg.otp">Kode verifikasi (cek Gmail)</span>
