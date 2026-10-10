@@ -897,7 +897,32 @@ app.get('/api/auth/me', (req, res) => {
   }
   const u = db.users.find(x => x.id === s.userId);
   if (!u) return res.status(401).json({ error: 'not_authenticated' });
-  res.json({ ok: true, role: u.role, email: u.email, suspended: !!u.suspended });
+  res.json({ ok: true, role: u.role, email: u.email, suspended: !!u.suspended,
+    firstName: u.firstName || '', lastName: u.lastName || '',
+    username: u.username || '', avatar: u.avatar || '' });
+});
+
+// Update profile (nama depan, nama belakang, username, foto)
+app.patch('/api/auth/profile', (req, res) => {
+  const s = sessionOf(req);
+  if (!s || s.role === 'admin') return res.status(401).json({ error: 'not_authenticated' });
+  const u = db.users.find(x => x.id === s.userId);
+  if (!u) return res.status(401).json({ error: 'not_authenticated' });
+  const { firstName, lastName, username, avatar } = req.body || {};
+  if (typeof firstName === 'string' && firstName.length <= 50) u.firstName = firstName.trim();
+  if (typeof lastName === 'string' && lastName.length <= 50) u.lastName = lastName.trim();
+  if (typeof username === 'string' && username.length <= 30) {
+    const clean = username.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+    // Check username not taken by another user
+    const taken = db.users.some(x => x.id !== u.id && x.username === clean);
+    if (clean && taken) return res.status(400).json({ error: 'username_taken' });
+    u.username = clean;
+  }
+  if (typeof avatar === 'string' && avatar.startsWith('data:image/') && avatar.length <= 700000) {
+    u.avatar = avatar;
+  }
+  saveDb();
+  res.json({ ok: true });
 });
 
 /* ========================== admin: providers ============================= */
