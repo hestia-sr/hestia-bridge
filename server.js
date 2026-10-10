@@ -799,7 +799,7 @@ app.post('/api/auth/register', async (req, res) => {
   if (!ln) return res.status(400).json({ error: 'Nama belakang wajib diisi.' });
   if (!un || un.length < 3) return res.status(400).json({ error: 'Username minimal 3 karakter.' });
   if (!/^[a-zA-Z0-9_.-]+$/.test(un)) return res.status(400).json({ error: 'Username hanya boleh huruf, angka, titik, strip, underscore.' });
-  if (!un.includes('.')) return res.status(400).json({ error: 'Username harus mengandung titik (.).' });
+  if (!/[._-]/.test(un)) return res.status(400).json({ error: 'Username harus mengandung titik (.), strip (-), atau underscore (_).' });
   if (db.users.some(u => u.username && u.username.toLowerCase() === un.toLowerCase())) {
     return res.status(400).json({ error: 'Username sudah dipakai.' });
   }
