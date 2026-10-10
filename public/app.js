@@ -2269,7 +2269,8 @@ async function refreshMine() {
   $('#guide-base-url').textContent = BRIDGE_BASE;
   const guideEl = $('#my-guide-base-url');
   if (guideEl) guideEl.textContent = BRIDGE_BASE;
-  $('#login-curl').textContent =
+  const loginCurl = $('#login-curl');
+  if (loginCurl) loginCurl.textContent =
     'curl ' + BRIDGE_BASE + '/chat/completions \\\n' +
     '  -H "Authorization: Bearer hb-xxxx" \\\n' +
     '  -H "Content-Type: application/json" \\\n' +
