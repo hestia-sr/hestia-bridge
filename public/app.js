@@ -1268,6 +1268,7 @@ async function loadUsers() {
           : (u.suspended ? '<span class="badge off">' + t('badge.suspended') + '</span>' : '<span class="badge on">' + t('badge.active') + '</span>')) +
       '</div>' +
       '<div class="key-info">' +
+        '<div class="row"><span class="k">Username</span><span class="v">' + esc(u.username || '-') + '</span></div>' +
         '<div class="row"><span class="k">' + t('card.keys') + '</span><span class="v">' + u.keyCount + '</span></div>' +
         '<div class="row"><span class="k">IP</span><span class="v">' + esc(u.lastIp || '-') + '</span></div>' +
         '<div class="row"><span class="k">' + t('card.registered') + '</span><span class="v">' + fmtDate(u.createdAt) + '</span></div>' +
