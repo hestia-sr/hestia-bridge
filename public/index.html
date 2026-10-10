@@ -165,9 +165,9 @@
         <input type="email" id="login-email" placeholder="nama@email.com" autocomplete="username" required>
       </label>
       <label><span data-i18n="auth.password">Password</span>
-        <div class="password-input-row">
+        <div class="password-input-wrap">
           <input type="password" id="login-password" placeholder="Password" autocomplete="current-password" required>
-          <button type="button" class="btn btn-ghost pw-toggle" data-target="login-password" aria-label="Lihat sandi">Lihat</button>
+          <button type="button" class="pw-toggle-inside" data-target="login-password" aria-label="Lihat sandi">◉</button>
         </div>
       </label>
       <label class="check-row">
@@ -231,15 +231,15 @@
         <input type="email" id="reg-email" placeholder="nama@gmail.com" autocomplete="username" required>
       </label>
       <label><span data-i18n="auth.reg.password">Sandi (min 6 karakter)</span>
-        <div class="password-input-row">
+        <div class="password-input-wrap">
           <input type="password" id="reg-password" data-i18n-ph="auth.reg.password.ph" placeholder="Min 6 karakter" autocomplete="new-password" minlength="6" required>
-          <button type="button" class="btn btn-ghost pw-toggle" data-target="reg-password" aria-label="Lihat sandi">Lihat</button>
+          <button type="button" class="pw-toggle-inside" data-target="reg-password" aria-label="Lihat sandi">◉</button>
         </div>
       </label>
       <label><span>Konfirmasi Sandi</span>
-        <div class="password-input-row">
+        <div class="password-input-wrap">
           <input type="password" id="reg-password-confirm" placeholder="Ulangi sandi" autocomplete="new-password" minlength="6" required>
-          <button type="button" class="btn btn-ghost pw-toggle" data-target="reg-password-confirm" aria-label="Lihat sandi">Lihat</button>
+          <button type="button" class="pw-toggle-inside" data-target="reg-password-confirm" aria-label="Lihat sandi">◉</button>
         </div>
       </label>
       <div id="otp-row" class="hidden">
