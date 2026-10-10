@@ -1068,3 +1068,24 @@ body.dark .act-type.admin_action { background: #713f12; color: #fef08a; }
   font-size: .85rem;
   color: var(--muted);
 }
+
+/* Models page - cantik & estetik */
+#view-models .filter-tabs {
+  margin-bottom: 1.2rem;
+}
+#view-models h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.model-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: .8rem;
+}
+@media (max-width: 600px) {
+  #view-models .hero-body {
+    padding: .8rem;
+  }
+}
