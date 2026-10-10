@@ -819,7 +819,8 @@ async function loadMyKeys() {
 }
 function renderMyKeyList() {
   const box = $('#mykey-list');
-  let list = myKeysCache;
+  // Hanya tampilkan key gateway (provider), bukan worker
+  let list = myKeysCache.filter(k => k.mode !== 'worker');
   if (!list.length) {
     box.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">Belum ada key.</div>';
     return;
@@ -2644,3 +2645,33 @@ if ($('#models-list')) renderModels('gratis');
     }
   });
 })();
+
+// Tampilkan key worker di halaman Worker
+function renderWorkerKeyList() {
+  const box = document.getElementById('myworkerkey-list');
+  if (!box) return;
+  const list = (typeof myKeysCache !== 'undefined' ? myKeysCache : []).filter(k => k.mode === 'worker');
+  const countEl = document.getElementById('myworkerkey-count');
+  if (countEl) countEl.textContent = list.length + ' key';
+  if (!list.length) {
+    box.innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--muted)">Belum ada key worker.</div>';
+    return;
+  }
+  box.innerHTML = list.map(k => {
+    const created = k.createdAt ? timeAgo(k.createdAt) : '-';
+    const keyPrefix = k.token ? k.token.slice(0, 10) : (k.prefix || '');
+    return '<div class="key-table-row">' +
+      '<div><div style="font-weight:600">' + escapeHtml(k.name) + '</div>' +
+      '<div class="muted small">Worker: ' + escapeHtml(k.workerName || '-') + '</div></div>' +
+      '<div class="muted small">' + escapeHtml(keyPrefix) + '...</div>' +
+      '<div class="muted small">' + created + '</div>' +
+      '</div>';
+  }).join('');
+}
+
+// Panggil renderWorkerKeyList setiap loadMyKeys selesai
+const _origLoadMyKeys = loadMyKeys;
+loadMyKeys = async function() {
+  await _origLoadMyKeys();
+  renderWorkerKeyList();
+};
