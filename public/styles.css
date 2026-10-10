@@ -1100,3 +1100,88 @@ body.dark .act-type.admin_action { background: #713f12; color: #fef08a; }
   background: linear-gradient(135deg, #a855f7, #7c3aed) !important;
   color: #fff !important;
 }
+
+/* Model cards - cantik, rapi, estetik, mobile-friendly */
+.model-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem;
+  margin-bottom: .8rem;
+  transition: transform .15s, box-shadow .15s;
+}
+.model-card:active {
+  transform: scale(.99);
+}
+.model-card-head {
+  display: flex;
+  gap: .8rem;
+  align-items: flex-start;
+  margin-bottom: .7rem;
+}
+.model-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+}
+.model-icon svg {
+  width: 24px;
+  height: 24px;
+}
+.model-name {
+  margin: 0 0 .2rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.model-desc {
+  margin: 0;
+  font-size: .85rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.model-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin-bottom: .7rem;
+}
+.model-badge {
+  font-size: .75rem;
+  padding: .25rem .6rem;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-weight: 600;
+}
+.model-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+  padding-top: .7rem;
+  border-top: 1px solid var(--border);
+}
+.model-id {
+  font-family: monospace;
+  font-size: .78rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+@media (max-width: 600px) {
+  .model-card {
+    padding: .85rem;
+  }
+  .model-name {
+    font-size: 1rem;
+  }
+}
