@@ -75,7 +75,8 @@ function enterApp(me) {
     switchView('home');
     refreshAll();
   } else {
-    $('#my-foot-email').textContent = t('foot.signedin') + ' ' + me.email;
+    const myFootEmail = $('#my-foot-email');
+    if (myFootEmail) myFootEmail.textContent = t('foot.signedin') + ' ' + me.email;
     switchView('home');
     refreshMine();
   }
@@ -129,6 +130,7 @@ $('#login-form').addEventListener('submit', async e => {
   try {
     const r = await fetch('/api/auth/login', {
       method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: $('#login-email').value, password: $('#login-password').value })
     });
