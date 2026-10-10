@@ -618,6 +618,16 @@ $('#connect-curl-copy').addEventListener('click', async () => {
   toast(t('toast.curl.copied'));
 });
 
+// Dashboard curl copy button
+const dashCurlCopy = $('#dash-curl-copy');
+if (dashCurlCopy) dashCurlCopy.addEventListener('click', async () => {
+  const el = $('#dash-curl');
+  if (el) {
+    await navigator.clipboard.writeText(el.textContent);
+    toast(t('toast.curl.copied'));
+  }
+});
+
 /* rename modal */
 $('#rename-modal-close').addEventListener('click', () => $('#rename-modal').classList.add('hidden'));
 $('#rename-modal').addEventListener('click', e => {
