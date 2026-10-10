@@ -165,7 +165,14 @@
         <input type="email" id="login-email" placeholder="nama@email.com" autocomplete="username" required>
       </label>
       <label><span data-i18n="auth.password">Password</span>
-        <input type="password" id="login-password" placeholder="Password" autocomplete="current-password" required>
+        <div class="password-input-row">
+          <input type="password" id="login-password" placeholder="Password" autocomplete="current-password" required>
+          <button type="button" class="btn btn-ghost pw-toggle" data-target="login-password" aria-label="Lihat sandi">👁</button>
+        </div>
+      </label>
+      <label class="check-row">
+        <input type="checkbox" id="login-tos" required>
+        <span>Saya menyetujui <a href="#" id="tos-link-login">Syarat &amp; Ketentuan</a> Hestia Bridge</span>
       </label>
       <div id="login-error" class="error hidden"></div>
       <button type="submit" class="btn btn-primary btn-block" data-i18n="auth.login.submit">Masuk</button>
