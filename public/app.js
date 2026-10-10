@@ -976,7 +976,7 @@ if (myInlineBtn) myInlineBtn.addEventListener('click', async () => {
     const newKey = {
       id: j.id,
       name: j.name,
-      masked: j.token.slice(0, 6) + '...' + j.token.slice(-4),
+      masked: j.token.slice(0, 10),
       createdAt: new Date().toISOString(),
       lastUsedAt: null,
       revoked: false
