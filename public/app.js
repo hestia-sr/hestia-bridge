@@ -466,7 +466,9 @@ function switchView(name) {
     b.classList.toggle('active', b.dataset.view === name));
   document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
   $('#view-' + name).classList.remove('hidden');
-  $('.topbar-title').textContent = t(VIEW_TITLES[name] || 'topbar.keys');
+  const titleText = t(VIEW_TITLES[name] || 'topbar.keys');
+  $('.topbar-title').textContent = titleText;
+  document.title = 'Hestia Bridge — ' + titleText;
   closeDrawer();
   if (name === 'users') loadUsers();
   if (name === 'activities') loadActivities(true);
