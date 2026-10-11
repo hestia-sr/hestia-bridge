@@ -250,7 +250,12 @@ let saveTimer = null;
         });
         dirty = true;
       } else {
-        if (mp.key !== k) { mp.key = k; dirty = true; }
+        // Don't overwrite manually set keys with placeholders
+        const isPlaceholder = k.startsWith('placeholder');
+        const mpIsPlaceholder = mp.key && mp.key.startsWith('placeholder');
+        if (!isPlaceholder && mp.key !== k) { mp.key = k; dirty = true; }
+        else if (isPlaceholder && !mpIsPlaceholder) { /* keep manual key */ }
+        else if (mp.key !== k) { mp.key = k; dirty = true; }
         mp.models = models; dirty = true;
       }
     });
