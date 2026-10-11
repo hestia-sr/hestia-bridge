@@ -1998,3 +1998,32 @@ const I18N = {
     'table.lastused': 'Last used',
     'table.status': 'Status',
     'empty.mykeys.simple': 'No keys yet.',
+  },
+};
+
+// I18n helpers (reconstructed)
+let currentLang = localStorage.getItem('hestia-lang') || 'id';
+function t(key) {
+  const lang = I18N[currentLang] || I18N.id;
+  return lang[key] || I18N.id[key] || key;
+}
+function setLang(l) {
+  currentLang = l;
+  localStorage.setItem('hestia-lang', l);
+  applyI18n();
+}
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    const v = t(k);
+    if (v && v !== k) el.textContent = v;
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const k = el.getAttribute('data-i18n-ph');
+    const v = t(k);
+    if (v && v !== k) el.placeholder = v;
+  });
+  const lbl = document.getElementById('lang-label');
+  if (lbl) lbl.textContent = currentLang.toUpperCase();
+}
+document.addEventListener('DOMContentLoaded', () => { applyI18n(); });
