@@ -2487,7 +2487,7 @@ function modelCard(m, showCopy, locked) {
   const tersedia = showCopy !== false
     ? '<span class="badge-tersedia">' + t('card.available') + '</span>' : '';
   const lockBadge = locked
-    ? '<span class="badge-tersedia" style="background:#6b7280;margin-left:.3rem"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" style="vertical-align:-2px"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 1 1 6 0v3H9z"/></svg> Paket Voucher</span>' : '';
+    ? '<span class="badge-tersedia" style="background:#6b7280;margin-left:.3rem;padding:.2rem .4rem"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 1 1 6 0v3H9z"/></svg></span>' : '';
   // Capability badges
   let capsHtml = '';
   if (m.caps) {
@@ -2520,7 +2520,8 @@ function modelCard(m, showCopy, locked) {
   } else {
     logoHtml = '<div class="mc-logo"><span style="font-weight:800;font-size:1.1rem">' + esc(m.name.charAt(0).toUpperCase()) + '</span></div>';
   }
-  return '<div class="model-card-gate">' +
+  const disabledStyle = locked ? ' style="opacity:.6;filter:grayscale(.5);pointer-events:none"' : '';
+  return '<div class="model-card-gate"' + disabledStyle + '>' +
     '<div class="mc-top">' +
       logoHtml +
       '<div class="mc-idwrap"><code class="mc-id">' + esc(shortId) + '</code>' + copyBtn + '</div>' +
