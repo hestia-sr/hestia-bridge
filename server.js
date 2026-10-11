@@ -779,14 +779,12 @@ function customProviderOf(user) {
 /* ============================ public: health ============================= */
 app.get('/api/bansos/pool', (req, res) => {
   try {
+    // Total pool Bansos ditetapkan Hestia: 50 juta token (11 Okt 2026).
+    // Jangan jumlahkan quota semua key — itu kegandaan.
+    const total = 50000000;
     const keys = (db.keys || []).filter(k => k.providerId === 'gateai-bansos' && !k.revoked);
-    let total = 0, used = 0;
-    keys.forEach(k => {
-      if (k.tokenQuota) {
-        total += k.tokenQuota;
-        used += (k.tokenUsed || 0);
-      }
-    });
+    let used = 0;
+    keys.forEach(k => { used += (k.tokenUsed || 0); });
     res.json({ total, remaining: Math.max(0, total - used) });
   } catch (e) {
     res.json({ total: 0, remaining: 0 });
