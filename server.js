@@ -685,9 +685,11 @@ function recordUsage(keyId, model, promptTokens, completionTokens, streamed, via
   const k = db.keys.find(x => x.id === keyId);
   if (k) {
     k.lastUsedAt = nowIso();
+    const used = (promptTokens || 0) + (completionTokens || 0);
+    // Catat pemakaian di key itu sendiri (untuk pool Bansos dkk).
+    k.tokenUsed = (k.tokenUsed || 0) + used;
     if (k.userId) {
       const owner = db.users.find(u => u.id === k.userId);
-      const used = (promptTokens || 0) + (completionTokens || 0);
       if (owner && owner.plan === 'gratis' && typeof owner.freeTokens === 'number') {
         owner.freeTokens = Math.max(0, owner.freeTokens - used);
       }
