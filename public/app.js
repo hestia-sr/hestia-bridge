@@ -2468,6 +2468,7 @@ const MODELS_GRATIS = [
   { id: 'cohere/tiny-aya-global', name: 'Tiny Aya Global', desc: 'Model ringan Cohere.', provider: 'Cohere', context: '32.000', caps: { reasoning: false, text: true, vision: false } },
   { id: 'liquid/lfm-2.5-2.6b:free', name: 'LFM 2.5 2.6B', desc: 'Model compact yang efisien.', provider: 'Liquid', context: '32.000', caps: { reasoning: false, text: true, vision: false } },
 ];
+const MODELS_MATI = [];
 const MODELS_VOUCHER = [
   { id: 'qwen/qwen3-max:free', name: 'Qwen3 Max', desc: 'Varian Max dari Qwen3, powerful untuk berbagai tugas.', provider: 'Qwen', context: '262.144', caps: { reasoning: true, text: true, vision: false } },
   { id: 'qwen/qwen3.8-max:free', name: 'Qwen3.8 Max', desc: 'Generasi terbaru Qwen Max.', provider: 'Qwen', context: '1.000.000', caps: { reasoning: true, text: true, vision: true } },
@@ -2538,6 +2539,7 @@ function renderModels(filter) {
   let arr = [];
   if (filter === 'gratis') arr = MODELS_GRATIS;
   else if (filter === 'voucher') arr = MODELS_VOUCHER;
+  else if (filter === 'mati') arr = MODELS_MATI;
 
   if (!arr.length) {
     const label = t('models.filter.' + filter);
