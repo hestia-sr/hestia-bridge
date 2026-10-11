@@ -2473,12 +2473,7 @@ const MODELS_VOUCHER = [
   { id: 'qwen/qwen3.8-max:free', name: 'Qwen3.8 Max', desc: 'Generasi terbaru Qwen Max.', provider: 'Qwen', context: '1.000.000', caps: { reasoning: true, text: true, vision: true } },
   { id: 'qwen/qwen3-coder-plus:free', name: 'Qwen3 Coder Plus', desc: 'Model coding Qwen yang powerful.', provider: 'Qwen', context: '1.048.576', caps: { reasoning: true, text: true, vision: true } },
 ];
-const MODELS_MATI = [
-  { id: 'inclusionai/ling-3.0-flash-sante:free', name: 'Ling 3.0 Flash Sante', desc: 'Tidak aktif - server error.' },
-  { id: 'liquid/lfm-2.5-2.6b:free', name: 'LFM 2.5 2.6B', desc: 'Tidak aktif - server error.' },
-  { id: 'apodex/apodex-1.1-mini:free', name: 'Apodex 1.1 Mini', desc: 'Tidak aktif - server error.' },
-  { id: 'dots-studio/dots-3-note-preview:free', name: 'Dots 3 Note Preview', desc: 'Tidak aktif - server error.' },
-];
+
 
 function modelCard(m, showCopy, locked) {
   let shortId = m.id.replace(':free', '');
@@ -2543,7 +2538,7 @@ function renderModels(filter) {
   let arr = [];
   if (filter === 'gratis') arr = MODELS_GRATIS;
   else if (filter === 'voucher') arr = MODELS_VOUCHER;
-  else if (filter === 'mati') arr = MODELS_MATI;
+
   if (!arr.length) {
     const label = t('models.filter.' + filter);
     list.innerHTML = '<div class="card"><div class="card-body" style="padding:2rem;text-align:center;color:var(--muted)">' + t('models.empty') + ' ' + label + '.</div></div>';
