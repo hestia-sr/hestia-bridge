@@ -2416,7 +2416,7 @@ function renderModels(filter) {
   else if (filter === 'mati') arr = MODELS_MATI;
   if (!arr.length) {
     const label = filter === 'gratis' ? 'gratis' : filter === 'voucher' ? 'voucher' : 'mati';
-    list.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">Belum ada model ' + label + '.</div>';
+    list.innerHTML = '<div class="card"><div class="card-body" style="padding:2rem;text-align:center;color:var(--muted)">Belum ada model ' + label + '.</div></div>';
     return;
   }
   list.innerHTML = arr.map(m => modelCard(m, filter !== 'mati')).join('');
