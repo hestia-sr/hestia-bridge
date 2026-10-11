@@ -2654,7 +2654,7 @@ function renderWorkerKeyList() {
   const countEl = document.getElementById('myworkerkey-count');
   if (countEl) countEl.textContent = list.length + ' key';
   if (!list.length) {
-    box.innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--muted)">Belum ada key worker.</div>';
+    box.innerHTML = '<div class="card"><div class="card-body" style="padding:1.5rem;text-align:center;color:var(--muted)">Belum ada key worker.</div></div>';
     return;
   }
   box.innerHTML = list.map(k => {
