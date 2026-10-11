@@ -2372,6 +2372,11 @@ document.getElementById('lang-btn').addEventListener('click', () => {
   LANG = LANG === 'id' ? 'en' : 'id';
   applyLang();
   renderApps();
+  if (typeof renderModels === 'function' && !document.getElementById('view-models').classList.contains('hidden')) {
+    const activeTab = document.querySelector('.filter-tab.active');
+    const filter = activeTab ? activeTab.getAttribute('data-mfilter') : 'gratis';
+    renderModels(filter);
+  }
   const gb = $('#guide-base-url');
   if (gb) gb.textContent = BRIDGE_BASE;
   const mgb = $('#my-guide-base-url');
