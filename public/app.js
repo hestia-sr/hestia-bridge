@@ -460,7 +460,7 @@ function closeDrawer() {
 }
 $('#drawer-btn').addEventListener('click', openDrawer);
 $('#drawer-backdrop').addEventListener('click', closeDrawer);
-const VIEW_TITLES = { home: 'nav.home', keys: 'topbar.keys', providers: 'nav.providers', users: 'nav.users', activities: 'nav.activities', mykeys: 'nav.mykeys', myworkers: 'nav.myworkers', settings: 'nav.settings', models: 'Model', voucher: 'Voucher' };
+const VIEW_TITLES = { home: 'nav.home', keys: 'topbar.keys', providers: 'nav.providers', users: 'nav.users', activities: 'nav.activities', vouchermgmt: 'nav.vouchermgmt', mykeys: 'nav.mykeys', myworkers: 'nav.myworkers', settings: 'nav.settings', models: 'Model', voucher: 'Voucher' };
 function switchView(name) {
   document.querySelectorAll('.drawer-btn[data-view]').forEach(b =>
     b.classList.toggle('active', b.dataset.view === name));
@@ -472,6 +472,7 @@ function switchView(name) {
   closeDrawer();
   if (name === 'users') loadUsers();
   if (name === 'activities') loadActivities(true);
+  if (name === 'vouchermgmt') loadVouchers();
   if (name === 'settings') loadMySettings();
   if (name === 'myworkers') { loadMyWorkers(); refreshWorkerAgentCard(); }
 }
@@ -1660,6 +1661,13 @@ const I18N = {
     'voucher.d3': '3 hari',
     'voucher.d7': '1 minggu',
     'voucher.dunlimited': 'Unlimited',
+    'voucher.redeemTitle': 'Punya Kode Voucher?',
+    'voucher.redeemDesc': 'Masukkan kode untuk menambah token.',
+    'voucher.redeem': 'Tukar',
+    'nav.vouchermgmt': 'Voucher',
+    'vouchermgmt.title': 'Kelola Voucher',
+    'vouchermgmt.create': 'Buat',
+    'vouchermgmt.list': 'Daftar Voucher',
     'nav.voucher': 'Voucher',
     'keys.desc': 'Kunci API mengautentikasi request Anda. Jaga kerahasiaannya.',
     'keys.new': '+ Buat kunci baru',
@@ -2013,6 +2021,13 @@ const I18N = {
     'voucher.d3': '3 days',
     'voucher.d7': '1 week',
     'voucher.dunlimited': 'Unlimited',
+    'voucher.redeemTitle': 'Have a Voucher Code?',
+    'voucher.redeemDesc': 'Enter the code to add tokens.',
+    'voucher.redeem': 'Redeem',
+    'nav.vouchermgmt': 'Vouchers',
+    'vouchermgmt.title': 'Manage Vouchers',
+    'vouchermgmt.create': 'Create',
+    'vouchermgmt.list': 'Voucher List',
     'nav.voucher': 'Voucher',
     'keys.desc': 'API keys authenticate your requests. Keep them secret.',
     'keys.new': '+ New key',
@@ -2786,3 +2801,80 @@ loadMyKeys = async function() {
   await _origLoadMyKeys();
   renderWorkerKeyList();
 };
+
+// Voucher redeem
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('voucher-redeem-btn');
+  if (btn) {
+    btn.addEventListener('click', async () => {
+      const input = document.getElementById('voucher-code-input');
+      const msg = document.getElementById('voucher-redeem-msg');
+      const code = (input.value || '').trim();
+      if (!code) {
+        msg.textContent = LANG === 'id' ? 'Masukkan kode dulu.' : 'Enter the code first.';
+        msg.style.color = '#e53e3e';
+        return;
+      }
+      btn.disabled = true;
+      try {
+        const r = await api('/api/vouchers/redeem', { method: 'POST', body: JSON.stringify({ code }) });
+        msg.textContent = (LANG === 'id' ? 'Berhasil! +' : 'Success! +') + r.tokens.toLocaleString('id-ID') + (LANG === 'id' ? ' token.' : ' tokens.');
+        msg.style.color = '#38a169';
+        input.value = '';
+      } catch (err) {
+        msg.textContent = 'Gagal: ' + (err.message || 'unknown');
+        msg.style.color = '#e53e3e';
+      }
+      btn.disabled = false;
+    });
+  }
+});
+
+async function loadVouchers() {
+  const list = document.getElementById('vm-list');
+  if (!list) return;
+  try {
+    const r = await api('/api/vouchers');
+    if (!r.vouchers.length) {
+      list.innerHTML = '<p class="muted">Belum ada voucher.</p>';
+      return;
+    }
+    list.innerHTML = r.vouchers.map(v =>
+      '<div style="padding:.5rem;border-bottom:1px solid #eee">' +
+      '<div style="font-family:monospace;font-weight:700">' + v.code + '</div>' +
+      '<div>' + v.tokens.toLocaleString('id-ID') + ' token' +
+      (v.redeemedBy ? ' <span style="color:#e53e3e">(dipakai)</span>' : ' <span style="color:#38a169">(aktif)</span>') +
+      '</div></div>'
+    ).join('');
+  } catch (e) {
+    list.innerHTML = '<p>Gagal memuat.</p>';
+  }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('vm-create');
+  if (btn) {
+    btn.addEventListener('click', async () => {
+      const inp = document.getElementById('vm-tokens');
+      const msg = document.getElementById('vm-msg');
+      const tokens = parseInt(inp.value, 10);
+      if (!tokens || tokens <= 0) {
+        msg.textContent = 'Masukkan jumlah token.';
+        msg.style.color = '#e53e3e';
+        return;
+      }
+      btn.disabled = true;
+      try {
+        const r = await api('/api/vouchers', { method: 'POST', body: JSON.stringify({ tokens }) });
+        msg.textContent = 'Voucher dibuat: ' + r.code;
+        msg.style.color = '#38a169';
+        inp.value = '';
+        loadVouchers();
+      } catch (e) {
+        msg.textContent = 'Gagal: ' + (e.message || 'unknown');
+        msg.style.color = '#e53e3e';
+      }
+      btn.disabled = false;
+    });
+  }
+});
+
