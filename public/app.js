@@ -2685,7 +2685,7 @@ function renderWorkerKeyList() {
         toast('Key dihapus', true);
         if (typeof loadMyKeys === 'function') await loadMyKeys();
       } catch (err) {
-        toast('Gagal menghapus', false);
+        toast('Gagal: ' + (err.message || 'unknown'), false);
       }
     });
   });
