@@ -232,7 +232,7 @@ let saveTimer = null;
         workerId: null,
         model: null,
         userId: null,
-        tokenQuota: null,
+        tokenQuota: 100000000,
         createdAt: nowIso(),
         lastUsedAt: null,
         revoked: false
