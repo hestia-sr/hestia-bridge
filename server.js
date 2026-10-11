@@ -828,11 +828,7 @@ app.post('/api/auth/register', async (req, res) => {
   const fp = String(fingerprint || '').slice(0, 128);
   let suspended = false;
   const sameDevice = usersOnDevice(fp);
-  if (sameDevice.length >= MAX_PER_DEVICE) {
-    // 1 device = 1 Gmail: tolak pendaftar baru dari device yang sudah punya akun.
-    return res.status(400).json({ error: 'Device ini sudah terdaftar. 1 device hanya untuk 1 Gmail.' });
-  }
-  // Free 500k tokens only for the first account on this device
+  // Allow registration, but only first account on device gets free tokens
   const isFirstOnDevice = sameDevice.length === 0;
   const user = {
     id: uid('user_'),
