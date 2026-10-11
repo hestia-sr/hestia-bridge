@@ -2468,7 +2468,11 @@ const MODELS_GRATIS = [
   { id: 'cohere/command-a', name: 'Command A', desc: 'Model flagship Cohere.', provider: 'Cohere', context: '256.000', caps: { reasoning: true, text: true, vision: false } },
   { id: 'qwen/qwen-plus-2025-07-28:free', name: 'Qwen Plus 2025', desc: 'Model Qwen terbaru dengan performa tinggi untuk chat.', provider: 'Qwen', context: '131.072', caps: { reasoning: true, text: true, vision: false } },
 ];
-const MODELS_VOUCHER = [];
+const MODELS_VOUCHER = [
+  { id: 'qwen/qwen3-max:free', name: 'Qwen3 Max', desc: 'Varian Max dari Qwen3, powerful untuk berbagai tugas.', provider: 'Qwen', context: '262.144', caps: { reasoning: true, text: true, vision: false } },
+  { id: 'qwen/qwen3.8-max:free', name: 'Qwen3.8 Max', desc: 'Generasi terbaru Qwen Max.', provider: 'Qwen', context: '1.000.000', caps: { reasoning: true, text: true, vision: true } },
+  { id: 'qwen/qwen3-coder-plus:free', name: 'Qwen3 Coder Plus', desc: 'Model coding Qwen yang powerful.', provider: 'Qwen', context: '1.048.576', caps: { reasoning: true, text: true, vision: true } },
+];
 const MODELS_MATI = [
   { id: 'inclusionai/ling-3.0-flash-sante:free', name: 'Ling 3.0 Flash Sante', desc: 'Tidak aktif - server error.' },
   { id: 'liquid/lfm-2.5-2.6b:free', name: 'LFM 2.5 2.6B', desc: 'Tidak aktif - server error.' },
@@ -2503,7 +2507,15 @@ function modelCard(m, showCopy, locked) {
   const logoImgs = {
     'Qwen': 'logos/qwen.png',
     'Sensenova': 'logos/sensenova.png',
-    'Stealth': 'logos/space-bunny.png'
+    'Stealth': 'logos/space-bunny.png',
+    'Mistral': 'logos/mistral.png',
+    'Cohere': 'logos/cohere.png',
+    'Meta': 'logos/meta.png',
+    'Anthropic': 'logos/anthropic.png',
+    'DeepSeek': 'logos/deepseek.png',
+    'Google': 'logos/gemini.png',
+    'xAI': 'logos/grok.png',
+    'OpenAI': 'logos/chatgpt.png'
   };
   let logoHtml;
   if (logoImgs[m.provider]) {
