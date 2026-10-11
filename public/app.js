@@ -399,7 +399,13 @@ function renderPlan() {
   }
   const now = Date.now();
   const remain = Math.max(0, (planData.planExpiresAt || 0) - now);
-  $('#plan-countdown').textContent = fmtCountdown(remain);
+  // Show tokens + countdown for paid plans
+  let countdownText = fmtCountdown(remain);
+  if (planData.planTokens) {
+    const remaining = planData.planTokens - (planData.planTokensUsed || 0);
+    countdownText = remaining.toLocaleString('id-ID') + ' token • ' + countdownText;
+  }
+  $('#plan-countdown').textContent = countdownText;
   // progress bar: sisa dibanding total durasi paket
   const totals = { '1hari': 864e5, '3hari': 3 * 864e5, '1minggu': 7 * 864e5 };
   const total = totals[planData.plan] || 864e5;
