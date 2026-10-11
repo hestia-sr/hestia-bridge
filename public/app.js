@@ -678,7 +678,7 @@ function fillKeyModels() {
   const p = keyProvidersCache.find(x => x.id === pid);
   const models = (p && p.models) || [];
   $('#key-model').innerHTML = models.length
-    ? models.map(m => '<option value="' + esc(m) + '">' + esc(m) + '</option>').join('')
+    ? '<option value="">Semua model</option>' + models.map(m => '<option value="' + esc(m) + '">' + esc(m) + '</option>').join('')
     : '<option value="">' + t('opt.no.model') + '</option>';
 }
 $('#key-provider').addEventListener('change', fillKeyModels);
