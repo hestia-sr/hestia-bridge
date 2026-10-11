@@ -116,8 +116,8 @@
       </div>
       <div style="background:rgba(255,255,255,.05);border-radius:12px;padding:1.2rem;text-align:left">
         <p style="margin:0 0 .5rem;font-size:.7rem;letter-spacing:.15em;opacity:.6">GLOBAL POOL TERSISA</p>
-        <p style="margin:0 0 .8rem;font-size:1.8rem;font-weight:800">99.900.000 <span style="font-size:.9rem;font-weight:400;opacity:.6">/ 100.000.000 TOKEN</span></p>
-        <div style="background:rgba(255,255,255,.1);border-radius:10px;height:8px;overflow:hidden"><div style="background:linear-gradient(90deg,#667eea,#764ba2);height:100%;width:99.9%;border-radius:10px"></div></div>
+        <p style="margin:0 0 .8rem;font-size:1.8rem;font-weight:800"><span id="bansos-remaining">99.900.000</span> <span style="font-size:.9rem;font-weight:400;opacity:.6">/ <span id="bansos-total">100.000.000</span> TOKEN</span></p>
+        <div style="background:rgba(255,255,255,.1);border-radius:10px;height:8px;overflow:hidden"><div id="bansos-bar" style="background:linear-gradient(90deg,#667eea,#764ba2);height:100%;width:99.9%;border-radius:10px"></div></div>
         <p style="margin:.8rem 0 0;font-size:.75rem;opacity:.6">Berakhir 12 Oktober 2026 22:18 WIB</p>
       </div>
     </div>
@@ -133,6 +133,15 @@
       if(e3)e3.textContent=String(min).padStart(2,'0'); if(e4)e4.textContent=String(sec).padStart(2,'0');
     }
     tick(); setInterval(tick,1000);
+    // Fetch bansos pool
+    fetch('/api/bansos/pool').then(r=>r.json()).then(d=>{
+      if(d.total>0){
+        var rem=document.getElementById('bansos-remaining'), tot=document.getElementById('bansos-total'), bar=document.getElementById('bansos-bar');
+        if(rem)rem.textContent=d.remaining.toLocaleString('id-ID');
+        if(tot)tot.textContent=d.total.toLocaleString('id-ID');
+        if(bar)bar.style.width=(d.remaining/d.total*100)+'%';
+      }
+    }).catch(()=>{});
   })();
   </script>
 
