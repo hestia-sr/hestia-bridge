@@ -50,13 +50,14 @@ function loadDb() {
         wqueue: Array.isArray(d.wqueue) ? d.wqueue : [],
         users: Array.isArray(d.users) ? d.users : [],
         sessions: (d.sessions && typeof d.sessions === 'object') ? d.sessions : {},
-        freeTokenDevices: Array.isArray(d.freeTokenDevices) ? d.freeTokenDevices : []
+        freeTokenDevices: Array.isArray(d.freeTokenDevices) ? d.freeTokenDevices : [],
+        vouchers: Array.isArray(d.vouchers) ? d.vouchers : []
       };
     }
   } catch (e) {
     console.error('[db] load failed, starting fresh:', e.message);
   }
-  return { providers: [], keys: [], usage: [], workers: [], wqueue: [], users: [], sessions: {}, freeTokenDevices: [] };
+  return { providers: [], keys: [], usage: [], workers: [], wqueue: [], users: [], sessions: {}, freeTokenDevices: [], vouchers: [] };
 }
 const PLAN_DURATIONS = {
   gratis: 24 * 3600 * 1000,
@@ -1535,6 +1536,46 @@ app.delete('/api/users/:id', requireAdmin, (req, res) => {
   saveDb();
   adminLog(req, 'Hapus pengguna ' + u.email + ' permanen', { userId: u.id, email: u.email });
   res.json({ ok: true });
+});
+
+/* ==================== vouchers ==================== */
+function generateVoucherCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s = '';
+  for (let i = 0; i < 16; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return 'hesti-' + s.slice(0,4) + '-' + s.slice(4,8) + '-' + s.slice(8,12) + '-' + s.slice(12,16);
+}
+app.get('/api/vouchers', requireAdmin, (req, res) => {
+  res.json({ vouchers: db.vouchers.map(v => ({
+    code: v.code, tokens: v.tokens, createdAt: v.createdAt,
+    redeemedBy: v.redeemedBy || null, redeemedAt: v.redeemedAt || null
+  })) });
+});
+app.post('/api/vouchers', requireAdmin, (req, res) => {
+  const tokens = Math.floor(Number(req.body && req.body.tokens) || 0);
+  if (!tokens || tokens <= 0) return res.status(400).json({ error: 'tokens harus > 0' });
+  let code = generateVoucherCode();
+  while (db.vouchers.some(v => v.code === code)) code = generateVoucherCode();
+  const v = { code, tokens, createdAt: nowIso(), redeemedBy: null, redeemedAt: null };
+  db.vouchers.push(v);
+  saveDb();
+  adminLog(req, 'Buat voucher ' + code + ' (' + tokens.toLocaleString('id-ID') + ' token)', {});
+  res.json({ ok: true, code, tokens });
+});
+app.post('/api/vouchers/redeem', requireUser, (req, res) => {
+  const code = String((req.body && req.body.code) || '').trim();
+  if (!code) return res.status(400).json({ error: 'kode wajib diisi' });
+  const v = db.vouchers.find(x => x.code === code);
+  if (!v) return res.status(404).json({ error: 'Kode voucher tidak valid.' });
+  if (v.redeemedBy) return res.status(400).json({ error: 'Kode voucher sudah dipakai.' });
+  const u = req.user || db.users.find(x => x.id === (req.session && req.session.userId));
+  if (!u) return res.status(401).json({ error: 'unauthorized' });
+  v.redeemedBy = u.id;
+  v.redeemedAt = nowIso();
+  u.freeTokens = (typeof u.freeTokens === 'number' ? u.freeTokens : 0) + v.tokens;
+  saveDb();
+  logActivity('voucher_redeem', { userId: u.id, email: u.email, detail: code + ' +' + v.tokens });
+  res.json({ ok: true, tokens: v.tokens, freeTokens: u.freeTokens });
 });
 
 /* =========================== admin: workers ============================== */
