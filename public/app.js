@@ -2407,6 +2407,18 @@ function modelCard(m, showCopy) {
   '</div>';
 }
 
+// Voucher price toggle
+document.addEventListener('DOMContentLoaded', () => {
+  const vbtn = document.getElementById('voucher-price-btn');
+  const vsec = document.getElementById('voucher-price-section');
+  if (vbtn && vsec) {
+    vbtn.addEventListener('click', () => {
+      vsec.classList.toggle('hidden');
+      vbtn.textContent = vsec.classList.contains('hidden') ? '🎫 Lihat Harga Voucher' : '🎫 Sembunyikan Harga Voucher';
+    });
+  }
+});
+
 function renderModels(filter) {
   const list = $('#models-list');
   if (!list) return;
@@ -2415,30 +2427,7 @@ function renderModels(filter) {
   else if (filter === 'voucher') arr = MODELS_VOUCHER;
   else if (filter === 'mati') arr = MODELS_MATI;
   if (!arr.length) {
-    if (filter === 'voucher') {
-      const vouchers = [
-        { name: 'Basic', tokens: '300k', price: 'Rp3.000', duration: '1 hari', gradient: 'linear-gradient(135deg,#667eea,#764ba2)', icon: '✦' },
-        { name: 'Lite', tokens: '500k', price: 'Rp5.000', duration: '3 hari', gradient: 'linear-gradient(135deg,#f093fb,#f5576c)', icon: '✧' },
-        { name: 'Epic', tokens: '1jt', price: 'Rp10.000', duration: '1 minggu', gradient: 'linear-gradient(135deg,#4facfe,#00f2fe)', icon: '★' },
-        { name: 'Pro', tokens: '2jt', price: 'Rp15.000', duration: 'Unlimited', gradient: 'linear-gradient(135deg,#43e97b,#38f9d7)', icon: '◆' },
-      ];
-      list.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">' + vouchers.map(v =>
-        '<div class="card" style="overflow:hidden;border:none;box-shadow:0 4px 15px rgba(0,0,0,.1)">' +
-          '<div style="background:' + v.gradient + ';padding:1.2rem;color:#fff;text-align:center">' +
-            '<div style="font-size:1.8rem;margin-bottom:.3rem">' + v.icon + '</div>' +
-            '<div style="font-weight:700;font-size:1.1rem">Voucher ' + v.name + '</div>' +
-          '</div>' +
-          '<div class="card-body" style="text-align:center;padding:1rem">' +
-            '<div style="font-size:1.4rem;font-weight:700;color:var(--primary);margin-bottom:.2rem">' + v.tokens + '</div>' +
-            '<div class="muted small" style="margin-bottom:.5rem">Token</div>' +
-            '<div style="font-weight:600;font-size:1.1rem;margin-bottom:.2rem">' + v.price + '</div>' +
-            '<div class="muted small">' + v.duration + '</div>' +
-          '</div>' +
-        '</div>'
-      ).join('') + '</div>';
-      return;
-    }
-    const label = filter === 'gratis' ? 'gratis' : 'mati';
+    const label = filter === 'gratis' ? 'gratis' : filter === 'voucher' ? 'voucher' : 'mati';
     list.innerHTML = '<div class="card"><div class="card-body" style="padding:2rem;text-align:center;color:var(--muted)">Belum ada model ' + label + '.</div></div>';
     return;
   }
