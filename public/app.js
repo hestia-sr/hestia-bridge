@@ -763,6 +763,7 @@ async function loadProviders() {
       '</div>' +
       '<div class="key-actions">' +
         '<button class="btn btn-sm" data-act="test" data-id="' + p.id + '">' + t('btn.test') + '</button>' +
+        '<button class="btn btn-sm" data-act="edit" data-id="' + p.id + '">Edit Key</button>' +
         '<button class="btn btn-sm btn-danger" data-act="del" data-id="' + p.id + '">' + t('btn.delete') + '</button>' +
       '</div>' +
     '</div>'
@@ -784,6 +785,15 @@ $('#prov-list').addEventListener('click', async e => {
       const j = await api('/api/providers/' + id + '/test', { method: 'POST' });
       btn.disabled = false;
       toast(j.ok ? (t('toast.conn.ok') + j.modelCount + ' ' + t('card.models') + '.') : (t('toast.failed') + j.error));
+      await loadProviders();
+    } else if (btn.dataset.act === 'edit') {
+      const newKey = prompt('Masukkan API key baru untuk ' + id + ':');
+      if (!newKey) return;
+      await api('/api/providers/' + id, {
+        method: 'PATCH',
+        body: JSON.stringify({ apiKey: newKey })
+      });
+      toast('Key updated');
       await loadProviders();
     } else if (btn.dataset.act === 'del') {
       if (!confirm(t('confirm.provider.delete'))) return;
