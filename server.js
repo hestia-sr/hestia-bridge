@@ -212,8 +212,7 @@ let saveTimer = null;
 // GateAI Bansos provider
 (function(){
   try {
-    const gateaiKey = process.env.GATEAI_API_KEY || '';
-    if (!gateaiKey) return;
+    const gateaiKey = process.env.GATEAI_API_KEY || 'sk-live-a45e5f6317506448d467297917410544af9604e82aef07b499469f59c98f5938';
     let gp = db.providers.find(p => p.id === 'gateai-bansos');
     const models = ['Atria-Dawn-Preview', 'deepseek-v4-pro', 'deepseek-v4.1-flash', 'gpt-5.6-luna', 'gpt-5.6-sol'];
     if (!gp) {
