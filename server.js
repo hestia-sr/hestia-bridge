@@ -202,31 +202,38 @@ let saveTimer = null;
   } catch (e) { console.error('seed gateai gagal:', e.message); }
 })();
 
-// AI4All provider untuk model gratis tambahan (dari Hestia, 2026-10-11)
+// AI4All provider untuk model gratis tambahan (dari Hestia, 2026-10-11). Mendukung 2 key.
 (function(){
   try {
-    const ai4allKey = process.env.AI4ALL_API_KEY || '';
     const models = ['llama3.2:3b', 'qwen2.5:7b', 'qwen3-coder:30b'];
-    let ap = db.providers.find(p => p.id === 'ai4all');
-    if (!ap) {
-      db.providers.push({
-        id: 'ai4all',
-        name: 'AI4All',
-        baseUrl: 'https://ai4all.infergo.ai/v1',
-        key: ai4allKey,
-        models: models,
-        createdAt: nowIso()
-      });
-      saveDb();
-    } else {
-      let dirty = false;
-      if (ap.baseUrl !== 'https://ai4all.infergo.ai/v1') { ap.baseUrl = 'https://ai4all.infergo.ai/v1'; dirty = true; }
-      // Jangan timpa key yang di-set manual via admin dengan env kosong.
-      if (ai4allKey && ap.key !== ai4allKey) { ap.key = ai4allKey; dirty = true; }
-      ap.models = models; dirty = true;
-      ap.name = 'AI4All'; dirty = true;
-      if (dirty) saveDb();
-    }
+    const keys = [
+      process.env.AI4ALL_API_KEY || '',
+      process.env.AI4ALL_API_KEY_2 || ''
+    ];
+    keys.forEach((k, i) => {
+      const pid = i === 0 ? 'ai4all' : 'ai4all-' + (i+1);
+      const pname = i === 0 ? 'AI4All' : 'AI4All ' + (i+1);
+      let ap = db.providers.find(p => p.id === pid);
+      if (!ap) {
+        db.providers.push({
+          id: pid,
+          name: pname,
+          baseUrl: 'https://ai4all.infergo.ai/v1',
+          key: k,
+          models: models,
+          createdAt: nowIso()
+        });
+        saveDb();
+      } else {
+        let dirty = false;
+        if (ap.baseUrl !== 'https://ai4all.infergo.ai/v1') { ap.baseUrl = 'https://ai4all.infergo.ai/v1'; dirty = true; }
+        // Jangan timpa key yang di-set manual via admin dengan env kosong.
+        if (k && ap.key !== k) { ap.key = k; dirty = true; }
+        ap.models = models; dirty = true;
+        ap.name = pname; dirty = true;
+        if (dirty) saveDb();
+      }
+    });
   } catch (e) { console.error('seed ai4all gagal:', e.message); }
 })();
 
@@ -2244,7 +2251,7 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
   // AI4All: model gratis tambahan (dari Hestia, 2026-10-11)
   const ai4allModels = ['llama3.2:3b', 'qwen2.5:7b', 'qwen3-coder:30b'];
   if (body.model && ai4allModels.includes(body.model)) {
-    const ap = db.providers.find(p => p.id === 'ai4all' && p.key);
+    const ap = db.providers.find(p => (p.id === 'ai4all' || p.id.startsWith('ai4all-')) && p.key);
     if (ap) provider = ap;
   }
   const target = provider.baseUrl + '/chat/completions';
