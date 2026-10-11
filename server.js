@@ -1727,6 +1727,28 @@ app.get('/api/my-plan', requireUser, (req, res) => {  if (!req.user) return res.
     planTokensUsed: typeof u.planTokensUsed === 'number' ? u.planTokensUsed : 0,
   });
 });
+
+app.get('/api/my-stats', requireUser, (req, res) => {
+  const u = req.user;
+  if (!u) return res.json({ totalTokens: 0, totalRequests: 0, models: [] });
+  const userKeyIds = new Set(db.keys.filter(k => k.userId === u.id).map(k => k.id));
+  let totalTokens = 0;
+  let totalRequests = 0;
+  const modelsSet = new Set();
+  for (const entry of db.usage) {
+    if (userKeyIds.has(entry.keyId)) {
+      totalRequests++;
+      totalTokens += (entry.promptTokens || 0) + (entry.completionTokens || 0);
+      if (entry.model) modelsSet.add(entry.model);
+    }
+  }
+  res.json({
+    totalTokens,
+    totalRequests,
+    models: Array.from(modelsSet),
+    ttl: u.planExpiresAt || null,
+  });
+});
 app.delete('/api/users/:id', requireAdmin, (req, res) => {
   const i = db.users.findIndex(x => x.id === req.params.id);
   if (i < 0) return res.status(404).json({ error: 'user_not_found' });
