@@ -104,17 +104,37 @@
   </section>
 
   <section id="bansos-banner" class="center-wrap" style="margin-bottom:2rem">
-    <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:16px;padding:2rem;text-align:center;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.15)">
-      <h2 style="margin:0 0 .5rem;font-size:1.8rem;font-weight:800">Bansos Token</h2>
-      <p style="margin:0 0 1rem;opacity:.9">100 Juta Token Gratis! Model AI premium untuk semua.</p>
-      <div style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap">
-        <span style="background:rgba(255,255,255,.2);padding:.4rem .8rem;border-radius:20px;font-size:.85rem">DeepSeek V4 Pro</span>
-        <span style="background:rgba(255,255,255,.2);padding:.4rem .8rem;border-radius:20px;font-size:.85rem">DeepSeek V4.1 Flash</span>
-        <span style="background:rgba(255,255,255,.2);padding:.4rem .8rem;border-radius:20px;font-size:.85rem">GPT-5.6 Luna</span>
-        <span style="background:rgba(255,255,255,.2);padding:.4rem .8rem;border-radius:20px;font-size:.85rem">GPT-5.6 Sol</span>
+    <div style="background:#1a1a2e;border-radius:20px;padding:2.5rem 2rem;text-align:center;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.2)">
+      <p style="margin:0 0 1rem;font-size:.75rem;letter-spacing:.2em;opacity:.7">CAMPAIGN RESMI &bull; 100 JUTA TOKEN BANSOS &bull; OKTOBER 2026</p>
+      <h2 style="margin:0 0 1rem;font-size:2.2rem;font-weight:800;line-height:1.2">100 Juta Token.<br><span style="color:#a8b5ff">Pakai Model AI<br>Berbayar Gratis.</span></h2>
+      <p style="margin:0 auto 1.5rem;max-width:500px;opacity:.8;line-height:1.6">Model AI premium (DeepSeek V4 Pro, DeepSeek V4.1 Flash, GPT-5.6 Luna/Sol) dapat kamu gunakan gratis menggunakan kuota Bansos.</p>
+      <div style="display:flex;gap:.8rem;justify-content:center;margin-bottom:1.5rem">
+        <div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:.8rem 1.2rem;min-width:70px"><div id="bansos-d" style="font-size:1.5rem;font-weight:800">00</div><div style="font-size:.65rem;opacity:.6;margin-top:.2rem">HARI</div></div>
+        <div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:.8rem 1.2rem;min-width:70px"><div id="bansos-h" style="font-size:1.5rem;font-weight:800">00</div><div style="font-size:.65rem;opacity:.6;margin-top:.2rem">JAM</div></div>
+        <div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:.8rem 1.2rem;min-width:70px"><div id="bansos-m" style="font-size:1.5rem;font-weight:800">00</div><div style="font-size:.65rem;opacity:.6;margin-top:.2rem">MENIT</div></div>
+        <div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:.8rem 1.2rem;min-width:70px"><div id="bansos-s" style="font-size:1.5rem;font-weight:800">00</div><div style="font-size:.65rem;opacity:.6;margin-top:.2rem">DETIK</div></div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border-radius:12px;padding:1.2rem;text-align:left">
+        <p style="margin:0 0 .5rem;font-size:.7rem;letter-spacing:.15em;opacity:.6">GLOBAL POOL TERSISA</p>
+        <p style="margin:0 0 .8rem;font-size:1.8rem;font-weight:800">99.900.000 <span style="font-size:.9rem;font-weight:400;opacity:.6">/ 100.000.000 TOKEN</span></p>
+        <div style="background:rgba(255,255,255,.1);border-radius:10px;height:8px;overflow:hidden"><div style="background:linear-gradient(90deg,#667eea,#764ba2);height:100%;width:99.9%;border-radius:10px"></div></div>
+        <p style="margin:.8rem 0 0;font-size:.75rem;opacity:.6">Berakhir 12 Oktober 2026 22:18 WIB</p>
       </div>
     </div>
   </section>
+  <script>
+  (function(){
+    var end = new Date('2026-10-12T22:18:00+07:00').getTime();
+    function tick(){
+      var now = Date.now(); var d = Math.max(0, end - now);
+      var days = Math.floor(d/864e5), hrs = Math.floor(d%864e5/36e5), min = Math.floor(d%36e5/6e4), sec = Math.floor(d%6e4/1e3);
+      var e1=document.getElementById('bansos-d'),e2=document.getElementById('bansos-h'),e3=document.getElementById('bansos-m'),e4=document.getElementById('bansos-s');
+      if(e1)e1.textContent=String(days).padStart(2,'0'); if(e2)e2.textContent=String(hrs).padStart(2,'0');
+      if(e3)e3.textContent=String(min).padStart(2,'0'); if(e4)e4.textContent=String(sec).padStart(2,'0');
+    }
+    tick(); setInterval(tick,1000);
+  })();
+  </script>
 
   <section id="auth-form-section" class="center-wrap">
   <div class="login-card">
