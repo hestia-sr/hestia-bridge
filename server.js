@@ -832,6 +832,8 @@ app.post('/api/auth/register', async (req, res) => {
     // 1 device = 1 Gmail: tolak pendaftar baru dari device yang sudah punya akun.
     return res.status(400).json({ error: 'Device ini sudah terdaftar. 1 device hanya untuk 1 Gmail.' });
   }
+  // Free 500k tokens only for the first account on this device
+  const isFirstOnDevice = sameDevice.length === 0;
   const user = {
     id: uid('user_'),
     email: em,
@@ -844,7 +846,7 @@ app.post('/api/auth/register', async (req, res) => {
     suspended,
     plan: 'gratis',
     planExpiresAt: Date.now() + PLAN_DURATIONS.gratis,
-    freeTokens: 500000,
+    freeTokens: isFirstOnDevice ? 500000 : 0,
     createdAt: nowIso(),
     lastIp: clientIp(req) || null
   };
