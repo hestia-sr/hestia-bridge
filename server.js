@@ -1523,6 +1523,7 @@ app.get('/api/my-plan', requireUser, (req, res) => {  if (!req.user) return res.
     planExpiresAt: u.planExpiresAt || null,
     remainingMs: Math.max(0, (u.planExpiresAt || 0) - Date.now()),
     expired: planExpired(u),
+    freeTokens: typeof u.freeTokens === 'number' ? u.freeTokens : null,
   });
 });
 app.delete('/api/users/:id', requireAdmin, (req, res) => {
