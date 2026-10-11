@@ -2850,13 +2850,18 @@ async function loadVouchers() {
       list.innerHTML = '<p class="muted">Belum ada voucher.</p>';
       return;
     }
-    list.innerHTML = r.vouchers.map(v =>
+    list.innerHTML = r.vouchers.map((v, i) =>
       '<div style="padding:.5rem;border-bottom:1px solid #eee">' +
-      '<div style="font-family:monospace;font-weight:700">' + v.code + '</div>' +
+      '<div style="font-family:monospace;font-weight:700">' + v.code +
+      ' <button class="btn btn-secondary vm-cp" data-i="' + i + '" style="padding:.15rem .4rem;font-size:.75rem">Salin</button></div>' +
       '<div>' + v.tokens.toLocaleString('id-ID') + ' token' +
       (v.redeemedBy ? ' <span style="color:#e53e3e">(dipakai)</span>' : ' <span style="color:#38a169">(aktif)</span>') +
       '</div></div>'
     ).join('');
+    list.querySelectorAll('.vm-cp').forEach(b => b.addEventListener('click', () => {
+      const code = r.vouchers[parseInt(b.getAttribute('data-i'), 10)].code;
+      navigator.clipboard.writeText(code).then(() => { b.textContent = 'Disalin!'; });
+    }));
   } catch (e) {
     list.innerHTML = '<p>Gagal memuat.</p>';
   }
@@ -2882,10 +2887,15 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.disabled = true;
       try {
         const r = await api('/api/vouchers', { method: 'POST', body: JSON.stringify({ tokens }) });
-        msg.textContent = 'Voucher dibuat: ' + r.code;
+        msg.innerHTML = 'Voucher dibuat: <span id="vm-newcode" style="font-family:monospace;font-weight:700">' + r.code + '</span> <button id="vm-copy" class="btn btn-secondary" style="padding:.2rem .5rem;font-size:.8rem">Salin</button>';
         msg.style.color = '#38a169';
         inp.value = '';
         loadVouchers();
+        const cp = document.getElementById('vm-copy');
+        if (cp) cp.addEventListener('click', () => {
+          const c = document.getElementById('vm-newcode');
+          if (c) navigator.clipboard.writeText(c.textContent).then(() => { cp.textContent = 'Disalin!'; });
+        });
       } catch (e) {
         msg.textContent = 'Gagal: ' + (e.message || 'unknown');
         msg.style.color = '#e53e3e';
