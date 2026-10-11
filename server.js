@@ -1668,6 +1668,17 @@ app.post('/api/vouchers/redeem', requireUser, (req, res) => {
   v.redeemedBy = u.id;
   v.redeemedAt = nowIso();
   u.freeTokens = (typeof u.freeTokens === 'number' ? u.freeTokens : 0) + v.tokens;
+  // Set plan based on voucher tokens so voucher models unlock
+  const now = Date.now();
+  if (v.tokens >= 2000000) {
+    u.plan = '1minggu'; u.planStart = now; u.planEnd = now + 7*24*60*60*1000;
+  } else if (v.tokens >= 1000000) {
+    u.plan = '1minggu'; u.planStart = now; u.planEnd = now + 7*24*60*60*1000;
+  } else if (v.tokens >= 500000) {
+    u.plan = '3hari'; u.planStart = now; u.planEnd = now + 3*24*60*60*1000;
+  } else if (v.tokens >= 300000) {
+    u.plan = '1hari'; u.planStart = now; u.planEnd = now + 24*60*60*1000;
+  }
   saveDb();
   logActivity('voucher_redeem', { userId: u.id, email: u.email, detail: code + ' +' + v.tokens });
   res.json({ ok: true, tokens: v.tokens, freeTokens: u.freeTokens, username: u.username || u.email });
