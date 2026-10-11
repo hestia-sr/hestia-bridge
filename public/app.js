@@ -2520,8 +2520,10 @@ function modelCard(m, showCopy, locked) {
   } else {
     logoHtml = '<div class="mc-logo"><span style="font-weight:800;font-size:1.1rem">' + esc(m.name.charAt(0).toUpperCase()) + '</span></div>';
   }
-  const disabledStyle = locked ? ' style="opacity:.6;filter:grayscale(.5);pointer-events:none"' : '';
-  return '<div class="model-card-gate"' + disabledStyle + '>' +
+  const disabledStyle = locked ? ' style="opacity:.6;filter:grayscale(.5);pointer-events:none;position:relative"' : '';
+  const lockOverlay = locked
+    ? '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><svg viewBox="0 0 24 24" width="48" height="48" fill="rgba(0,0,0,.3)"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 1 1 6 0v3H9z"/></svg></div>' : '';
+  return '<div class="model-card-gate"' + disabledStyle + '>' + lockOverlay +
     '<div class="mc-top">' +
       logoHtml +
       '<div class="mc-idwrap"><code class="mc-id">' + esc(shortId) + '</code>' + copyBtn + '</div>' +
