@@ -2476,7 +2476,7 @@ const MODELS_MATI = [
   { id: 'dots-studio/dots-3-note-preview:free', name: 'Dots 3 Note Preview', desc: 'Tidak aktif - server error.' },
 ];
 
-function modelCard(m, showCopy) {
+function modelCard(m, showCopy, locked) {
   let shortId = m.id.replace(':free', '');
   const slashIdx = shortId.indexOf('/');
   if (slashIdx !== -1) shortId = shortId.slice(slashIdx + 1);
@@ -2486,6 +2486,8 @@ function modelCard(m, showCopy) {
     : '';
   const tersedia = showCopy !== false
     ? '<span class="badge-tersedia">' + t('card.available') + '</span>' : '';
+  const lockBadge = locked
+    ? '<span class="badge-tersedia" style="background:#6b7280;margin-left:.3rem"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" style="vertical-align:-2px"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 1 1 6 0v3H9z"/></svg> Paket Voucher</span>' : '';
   // Capability badges
   let capsHtml = '';
   if (m.caps) {
@@ -2513,7 +2515,7 @@ function modelCard(m, showCopy) {
     '<div class="mc-top">' +
       logoHtml +
       '<div class="mc-idwrap"><code class="mc-id">' + esc(shortId) + '</code>' + copyBtn + '</div>' +
-      tersedia +
+      tersedia + lockBadge +
     '</div>' +
     (capsHtml ? '<div class="mc-caps">' + capsHtml + '</div>' : '') +
     '<div class="mc-name">' + esc(m.name) + '</div>' +
@@ -2534,7 +2536,9 @@ function renderModels(filter) {
     list.innerHTML = '<div class="card"><div class="card-body" style="padding:2rem;text-align:center;color:var(--muted)">' + t('models.empty') + ' ' + label + '.</div></div>';
     return;
   }
-  list.innerHTML = arr.map(m => modelCard(m, filter !== 'mati')).join('');
+  const isGratis = typeof planData !== 'undefined' && planData && planData.plan === 'gratis';
+  const locked = isGratis && filter === 'voucher';
+  list.innerHTML = arr.map(m => modelCard(m, filter !== 'mati', locked)).join('');
   // Attach copy handlers
   list.querySelectorAll('[data-copy-model]').forEach(btn => {
     btn.addEventListener('click', () => {
