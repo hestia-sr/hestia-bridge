@@ -643,6 +643,21 @@ function customProviderOf(user) {
 }
 
 /* ============================ public: health ============================= */
+app.get('/api/bansos/pool', (req, res) => {
+  try {
+    const keys = (db.keys || []).filter(k => k.providerId === 'gateai-bansos' && !k.revoked);
+    let total = 0, used = 0;
+    keys.forEach(k => {
+      if (k.tokenQuota) {
+        total += k.tokenQuota;
+        used += (k.tokenUsed || 0);
+      }
+    });
+    res.json({ total, remaining: Math.max(0, total - used) });
+  } catch (e) {
+    res.json({ total: 0, remaining: 0 });
+  }
+});
 app.get('/api/health', (req, res) => res.json({ ok: true, service: 'hestia-bridge' }));
 
 /* ==================== auth: register + login (admin & user) ============ */
