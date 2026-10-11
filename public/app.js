@@ -2660,6 +2660,7 @@ function renderWorkerKeyList() {
   box.innerHTML = list.map(k => {
     const created = k.createdAt ? timeAgo(k.createdAt) : '-';
     const st = k.stats || { requests: 0, totalTokens: 0 };
+    const masked = k.masked || '-';
     return '<div class="card" style="margin-bottom:.7rem"><div class="card-body">' +
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">' +
         '<div style="font-weight:600;font-size:1rem">' + esc(k.name) + '</div>' +
@@ -2667,6 +2668,7 @@ function renderWorkerKeyList() {
           '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>' +
         '</button>' +
       '</div>' +
+      '<div class="muted small" style="font-family:monospace;margin-bottom:.3rem">' + esc(masked) + '</div>' +
       '<div class="muted small" style="margin-bottom:.3rem">Worker: ' + esc(k.workerName || '-') + ' • ' + created + '</div>' +
       '<div class="muted small"><strong>' + st.requests + '</strong> request • <strong>' + st.totalTokens.toLocaleString() + '</strong> token</div>' +
       '</div></div>';
