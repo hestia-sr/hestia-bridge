@@ -1517,13 +1517,24 @@ app.post('/api/bot/extend', requireBot, (req, res) => {
 /* Info paket user sendiri. */
 app.get('/api/my-plan', requireUser, (req, res) => {  if (!req.user) return res.json({ plan: 'admin', planName: 'Admin', planExpiresAt: null, remainingMs: null, expired: false });
   const u = req.user;
+  if (u.plan === 'gratis' && typeof u.freeTokens !== 'number') {
+    if (!db.freeTokenDevices) db.freeTokenDevices = [];
+    const fp = u.deviceFingerprint;
+    if (fp && !db.freeTokenDevices.includes(fp)) {
+      u.freeTokens = 500000;
+      db.freeTokenDevices.push(fp);
+    } else {
+      u.freeTokens = 0;
+    }
+    saveDb();
+  }
   res.json({
     plan: u.plan || 'gratis',
     planName: PLAN_NAMES[u.plan] || 'Gratis',
     planExpiresAt: u.planExpiresAt || null,
     remainingMs: Math.max(0, (u.planExpiresAt || 0) - Date.now()),
     expired: planExpired(u),
-    freeTokens: typeof u.freeTokens === 'number' ? u.freeTokens : null,
+    freeTokens: typeof u.freeTokens === 'number' ? u.freeTokens : 0,
   });
 });
 app.delete('/api/users/:id', requireAdmin, (req, res) => {
