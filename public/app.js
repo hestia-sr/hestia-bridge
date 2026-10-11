@@ -2484,10 +2484,10 @@ function modelCard(m, showCopy, locked) {
     ? '<button class="icon-btn model-copy" data-copy-model="' + esc(m.id) + '" title="Salin ID" aria-label="Salin ID">' +
       '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>'
     : '';
-  const tersedia = showCopy !== false
-    ? '<span class="badge-tersedia">' + t('card.available') + '</span>' : '';
-  const lockBadge = locked
-    ? '<span class="badge-tersedia" style="background:#6b7280;margin-left:.3rem;padding:.2rem .4rem"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:-2px"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 1 1 6 0v3H9z"/></svg></span>' : '';
+  const tersedia = locked
+    ? '<span class="badge-tersedia" style="background:#4a5568;color:#fff">Nonaktif</span>'
+    : (showCopy !== false ? '<span class="badge-tersedia">' + t('card.available') + '</span>' : '');
+  const lockBadge = '';
   // Capability badges
   let capsHtml = '';
   if (m.caps) {
