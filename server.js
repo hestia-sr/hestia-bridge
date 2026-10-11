@@ -215,6 +215,32 @@ let saveTimer = null;
   } catch (e) { console.error('seed gateai gagal:', e.message); }
 })();
 
+// MapleFlow provider for premium models
+(function(){
+  try {
+    const mfKey = process.env.MAPLEFLOW_API_KEY || '';
+    if (!mfKey) return;
+    let mp = db.providers.find(p => p.id === 'mapleflow');
+    const models = ['claude-opus-4.8', 'claude-opus-4.7', 'claude-opus-4.6', 'gpt-4.1', 'claude-sonnet-4.6', 'gpt-4o', 'grok-4.1-fast', 'deepseek-r1-32b', 'grok-3'];
+    if (!mp) {
+      db.providers.push({
+        id: 'mapleflow',
+        name: 'MapleFlow',
+        baseUrl: 'https://api.mapleflow.io/v1',
+        key: mfKey,
+        models: models,
+        createdAt: nowIso()
+      });
+      saveDb();
+    } else {
+      let dirty = false;
+      if (mp.key !== mfKey) { mp.key = mfKey; dirty = true; }
+      mp.models = models; dirty = true;
+      if (dirty) saveDb();
+    }
+  } catch (e) { console.error('seed mapleflow gagal:', e.message); }
+})();
+
 // Create 3 bansos API keys
 (function(){
   try {
