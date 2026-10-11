@@ -848,6 +848,7 @@ app.post('/api/auth/register', async (req, res) => {
     plan: 'gratis',
     planExpiresAt: null,
     freeTokens: isFirstOnDevice ? 500000 : 0,
+    gotFreeTokens: !!isFirstOnDevice,
     createdAt: nowIso(),
     lastIp: clientIp(req) || null
   };
@@ -1522,9 +1523,11 @@ app.get('/api/my-plan', requireUser, (req, res) => {  if (!req.user) return res.
     const fp = u.deviceFingerprint;
     if (fp && !db.freeTokenDevices.includes(fp)) {
       u.freeTokens = 500000;
+      u.gotFreeTokens = true;
       db.freeTokenDevices.push(fp);
     } else {
       u.freeTokens = 0;
+      u.gotFreeTokens = false;
     }
     saveDb();
   }
@@ -1535,6 +1538,7 @@ app.get('/api/my-plan', requireUser, (req, res) => {  if (!req.user) return res.
     remainingMs: Math.max(0, (u.planExpiresAt || 0) - Date.now()),
     expired: planExpired(u),
     freeTokens: typeof u.freeTokens === 'number' ? u.freeTokens : 0,
+    gotFreeTokens: !!u.gotFreeTokens,
   });
 });
 app.delete('/api/users/:id', requireAdmin, (req, res) => {
