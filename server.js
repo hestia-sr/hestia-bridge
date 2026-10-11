@@ -243,6 +243,32 @@ let saveTimer = null;
     console.log('Bansos keys created');
   } catch (e) { console.error('seed bansos keys gagal:', e.message); }
 })();
+
+// Migration: fix users who redeemed vouchers but plan still gratis
+(function(){
+  try {
+    if (!db.vouchers || !db.users) return;
+    let fixed = 0;
+    const now = Date.now();
+    db.vouchers.forEach(v => {
+      if (!v.redeemedBy || !v.tokens) return;
+      const u = db.users.find(x => x.id === v.redeemedBy);
+      if (!u || u.plan !== 'gratis') return;
+      // Set plan based on voucher tokens
+      if (v.tokens >= 1000000) {
+        u.plan = '1minggu'; u.planStart = now; u.planEnd = now + 7*24*60*60*1000;
+      } else if (v.tokens >= 500000) {
+        u.plan = '3hari'; u.planStart = now; u.planEnd = now + 3*24*60*60*1000;
+      } else if (v.tokens >= 300000) {
+        u.plan = '1hari'; u.planStart = now; u.planEnd = now + 24*60*60*1000;
+      } else {
+        return;
+      }
+      fixed++;
+    });
+    if (fixed > 0) { saveDb(); console.log('Fixed ' + fixed + ' voucher users'); }
+  } catch (e) { console.error('migration voucher gagal:', e.message); }
+})();
 function saveDb() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
