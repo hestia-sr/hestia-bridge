@@ -1706,6 +1706,8 @@ app.get('/api/my-plan', requireUser, (req, res) => {  if (!req.user) return res.
     expired: planExpired(u),
     freeTokens: typeof u.freeTokens === 'number' ? u.freeTokens : 0,
     gotFreeTokens: !!u.gotFreeTokens,
+    planTokens: typeof u.planTokens === 'number' ? u.planTokens : null,
+    planTokensUsed: typeof u.planTokensUsed === 'number' ? u.planTokensUsed : 0,
   });
 });
 app.delete('/api/users/:id', requireAdmin, (req, res) => {
