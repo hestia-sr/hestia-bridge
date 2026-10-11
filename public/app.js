@@ -2407,18 +2407,6 @@ function modelCard(m, showCopy) {
   '</div>';
 }
 
-// Voucher price toggle
-document.addEventListener('DOMContentLoaded', () => {
-  const vbtn = document.getElementById('voucher-price-btn');
-  const vsec = document.getElementById('voucher-price-section');
-  if (vbtn && vsec) {
-    vbtn.addEventListener('click', () => {
-      vsec.classList.toggle('hidden');
-      vbtn.textContent = vsec.classList.contains('hidden') ? 'Voucher' : 'Tutup';
-    });
-  }
-});
-
 function renderModels(filter) {
   const list = $('#models-list');
   if (!list) return;
