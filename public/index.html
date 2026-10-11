@@ -259,6 +259,10 @@
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 12h4l2-7 4 14 2-7h6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span data-i18n="nav.activities">Aktivitas</span>
       </button>
+      <button class="drawer-btn admin-only" data-view="vouchermgmt">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M20 7H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1zm-1 8H5v-6h14v6zM7 10h4v2H7z" fill="currentColor"/></svg>
+        <span data-i18n="nav.vouchermgmt">Voucher</span>
+      </button>
       <button class="drawer-btn user-only" data-view="mykeys">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M14 3a7 7 0 0 0-6.9 8.2L3 15.3V21h5.7l4.1-4.1A7 7 0 1 0 14 3zm1.4 4.6a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z" fill="currentColor"/></svg>
         <span data-i18n="nav.mykeys">API Key</span>
@@ -712,6 +716,15 @@
             <a href="https://t.me/Hestia_gateway_bot?start=voucher_pro" class="btn btn-primary" style="width:100%" data-i18n="voucher.buy">Beli</a>
           </div>
         </div>
+        <div class="card" style="margin-top:1rem"><div class="card-body" style="text-align:center">
+          <h3 style="margin:0 0 .5rem" data-i18n="voucher.redeemTitle">Punya Kode Voucher?</h3>
+          <p class="muted small" style="margin:0 0 .8rem" data-i18n="voucher.redeemDesc">Masukkan kode untuk menambah token.</p>
+          <div style="display:flex;gap:.5rem;max-width:400px;margin:0 auto">
+            <input id="voucher-code-input" class="input" placeholder="hesti-XXXX-XXXX-XXXX-XXXX" style="flex:1;text-transform:uppercase" />
+            <button id="voucher-redeem-btn" class="btn btn-primary" data-i18n="voucher.redeem">Tukar</button>
+          </div>
+          <div id="voucher-redeem-msg" class="small" style="margin-top:.5rem"></div>
+        </div></div>
       </div>
     </section>
 
@@ -850,6 +863,24 @@
           </div>
           <div id="cred-list"></div>
         </div><!-- /act-tab-cred -->
+      </div>
+    </section>
+
+    <!-- ===== VOUCHER MGMT VIEW (admin) ===== -->
+    <section id="view-vouchermgmt" class="view hidden">
+      <div class="hero-body" style="padding-top:1rem">
+        <div class="card" style="margin-bottom:1rem"><div class="card-body">
+          <h2 style="margin:0 0 .5rem" data-i18n="vouchermgmt.title">Kelola Voucher</h2>
+          <div style="display:flex;gap:.5rem;max-width:400px">
+            <input id="vm-tokens" type="number" class="input" placeholder="Jumlah token" min="1" style="flex:1" />
+            <button id="vm-create" class="btn btn-primary" data-i18n="vouchermgmt.create">Buat</button>
+          </div>
+          <div id="vm-msg" class="small" style="margin-top:.5rem"></div>
+        </div></div>
+        <div class="card"><div class="card-body">
+          <h3 style="margin:0 0 .5rem" data-i18n="vouchermgmt.list">Daftar Voucher</h3>
+          <div id="vm-list" class="small"></div>
+        </div></div>
       </div>
     </section>
 
