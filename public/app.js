@@ -1904,6 +1904,8 @@ const I18N = {
     'card.provider': 'Provider',
     'card.supportedmodels': 'Model yang didukung',
     'card.available': 'Tersedia',
+    'card.context': 'konteks',
+    'card.context.soon': 'konteks segera',
     'card.popular': 'Paling banyak dipakai',
     'card.copymodel': 'Salin nama model',
     'toast.model.copied': 'Nama model disalin.',
@@ -2266,6 +2268,8 @@ const I18N = {
     'card.models': 'models',
     'card.supportedmodels': 'Supported models',
     'card.available': 'Available',
+    'card.context': 'context',
+    'card.context.soon': 'context soon',
     'card.popular': 'Most used',
     'card.copymodel': 'Copy model name',
     'toast.model.copied': 'Model name copied.',
@@ -2440,7 +2444,7 @@ function modelCard(m, showCopy) {
       '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>'
     : '';
   const tersedia = showCopy !== false
-    ? '<span class="badge-tersedia">Tersedia</span>' : '';
+    ? '<span class="badge-tersedia">' + t('card.available') + '</span>' : '';
   // Capability badges
   let capsHtml = '';
   if (m.caps) {
@@ -2449,8 +2453,8 @@ function modelCard(m, showCopy) {
     if (m.caps.vision) capsHtml += '<span class="cap-badge">Vision</span>';
   }
   const contextHtml = m.context
-    ? '<span class="ctx-badge">' + esc(m.context) + ' konteks</span>'
-    : '<span class="ctx-badge ctx-segera">konteks segera</span>';
+    ? '<span class="ctx-badge">' + esc(m.context) + ' ' + t('card.context') + '</span>'
+    : '<span class="ctx-badge ctx-segera">' + t('card.context.soon') + '</span>';
   const providerHtml = m.provider
     ? '<span class="provider-badge">' + esc(m.provider) + '</span>' : '';
   const logoImgs = {
