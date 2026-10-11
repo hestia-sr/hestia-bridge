@@ -2483,15 +2483,15 @@ const MODELS_VOUCHER = [
   { id: 'qwen/qwen3-max:free', name: 'Qwen3 Max', desc: 'Varian Max dari Qwen3, powerful untuk berbagai tugas.', provider: 'Qwen', context: '262.144', caps: { reasoning: true, text: true, vision: false } },
   { id: 'qwen/qwen3.8-max:free', name: 'Qwen3.8 Max', desc: 'Generasi terbaru Qwen Max.', provider: 'Qwen', context: '1.000.000', caps: { reasoning: true, text: true, vision: true } },
   { id: 'qwen/qwen3-coder-plus:free', name: 'Qwen3 Coder Plus', desc: 'Model coding Qwen yang powerful.', provider: 'Qwen', context: '1.048.576', caps: { reasoning: true, text: true, vision: true } },
-  { id: 'claude-opus-4.8', name: 'Claude Opus 4.8', desc: 'Kasta tertinggi Claude.', provider: 'Anthropic', caps: { reasoning: true, text: true, vision: true } },
-  { id: 'claude-opus-4.7', name: 'Claude Opus 4.7', desc: 'Claude Opus generasi sebelumnya.', provider: 'Anthropic', caps: { reasoning: true, text: true, vision: true } },
-  { id: 'claude-opus-4.6', name: 'Claude Opus 4.6', desc: 'Claude Opus yang powerful.', provider: 'Anthropic', caps: { reasoning: true, text: true, vision: true } },
-  { id: 'gpt-4.1', name: 'GPT-4.1', desc: 'Flagship OpenAI.', provider: 'OpenAI', caps: { reasoning: true, text: true, vision: true } },
-  { id: 'claude-sonnet-4.6', name: 'Claude Sonnet 4.6', desc: 'Claude Sonnet seimbang.', provider: 'Anthropic', caps: { reasoning: true, text: true, vision: true } },
-  { id: 'gpt-4o', name: 'GPT-4o', desc: 'GPT-4o multimodal.', provider: 'OpenAI', caps: { reasoning: true, text: true, vision: true } },
-  { id: 'grok-4.1-fast', name: 'Grok 4.1 Fast', desc: 'Grok cepat.', provider: 'xAI', caps: { reasoning: true, text: true, vision: true } },
+  { id: 'claude-opus-4.8', name: 'Claude Opus 4.8', desc: 'Kasta tertinggi Claude.', provider: 'Claude', caps: { reasoning: true, text: true, vision: true } },
+  { id: 'claude-opus-4.7', name: 'Claude Opus 4.7', desc: 'Claude Opus generasi sebelumnya.', provider: 'Claude', caps: { reasoning: true, text: true, vision: true } },
+  { id: 'claude-opus-4.6', name: 'Claude Opus 4.6', desc: 'Claude Opus yang powerful.', provider: 'Claude', caps: { reasoning: true, text: true, vision: true } },
+  { id: 'gpt-4.1', name: 'GPT-4.1', desc: 'Flagship OpenAI.', provider: 'ChatGPT', caps: { reasoning: true, text: true, vision: true } },
+  { id: 'claude-sonnet-4.6', name: 'Claude Sonnet 4.6', desc: 'Claude Sonnet seimbang.', provider: 'Claude', caps: { reasoning: true, text: true, vision: true } },
+  { id: 'gpt-4o', name: 'GPT-4o', desc: 'GPT-4o multimodal.', provider: 'ChatGPT', caps: { reasoning: true, text: true, vision: true } },
+  { id: 'grok-4.1-fast', name: 'Grok 4.1 Fast', desc: 'Grok cepat.', provider: 'Grok', caps: { reasoning: true, text: true, vision: true } },
   { id: 'deepseek-r1-32b', name: 'DeepSeek R1 32b', desc: 'Model reasoning DeepSeek.', provider: 'DeepSeek', caps: { reasoning: true, text: true, vision: false } },
-  { id: 'grok-3', name: 'Grok 3', desc: 'Grok generasi 3.', provider: 'xAI', caps: { reasoning: true, text: true, vision: true } },
+  { id: 'grok-3', name: 'Grok 3', desc: 'Grok generasi 3.', provider: 'Grok', caps: { reasoning: true, text: true, vision: true } },
 ];
 
 
@@ -2527,10 +2527,13 @@ function modelCard(m, showCopy, locked) {
     'Cohere': 'logos/cohere.png',
     'Meta': 'logos/meta.png',
     'Anthropic': 'logos/anthropic.png',
+    'Claude': 'logos/claude.png',
     'DeepSeek': 'logos/deepseek.png',
     'Google': 'logos/gemini.png',
     'xAI': 'logos/grok.png',
+    'Grok': 'logos/grok.png',
     'OpenAI': 'logos/chatgpt.png',
+    'ChatGPT': 'logos/chatgpt.png',
     'Liquid': 'logos/liquid.png'
   };
   let logoHtml;
