@@ -2414,7 +2414,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (vbtn && vsec) {
     vbtn.addEventListener('click', () => {
       vsec.classList.toggle('hidden');
-      vbtn.textContent = vsec.classList.contains('hidden') ? '🎫 Lihat Harga Voucher' : '🎫 Sembunyikan Harga Voucher';
+      vbtn.textContent = vsec.classList.contains('hidden') ? 'Voucher' : 'Tutup';
     });
   }
 });
