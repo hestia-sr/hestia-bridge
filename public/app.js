@@ -460,7 +460,7 @@ function closeDrawer() {
 }
 $('#drawer-btn').addEventListener('click', openDrawer);
 $('#drawer-backdrop').addEventListener('click', closeDrawer);
-const VIEW_TITLES = { home: 'nav.home', keys: 'topbar.keys', providers: 'nav.providers', users: 'nav.users', activities: 'nav.activities', mykeys: 'nav.mykeys', myworkers: 'nav.myworkers', settings: 'nav.settings' };
+const VIEW_TITLES = { home: 'nav.home', keys: 'topbar.keys', providers: 'nav.providers', users: 'nav.users', activities: 'nav.activities', mykeys: 'nav.mykeys', myworkers: 'nav.myworkers', settings: 'nav.settings', models: 'Model', voucher: 'Voucher' };
 function switchView(name) {
   document.querySelectorAll('.drawer-btn[data-view]').forEach(b =>
     b.classList.toggle('active', b.dataset.view === name));
