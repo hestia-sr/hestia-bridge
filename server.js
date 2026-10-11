@@ -78,10 +78,9 @@ const PLAN_NAMES = {
 };
 /* Model gateway Hestia: gratis vs paket berbayar (daftar dari Hestia, 2026-10-08). */
 const FREE_MODELS = [
-  'qwen/qwen-plus-2025-07-28:free',
   'qwen/qwen3-max:free',
-  'stealth/space-bunny-alpha:free',
-  'sensenova/sensenova-6.8-flash-lite'
+  'qwen/qwen3.8-max:free',
+  'qwen/qwen3-coder-plus:free'
 ];
 const PAID_MODELS = [
   'cohere/aya-expanse-32b',
@@ -181,7 +180,9 @@ let saveTimer = null;
       'qwen/qwen3.7-flash:free': { context: 'Konteks besar', caps: ['Text Generation'], popular: true },
       'qwen/qwen3.5-plus:free': { context: 'Konteks besar', caps: ['Text Generation', 'Vision'], popular: false },
       'qwen/qwen3.6-plus:free': { context: 'Konteks besar', caps: ['Text Generation', 'Vision'], popular: false },
-      'qwen/qwen3-max:free': { context: 'Konteks besar', caps: ['Text Generation'], popular: true }
+      'qwen/qwen3-max:free': { context: 'Konteks besar', caps: ['Text Generation'], popular: true },
+      'qwen/qwen3.8-max:free': { context: 'Konteks besar', caps: ['Text Generation', 'Vision'], popular: true },
+      'qwen/qwen3-coder-plus:free': { context: 'Konteks besar', caps: ['Text Generation', 'Vision'], popular: false }
     };
     const xkiroKey = process.env.GATEWAY_API_KEY || '';
     if (!gp) {
