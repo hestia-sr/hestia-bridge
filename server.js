@@ -1596,9 +1596,10 @@ app.get('/api/vouchers', requireAdmin, (req, res) => {
 app.post('/api/vouchers', requireAdmin, (req, res) => {
   const tokens = Math.floor(Number(req.body && req.body.tokens) || 0);
   if (!tokens || tokens <= 0) return res.status(400).json({ error: 'tokens harus > 0' });
+  const email = String((req.body && req.body.email) || '').trim().toLowerCase() || null;
   let code = generateVoucherCode();
   while (db.vouchers.some(v => v.code === code)) code = generateVoucherCode();
-  const v = { code, tokens, createdAt: nowIso(), redeemedBy: null, redeemedAt: null };
+  const v = { code, tokens, email, createdAt: nowIso(), redeemedBy: null, redeemedAt: null };
   db.vouchers.push(v);
   saveDb();
   adminLog(req, 'Buat voucher ' + code + ' (' + tokens.toLocaleString('id-ID') + ' token)', {});
@@ -1617,7 +1618,7 @@ app.post('/api/vouchers/redeem', requireUser, (req, res) => {
   u.freeTokens = (typeof u.freeTokens === 'number' ? u.freeTokens : 0) + v.tokens;
   saveDb();
   logActivity('voucher_redeem', { userId: u.id, email: u.email, detail: code + ' +' + v.tokens });
-  res.json({ ok: true, tokens: v.tokens, freeTokens: u.freeTokens });
+  res.json({ ok: true, tokens: v.tokens, freeTokens: u.freeTokens, username: u.username || u.email });
 });
 
 /* =========================== admin: workers ============================== */
