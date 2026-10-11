@@ -105,7 +105,13 @@ function allowedModelsForPlan(plan) {
   return (plan && plan !== 'gratis' ? PAID_MODELS : FREE_MODELS).slice();
 }
 function allowedModelsForKey(key) {
-  if (!key || !key.userId) return [...new Set([...FREE_MODELS, ...PAID_MODELS])];
+  if (!key) return [...new Set([...FREE_MODELS, ...PAID_MODELS])];
+  // Key khusus provider (misal Bansos): hanya model provider itu saja.
+  if (key.providerId) {
+    const p = db.providers.find(x => x.id === key.providerId);
+    if (p && p.id === 'gateai-bansos') return (p.models || []).slice();
+  }
+  if (!key.userId) return [...new Set([...FREE_MODELS, ...PAID_MODELS])];
   const owner = db.users.find(u => u.id === key.userId);
   return allowedModelsForPlan(owner ? owner.plan : 'gratis');
 }
