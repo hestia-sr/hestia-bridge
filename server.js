@@ -601,6 +601,7 @@ app.get('/api/health', (req, res) => res.json({ ok: true, service: 'hestia-bridg
 const MAX_PER_DEVICE = 1; // 1 device = 1 Gmail, pendaftar ke-2 langsung ditolak
 function planExpired(u) {
   if (!u || u.role === 'admin') return false;
+  if (u.plan === 'gratis') return false;
   return !u.planExpiresAt || u.planExpiresAt < Date.now();
 }
 const BLOCKED_DOMAINS = new Set(['hotmail.com', 'hotmail.co.id', 'outlook.com', 'outlook.co.id', 'live.com', 'live.co.id', 'msn.com']);
@@ -845,7 +846,7 @@ app.post('/api/auth/register', async (req, res) => {
     deviceFingerprint: fp || null,
     suspended,
     plan: 'gratis',
-    planExpiresAt: Date.now() + PLAN_DURATIONS.gratis,
+    planExpiresAt: null,
     freeTokens: isFirstOnDevice ? 500000 : 0,
     createdAt: nowIso(),
     lastIp: clientIp(req) || null
