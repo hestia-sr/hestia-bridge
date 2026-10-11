@@ -2831,13 +2831,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const r = await api('/api/vouchers/redeem', { method: 'POST', body: JSON.stringify({ code }) });
         const uname = r.username || '';
         const tokStr = r.tokens >= 1000000 ? (r.tokens/1000000) + 'jt' : (r.tokens >= 1000 ? (r.tokens/1000) + 'k' : r.tokens);
+        let txt;
         if (LANG === 'id') {
-          msg.textContent = 'Selamat ' + uname + ', Code Voucher sebesar ' + tokStr + ' Token Kamu berhasil Di Klaim!';
+          txt = 'Selamat ' + uname + ', Code Voucher sebesar ' + tokStr + ' Token Kamu berhasil Di Klaim!';
         } else {
-          msg.textContent = 'Congratulations ' + uname + ', Voucher Code for ' + tokStr + ' Tokens successfully claimed!';
+          txt = 'Congratulations ' + uname + ', Voucher Code for ' + tokStr + ' Tokens successfully claimed!';
         }
+        msg.textContent = txt;
         msg.style.color = '#38a169';
         input.value = '';
+        showVoucherPopup(txt);
       } catch (err) {
         msg.textContent = 'Gagal: ' + (err.message || 'unknown');
         msg.style.color = '#e53e3e';
@@ -2911,4 +2914,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+function showVoucherPopup(text) {
+  let ov = document.getElementById('voucher-popup-ov');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'voucher-popup-ov';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:9999;opacity:0;transition:opacity .3s';
+    ov.innerHTML = '<div id="voucher-popup-box" style="background:#fff;border-radius:16px;padding:1.5rem;max-width:320px;margin:1rem;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.3);transform:scale(.9);transition:transform .3s">' +
+      '<div style="width:60px;height:60px;margin:0 auto .5rem;background:linear-gradient(135deg,#43e97b,#38f9d7);border-radius:50%;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="30" height="30"><path d="M9 16.2l-3.5-3.5L4 14.2 9 19.2 20 8.2l-1.4-1.4z" fill="#fff"/></svg></div>' +
+      '<div id="voucher-popup-text" style="font-weight:600;margin-bottom:1rem"></div>' +
+      '<button id="voucher-popup-ok" style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:8px;padding:.6rem 2rem;font-weight:600;cursor:pointer">OK</button></div>';
+    document.body.appendChild(ov);
+    document.getElementById('voucher-popup-ok').addEventListener('click', () => {
+      ov.style.opacity = '0';
+      setTimeout(() => ov.style.display = 'none', 300);
+    });
+    ov.addEventListener('click', (e) => { if (e.target === ov) document.getElementById('voucher-popup-ok').click(); });
+  }
+  document.getElementById('voucher-popup-text').textContent = text;
+  ov.style.display = 'flex';
+  requestAnimationFrame(() => { ov.style.opacity = '1'; document.getElementById('voucher-popup-box').style.transform = 'scale(1)'; });
+}
 
