@@ -2464,9 +2464,9 @@ async function refreshMine() {
 // Models view - data & rendering
 const MODELS_GRATIS = [
   { id: 'qwen/qwen3-coder-plus:free', name: 'Qwen3 Coder Plus', desc: 'Model coding Qwen yang powerful.', provider: 'Qwen', context: '1.048.576', caps: { reasoning: true, text: true, vision: true } },
-  { id: 'mistralai/mistral-medium-3.5', name: 'Mistral Medium 3.5', desc: 'Model menengah Mistral yang seimbang.', provider: 'Mistral', context: '256.000', caps: { reasoning: true, text: true, vision: false } },
-  { id: 'cohere/command-a', name: 'Command A', desc: 'Model flagship Cohere.', provider: 'Cohere', context: '256.000', caps: { reasoning: true, text: true, vision: false } },
-  { id: 'qwen/qwen-plus-2025-07-28:free', name: 'Qwen Plus 2025', desc: 'Model Qwen terbaru dengan performa tinggi untuk chat.', provider: 'Qwen', context: '131.072', caps: { reasoning: true, text: true, vision: false } },
+  { id: 'mistralai/ministral-8b', name: 'Ministral 8B', desc: 'Model kecil Mistral yang cepat.', provider: 'Mistral', context: '256.000', caps: { reasoning: false, text: true, vision: true } },
+  { id: 'cohere/tiny-aya-global', name: 'Tiny Aya Global', desc: 'Model ringan Cohere.', provider: 'Cohere', context: '32.000', caps: { reasoning: false, text: true, vision: false } },
+  { id: 'liquid/lfm-2.5-2.6b:free', name: 'LFM 2.5 2.6B', desc: 'Model compact yang efisien.', provider: 'Liquid', context: '32.000', caps: { reasoning: false, text: true, vision: false } },
 ];
 const MODELS_VOUCHER = [
   { id: 'qwen/qwen3-max:free', name: 'Qwen3 Max', desc: 'Varian Max dari Qwen3, powerful untuk berbagai tugas.', provider: 'Qwen', context: '262.144', caps: { reasoning: true, text: true, vision: false } },
