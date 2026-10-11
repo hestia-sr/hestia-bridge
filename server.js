@@ -208,6 +208,32 @@ let saveTimer = null;
     }
   } catch (e) { console.error('seed gateway gagal:', e.message); }
 })();
+
+// GateAI Bansos provider
+(function(){
+  try {
+    const gateaiKey = process.env.GATEAI_API_KEY || '';
+    if (!gateaiKey) return;
+    let gp = db.providers.find(p => p.id === 'gateai-bansos');
+    const models = ['Atria-Dawn-Preview', 'deepseek-v4-pro', 'deepseek-v4.1-flash', 'gpt-5.6-luna', 'gpt-5.6-sol'];
+    if (!gp) {
+      db.providers.push({
+        id: 'gateai-bansos',
+        name: 'GateAI Bansos',
+        baseUrl: 'https://gateai.id/v1',
+        key: gateaiKey,
+        models: models,
+        createdAt: nowIso()
+      });
+      saveDb();
+    } else {
+      let dirty = false;
+      if (gp.key !== gateaiKey) { gp.key = gateaiKey; dirty = true; }
+      gp.models = models; dirty = true;
+      if (dirty) saveDb();
+    }
+  } catch (e) { console.error('seed gateai gagal:', e.message); }
+})();
 function saveDb() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
