@@ -81,7 +81,10 @@ const FREE_MODELS = [
   'qwen/qwen3-coder-plus:free',
   'mistralai/ministral-8b',
   'cohere/tiny-aya-global',
-  'liquid/lfm-2.5-2.6b:free'
+  'liquid/lfm-2.5-2.6b:free',
+  'llama3.2:3b',
+  'qwen2.5:7b',
+  'qwen3-coder:30b'
 ];
 const PAID_MODELS = [
   'qwen/qwen3-max:free',
@@ -197,6 +200,34 @@ let saveTimer = null;
       if (dirty) saveDb();
     }
   } catch (e) { console.error('seed gateai gagal:', e.message); }
+})();
+
+// AI4All provider untuk model gratis tambahan (dari Hestia, 2026-10-11)
+(function(){
+  try {
+    const ai4allKey = process.env.AI4ALL_API_KEY || '';
+    const models = ['llama3.2:3b', 'qwen2.5:7b', 'qwen3-coder:30b'];
+    let ap = db.providers.find(p => p.id === 'ai4all');
+    if (!ap) {
+      db.providers.push({
+        id: 'ai4all',
+        name: 'AI4All',
+        baseUrl: 'https://ai4all.infergo.ai/v1',
+        key: ai4allKey,
+        models: models,
+        createdAt: nowIso()
+      });
+      saveDb();
+    } else {
+      let dirty = false;
+      if (ap.baseUrl !== 'https://ai4all.infergo.ai/v1') { ap.baseUrl = 'https://ai4all.infergo.ai/v1'; dirty = true; }
+      // Jangan timpa key yang di-set manual via admin dengan env kosong.
+      if (ai4allKey && ap.key !== ai4allKey) { ap.key = ai4allKey; dirty = true; }
+      ap.models = models; dirty = true;
+      ap.name = 'AI4All'; dirty = true;
+      if (dirty) saveDb();
+    }
+  } catch (e) { console.error('seed ai4all gagal:', e.message); }
 })();
 
 // MapleFlow providers for premium models (supports up to 3 keys)
@@ -2209,6 +2240,12 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
     // Find a MapleFlow provider with a valid key
     const mp = db.providers.find(p => (p.id === 'mapleflow' || p.id.startsWith('mapleflow-')) && p.key && !p.key.startsWith('placeholder'));
     if (mp) provider = mp;
+  }
+  // AI4All: model gratis tambahan (dari Hestia, 2026-10-11)
+  const ai4allModels = ['llama3.2:3b', 'qwen2.5:7b', 'qwen3-coder:30b'];
+  if (body.model && ai4allModels.includes(body.model)) {
+    const ap = db.providers.find(p => p.id === 'ai4all' && p.key);
+    if (ap) provider = ap;
   }
   const target = provider.baseUrl + '/chat/completions';
   const ctrl = new AbortController();
