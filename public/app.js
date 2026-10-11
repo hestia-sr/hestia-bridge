@@ -1677,6 +1677,12 @@ const I18N = {
     'workers.guide.s5': 'kembali lagi ke web Hestia bridge lalu refresh. jika sudah melakukan refresh pergi ke Halaman Worker. dan buat api key worker.',
     'workers.guide.s6': 'Jika sudah membuat Api key Worker Kalian Wajib untuk Salin Seluruh Curl yang muncul secara otomatis. seperti api key worker dan model Ai nya',
     'workers.guide.s7': 'Jika pesan kalian lambat atau terjadi time out berarti antrian nya sangat panjang. itu karna Hestia bridge hanya untuk menjadi perantara saja seperti jembatan.',
+    'models.title': 'Models',
+    'models.desc': 'Daftar model AI yang tersedia.',
+    'models.filter.gratis': 'Gratis',
+    'models.filter.voucher': 'Voucher',
+    'models.filter.mati': 'Mati',
+    'models.empty': 'Belum ada model',
     'worker.agent.title': 'Agent untuk Worker',
     'worker.agent.desc': 'Pilih agent (Base URL + API key) milikmu yang dipakai worker.',
     'worker.agent.open': 'Atur Agent Pilihan',
@@ -2018,6 +2024,12 @@ const I18N = {
     'workers.guide.s5': 'Go back to the Hestia Bridge web then refresh. After refreshing go to the Worker Page. And create a worker api key.',
     'workers.guide.s6': 'If you have created a Worker Api key you must copy the entire Curl that appears automatically. Such as the worker api key and the Ai model.',
     'workers.guide.s7': 'If your messages are slow or time out, it means the queue is very long. That is because Hestia Bridge is only an intermediary like a bridge.',
+    'models.title': 'Models',
+    'models.desc': 'List of available AI models.',
+    'models.filter.gratis': 'Free',
+    'models.filter.voucher': 'Voucher',
+    'models.filter.mati': 'Off',
+    'models.empty': 'No',
     'worker.agent.title': 'Agent for Worker',
     'worker.agent.desc': 'Choose your own agent (Base URL + API key) used by the worker.',
     'worker.agent.open': 'Set Chosen Agent',
@@ -2473,8 +2485,8 @@ function renderModels(filter) {
   else if (filter === 'voucher') arr = MODELS_VOUCHER;
   else if (filter === 'mati') arr = MODELS_MATI;
   if (!arr.length) {
-    const label = filter === 'gratis' ? 'gratis' : filter === 'voucher' ? 'voucher' : 'mati';
-    list.innerHTML = '<div class="card"><div class="card-body" style="padding:2rem;text-align:center;color:var(--muted)">Belum ada model ' + label + '.</div></div>';
+    const label = t('models.filter.' + filter);
+    list.innerHTML = '<div class="card"><div class="card-body" style="padding:2rem;text-align:center;color:var(--muted)">' + t('models.empty') + ' ' + label + '.</div></div>';
     return;
   }
   list.innerHTML = arr.map(m => modelCard(m, filter !== 'mati')).join('');
