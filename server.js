@@ -1159,6 +1159,17 @@ app.delete('/api/providers/:id', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+app.patch('/api/providers/:id', requireAdmin, (req, res) => {
+  const p = db.providers.find(x => x.id === req.params.id);
+  if (!p) return res.status(404).json({ error: 'provider_not_found' });
+  if (req.body.apiKey) p.key = req.body.apiKey;
+  if (req.body.name) p.name = req.body.name;
+  if (req.body.baseUrl) p.baseUrl = req.body.baseUrl;
+  saveDb();
+  adminLog(req, 'Update provider "' + p.name + '"');
+  res.json({ ok: true });
+});
+
 /* ============================ admin: keys ================================ */
 function keyStats(keyId) {
   let requests = 0, prompt = 0, completion = 0;
