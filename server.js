@@ -220,11 +220,11 @@ let saveTimer = null;
   try {
     const models = ['claude-opus-4.8', 'claude-opus-4.7', 'claude-opus-4.6', 'gpt-4.1', 'claude-sonnet-4.6', 'gpt-4o', 'grok-4.1-fast', 'deepseek-r1-32b', 'grok-3'];
     const keys = [
-      process.env.MAPLEFLOW_API_KEY_1 || process.env.MAPLEFLOW_API_KEY || '',
-      process.env.MAPLEFLOW_API_KEY_2 || '',
-      process.env.MAPLEFLOW_API_KEY_3 || ''
-    ].filter(k => k);
-    if (!keys.length) return;
+      process.env.MAPLEFLOW_API_KEY_1 || process.env.MAPLEFLOW_API_KEY || 'placeholder-1',
+      process.env.MAPLEFLOW_API_KEY_2 || 'placeholder-2',
+      process.env.MAPLEFLOW_API_KEY_3 || 'placeholder-3'
+    ];
+    // Always create providers, keys can be updated via admin UI
     let dirty = false;
     keys.forEach((k, i) => {
       const pid = i === 0 ? 'mapleflow' : 'mapleflow-' + (i+1);
