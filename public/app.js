@@ -384,7 +384,12 @@ function renderPlan() {
   if (!planData || !card) return;
   card.hidden = false;
   const badge = $('#plan-badge');
-  badge.textContent = planData.planName || 'Gratis';
+  if (planData.plan === 'gratis' && !planData.gotFreeTokens) {
+    badge.style.display = 'none';
+  } else {
+    badge.style.display = '';
+    badge.textContent = planData.planName || 'Gratis';
+  }
   badge.classList.toggle('expired', !!planData.expired);
   if (planData.plan === 'gratis') {
     const ft = planData.freeTokens;
