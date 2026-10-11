@@ -111,7 +111,16 @@ const PAID_MODELS = [
   'nvidia/nemotron-3-nano-omni',
   'nvidia/nemotron-3-ultra',
   'sensenova/sensenova-6.8-flash-lite',
-  'x-ai/grok-4.5'
+  'x-ai/grok-4.5',
+  'claude-opus-4.8',
+  'claude-opus-4.7',
+  'claude-opus-4.6',
+  'gpt-4.1',
+  'claude-sonnet-4.6',
+  'gpt-4o',
+  'grok-4.1-fast',
+  'deepseek-r1-32b',
+  'grok-3'
 ];
 /* Model yang boleh dipakai untuk suatu paket. Key admin (tanpa userId) boleh semua. */
 function allowedModelsForPlan(plan) {
