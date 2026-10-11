@@ -2862,6 +2862,12 @@ async function loadVouchers() {
   }
 }
 document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.vm-preset').forEach(b => {
+    b.addEventListener('click', () => {
+      const inp = document.getElementById('vm-tokens');
+      if (inp) inp.value = b.getAttribute('data-tokens');
+    });
+  });
   const btn = document.getElementById('vm-create');
   if (btn) {
     btn.addEventListener('click', async () => {
