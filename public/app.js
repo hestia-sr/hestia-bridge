@@ -2515,7 +2515,8 @@ function modelCard(m, showCopy, locked) {
     'DeepSeek': 'logos/deepseek.png',
     'Google': 'logos/gemini.png',
     'xAI': 'logos/grok.png',
-    'OpenAI': 'logos/chatgpt.png'
+    'OpenAI': 'logos/chatgpt.png',
+    'Liquid': 'logos/liquid.png'
   };
   let logoHtml;
   if (logoImgs[m.provider]) {
