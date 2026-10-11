@@ -412,6 +412,33 @@ function renderPlan() {
   const pct = Math.min(100, Math.max(0, (remain / total) * 100));
   $('#plan-bar-fill').style.width = pct + '%';
 }
+async function loadStats() {
+  try {
+    const s = await api('/api/my-stats');
+    const el = id => document.getElementById(id);
+    if (el('stat-tokens')) el('stat-tokens').textContent = (s.totalTokens || 0).toLocaleString('id-ID');
+    if (el('stat-requests')) el('stat-requests').textContent = (s.totalRequests || 0).toLocaleString('id-ID');
+    if (el('stat-models')) el('stat-models').textContent = (s.models || []).length + ' model';
+    if (el('stat-ttl')) {
+      if (s.ttl) {
+        const remain = Math.max(0, s.ttl - Date.now());
+        el('stat-ttl').textContent = fmtCountdown(remain);
+      } else {
+        el('stat-ttl').textContent = '-';
+      }
+    }
+  } catch (e) { /* abaikan */ }
+}
+document.addEventListener('click', e => {
+  const btn = e.target.closest('#stats-btn');
+  if (btn) {
+    const card = document.getElementById('usage-stats');
+    if (card) {
+      card.classList.toggle('hidden');
+      if (!card.classList.contains('hidden')) loadStats();
+    }
+  }
+});
 async function loadPlan() {
   try {
     const p = await api('/api/my-plan');
