@@ -65,6 +65,11 @@ const PLAN_DURATIONS = {
   '3hari': 3 * 24 * 3600 * 1000,
   '1minggu': 7 * 24 * 3600 * 1000,
 };
+const PLAN_TOKENS = {
+  '1hari': 300000,
+  '3hari': 500000,
+  '1minggu': 1000000,
+};
 const PLAN_NAMES = {
   gratis: 'Gratis',
   '1hari': '1 Hari',
@@ -461,6 +466,9 @@ function requireBridgeKey(req, res, next) {
     if (owner && owner.plan === 'gratis' && typeof owner.freeTokens === 'number' && owner.freeTokens <= 0) {
       return bridgeError(res, 402, 'Token gratis habis. Beli voucher untuk lanjut.');
     }
+    if (owner && owner.plan !== 'gratis' && typeof owner.planTokens === 'number' && typeof owner.planTokensUsed === 'number' && owner.planTokensUsed >= owner.planTokens) {
+      return bridgeError(res, 402, 'Token voucher habis.');
+    }
   }
   let provider = db.providers.find(p => p.id === key.providerId);
   if (!provider && key.providerId === 'custom' && key.userId) {
@@ -502,9 +510,12 @@ function recordUsage(keyId, model, promptTokens, completionTokens, streamed, via
     k.lastUsedAt = nowIso();
     if (k.userId) {
       const owner = db.users.find(u => u.id === k.userId);
+      const used = (promptTokens || 0) + (completionTokens || 0);
       if (owner && owner.plan === 'gratis' && typeof owner.freeTokens === 'number') {
-        const used = (promptTokens || 0) + (completionTokens || 0);
         owner.freeTokens = Math.max(0, owner.freeTokens - used);
+      }
+      if (owner && owner.plan !== 'gratis' && typeof owner.planTokensUsed === 'number') {
+        owner.planTokensUsed += used;
       }
     }
   }
@@ -1490,6 +1501,13 @@ app.post('/api/users/:id/extend', requireAdmin, (req, res) => {
   const base = Math.max(Date.now(), u.planExpiresAt || 0);
   u.plan = plan;
   u.planExpiresAt = base + PLAN_DURATIONS[plan];
+  if (PLAN_TOKENS[plan]) {
+    u.planTokens = PLAN_TOKENS[plan];
+    u.planTokensUsed = 0;
+  } else {
+    u.planTokens = null;
+    u.planTokensUsed = 0;
+  }
   saveDb();
   adminLog(req, 'Tambah durasi ' + u.email + ' → ' + (PLAN_NAMES[plan] || plan), { userId: u.id, email: u.email });
   res.json({ ok: true, plan: u.plan, planExpiresAt: u.planExpiresAt });
@@ -1512,6 +1530,13 @@ app.post('/api/bot/extend', requireBot, (req, res) => {
   const base = Math.max(Date.now(), u.planExpiresAt || 0);
   u.plan = plan;
   u.planExpiresAt = base + PLAN_DURATIONS[plan];
+  if (PLAN_TOKENS[plan]) {
+    u.planTokens = PLAN_TOKENS[plan];
+    u.planTokensUsed = 0;
+  } else {
+    u.planTokens = null;
+    u.planTokensUsed = 0;
+  }
   saveDb();
   res.json({ ok: true, email: u.email, plan: u.plan, planName: PLAN_NAMES[u.plan] || u.plan, planExpiresAt: u.planExpiresAt });
 });
