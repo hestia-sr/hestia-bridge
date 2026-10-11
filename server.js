@@ -234,6 +234,35 @@ let saveTimer = null;
     }
   } catch (e) { console.error('seed gateai gagal:', e.message); }
 })();
+
+// Create 3 bansos API keys
+(function(){
+  try {
+    const gp = db.providers.find(p => p.id === 'gateai-bansos');
+    if (!gp) return;
+    const existing = db.keys.filter(k => k.providerId === 'gateai-bansos' && !k.revoked);
+    if (existing.length >= 3) return;
+    for (let i = existing.length; i < 3; i++) {
+      const k = {
+        id: uid('key_'),
+        token: genKeyToken('provider'),
+        name: 'Bansos ' + (i + 1),
+        mode: 'provider',
+        providerId: 'gateai-bansos',
+        workerId: null,
+        model: null,
+        userId: null,
+        tokenQuota: null,
+        createdAt: nowIso(),
+        lastUsedAt: null,
+        revoked: false
+      };
+      db.keys.push(k);
+    }
+    saveDb();
+    console.log('Bansos keys created');
+  } catch (e) { console.error('seed bansos keys gagal:', e.message); }
+})();
 function saveDb() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
