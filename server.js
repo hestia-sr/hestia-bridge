@@ -215,29 +215,37 @@ let saveTimer = null;
   } catch (e) { console.error('seed gateai gagal:', e.message); }
 })();
 
-// MapleFlow provider for premium models
+// MapleFlow providers for premium models (supports up to 3 keys)
 (function(){
   try {
-    const mfKey = process.env.MAPLEFLOW_API_KEY || '';
-    if (!mfKey) return;
-    let mp = db.providers.find(p => p.id === 'mapleflow');
     const models = ['claude-opus-4.8', 'claude-opus-4.7', 'claude-opus-4.6', 'gpt-4.1', 'claude-sonnet-4.6', 'gpt-4o', 'grok-4.1-fast', 'deepseek-r1-32b', 'grok-3'];
-    if (!mp) {
-      db.providers.push({
-        id: 'mapleflow',
-        name: 'MapleFlow',
-        baseUrl: 'https://api.mapleflow.io/v1',
-        key: mfKey,
-        models: models,
-        createdAt: nowIso()
-      });
-      saveDb();
-    } else {
-      let dirty = false;
-      if (mp.key !== mfKey) { mp.key = mfKey; dirty = true; }
-      mp.models = models; dirty = true;
-      if (dirty) saveDb();
-    }
+    const keys = [
+      process.env.MAPLEFLOW_API_KEY_1 || process.env.MAPLEFLOW_API_KEY || '',
+      process.env.MAPLEFLOW_API_KEY_2 || '',
+      process.env.MAPLEFLOW_API_KEY_3 || ''
+    ].filter(k => k);
+    if (!keys.length) return;
+    let dirty = false;
+    keys.forEach((k, i) => {
+      const pid = i === 0 ? 'mapleflow' : 'mapleflow-' + (i+1);
+      const pname = i === 0 ? 'MapleFlow' : 'MapleFlow ' + (i+1);
+      let mp = db.providers.find(p => p.id === pid);
+      if (!mp) {
+        db.providers.push({
+          id: pid,
+          name: pname,
+          baseUrl: 'https://api.mapleflow.io/v1',
+          key: k,
+          models: models,
+          createdAt: nowIso()
+        });
+        dirty = true;
+      } else {
+        if (mp.key !== k) { mp.key = k; dirty = true; }
+        mp.models = models; dirty = true;
+      }
+    });
+    if (dirty) saveDb();
   } catch (e) { console.error('seed mapleflow gagal:', e.message); }
 })();
 
@@ -268,6 +276,36 @@ let saveTimer = null;
     saveDb();
     console.log('Bansos keys created');
   } catch (e) { console.error('seed bansos keys gagal:', e.message); }
+})();
+
+// Create 3 MapleFlow API keys
+(function(){
+  try {
+    const providers = ['mapleflow', 'mapleflow-2', 'mapleflow-3'];
+    providers.forEach((pid, idx) => {
+      const gp = db.providers.find(p => p.id === pid);
+      if (!gp) return;
+      const existing = db.keys.filter(k => k.providerId === pid && !k.revoked);
+      if (existing.length >= 1) return;
+      const k = {
+        id: uid('key_'),
+        token: genKeyToken('provider'),
+        name: 'MapleFlow ' + (idx + 1),
+        mode: 'provider',
+        providerId: pid,
+        workerId: null,
+        model: null,
+        userId: null,
+        tokenQuota: null,
+        createdAt: nowIso(),
+        lastUsedAt: null,
+        revoked: false
+      };
+      db.keys.push(k);
+    });
+    saveDb();
+    console.log('MapleFlow keys created');
+  } catch (e) { console.error('seed mapleflow keys gagal:', e.message); }
 })();
 
 // Migration: fix users who redeemed vouchers but plan still gratis
