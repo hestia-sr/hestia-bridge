@@ -2829,7 +2829,13 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.disabled = true;
       try {
         const r = await api('/api/vouchers/redeem', { method: 'POST', body: JSON.stringify({ code }) });
-        msg.textContent = (LANG === 'id' ? 'Berhasil! +' : 'Success! +') + r.tokens.toLocaleString('id-ID') + (LANG === 'id' ? ' token.' : ' tokens.');
+        const uname = r.username || '';
+        const tokStr = r.tokens >= 1000000 ? (r.tokens/1000000) + 'jt' : (r.tokens >= 1000 ? (r.tokens/1000) + 'k' : r.tokens);
+        if (LANG === 'id') {
+          msg.textContent = 'Selamat ' + uname + ', Code Voucher sebesar ' + tokStr + ' Token Kamu berhasil Di Klaim!';
+        } else {
+          msg.textContent = 'Congratulations ' + uname + ', Voucher Code for ' + tokStr + ' Tokens successfully claimed!';
+        }
         msg.style.color = '#38a169';
         input.value = '';
       } catch (err) {
@@ -2877,6 +2883,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btn) {
     btn.addEventListener('click', async () => {
       const inp = document.getElementById('vm-tokens');
+      const emailInp = document.getElementById('vm-email');
       const msg = document.getElementById('vm-msg');
       const tokens = parseInt(inp.value, 10);
       if (!tokens || tokens <= 0) {
@@ -2886,7 +2893,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       btn.disabled = true;
       try {
-        const r = await api('/api/vouchers', { method: 'POST', body: JSON.stringify({ tokens }) });
+        const r = await api('/api/vouchers', { method: 'POST', body: JSON.stringify({ tokens, email: emailInp ? emailInp.value : '' }) });
         msg.innerHTML = 'Voucher dibuat: <span id="vm-newcode" style="font-family:monospace;font-weight:700">' + r.code + '</span> <button id="vm-copy" class="btn btn-secondary" style="padding:.2rem .5rem;font-size:.8rem">Salin</button>';
         msg.style.color = '#38a169';
         inp.value = '';
