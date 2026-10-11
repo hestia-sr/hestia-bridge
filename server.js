@@ -2181,7 +2181,15 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
     body.messages = msgs;
   }
   const wantStream = body.stream === true;
-  const target = req.provider.baseUrl + '/chat/completions';
+  // Route to correct provider based on model ID
+  let provider = req.provider;
+  const mapleModels = ['claude-opus-4.8', 'claude-opus-4.7', 'claude-opus-4.6', 'claude-sonnet-4.6', 'gpt-4.1', 'gpt-4o', 'grok-4.1-fast', 'deepseek-r1-32b', 'grok-3'];
+  if (body.model && mapleModels.includes(body.model)) {
+    // Find a MapleFlow provider with a valid key
+    const mp = db.providers.find(p => (p.id === 'mapleflow' || p.id.startsWith('mapleflow-')) && p.key && !p.key.startsWith('placeholder'));
+    if (mp) provider = mp;
+  }
+  const target = provider.baseUrl + '/chat/completions';
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 120000);
   // If the client disconnects mid-proxy, cancel the upstream request.
@@ -2197,7 +2205,7 @@ app.post('/v1/chat/completions', requireBridgeKey, async (req, res) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + req.provider.key
+        Authorization: 'Bearer ' + provider.key
       },
       body: JSON.stringify(body),
       signal: ctrl.signal
