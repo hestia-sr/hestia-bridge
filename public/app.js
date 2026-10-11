@@ -2661,11 +2661,32 @@ function renderWorkerKeyList() {
     const created = k.createdAt ? timeAgo(k.createdAt) : '-';
     const st = k.stats || { requests: 0, totalTokens: 0 };
     return '<div class="card" style="margin-bottom:.7rem"><div class="card-body">' +
-      '<div style="font-weight:600;font-size:1rem;margin-bottom:.3rem">' + esc(k.name) + '</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">' +
+        '<div style="font-weight:600;font-size:1rem">' + esc(k.name) + '</div>' +
+        '<button class="icon-btn workerkey-del" data-id="' + k.id + '" aria-label="Hapus" style="color:#ef4444">' +
+          '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>' +
+        '</button>' +
+      '</div>' +
       '<div class="muted small" style="margin-bottom:.3rem">Worker: ' + esc(k.workerName || '-') + ' • ' + created + '</div>' +
       '<div class="muted small"><strong>' + st.requests + '</strong> request • <strong>' + st.totalTokens.toLocaleString() + '</strong> token</div>' +
       '</div></div>';
   }).join('');
+  
+  // Attach delete handlers
+  box.querySelectorAll('.workerkey-del').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-id');
+      if (!confirm('Hapus key worker ini?')) return;
+      try {
+        await api('/api/my-keys/' + id, { method: 'DELETE' });
+        toast('Key dihapus', true);
+        if (typeof loadMyKeys === 'function') await loadMyKeys();
+      } catch (err) {
+        toast('Gagal menghapus', false);
+      }
+    });
+  });
 }
 
 // Panggil renderWorkerKeyList setiap loadMyKeys selesai
