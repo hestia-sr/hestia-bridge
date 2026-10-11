@@ -386,11 +386,17 @@ function renderPlan() {
   const badge = $('#plan-badge');
   badge.textContent = planData.planName || 'Gratis';
   badge.classList.toggle('expired', !!planData.expired);
+  if (planData.plan === 'gratis') {
+    const ft = planData.freeTokens;
+    $('#plan-countdown').textContent = (typeof ft === 'number' ? ft.toLocaleString('id-ID') : '-') + ' token';
+    $('#plan-bar-fill').style.width = '100%';
+    return;
+  }
   const now = Date.now();
   const remain = Math.max(0, (planData.planExpiresAt || 0) - now);
   $('#plan-countdown').textContent = fmtCountdown(remain);
   // progress bar: sisa dibanding total durasi paket
-  const totals = { gratis: 864e5, '1hari': 864e5, '3hari': 3 * 864e5, '1minggu': 7 * 864e5 };
+  const totals = { '1hari': 864e5, '3hari': 3 * 864e5, '1minggu': 7 * 864e5 };
   const total = totals[planData.plan] || 864e5;
   const pct = Math.min(100, Math.max(0, (remain / total) * 100));
   $('#plan-bar-fill').style.width = pct + '%';
