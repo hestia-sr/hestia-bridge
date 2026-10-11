@@ -49,13 +49,14 @@ function loadDb() {
         workers: Array.isArray(d.workers) ? d.workers : [],
         wqueue: Array.isArray(d.wqueue) ? d.wqueue : [],
         users: Array.isArray(d.users) ? d.users : [],
-        sessions: (d.sessions && typeof d.sessions === 'object') ? d.sessions : {}
+        sessions: (d.sessions && typeof d.sessions === 'object') ? d.sessions : {},
+        freeTokenDevices: Array.isArray(d.freeTokenDevices) ? d.freeTokenDevices : []
       };
     }
   } catch (e) {
     console.error('[db] load failed, starting fresh:', e.message);
   }
-  return { providers: [], keys: [], usage: [], workers: [], wqueue: [], users: [], sessions: {} };
+  return { providers: [], keys: [], usage: [], workers: [], wqueue: [], users: [], sessions: {}, freeTokenDevices: [] };
 }
 const PLAN_DURATIONS = {
   gratis: 24 * 3600 * 1000,
@@ -828,8 +829,10 @@ app.post('/api/auth/register', async (req, res) => {
   const fp = String(fingerprint || '').slice(0, 128);
   let suspended = false;
   const sameDevice = usersOnDevice(fp);
-  // Allow registration, but only first account on device gets free tokens
-  const isFirstOnDevice = sameDevice.length === 0;
+  // 1 device = 500k tokens total. Even if admin deletes the account, device won't get tokens again.
+  if (!db.freeTokenDevices) db.freeTokenDevices = [];
+  const deviceAlreadyGotTokens = fp && db.freeTokenDevices.includes(fp);
+  const isFirstOnDevice = !deviceAlreadyGotTokens;
   const user = {
     id: uid('user_'),
     email: em,
@@ -847,6 +850,9 @@ app.post('/api/auth/register', async (req, res) => {
     lastIp: clientIp(req) || null
   };
   db.users.push(user);
+  if (isFirstOnDevice && fp) {
+    db.freeTokenDevices.push(fp);
+  }
   saveDb();
   logActivity('register', { userId: user.id, email: user.email, ip: clientIp(req), detail: 'akun baru mendaftar' });
   const token = createSessionObj({ role: user.role, userId: user.id, email: user.email });
