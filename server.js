@@ -454,6 +454,12 @@ function requireBridgeKey(req, res, next) {
       return bridgeError(res, 429, 'Kuota token key ini sudah habis (' + key.tokenQuota.toLocaleString('id-ID') + ' token).');
     }
   }
+  if (key.userId) {
+    const owner = db.users.find(u => u.id === key.userId);
+    if (owner && owner.plan === 'gratis' && typeof owner.freeTokens === 'number' && owner.freeTokens <= 0) {
+      return bridgeError(res, 402, 'Token gratis habis. Beli voucher untuk lanjut.');
+    }
+  }
   let provider = db.providers.find(p => p.id === key.providerId);
   if (!provider && key.providerId === 'custom' && key.userId) {
     // BYOK: key terikat ke provider milik user sendiri.
@@ -490,7 +496,16 @@ function recordUsage(keyId, model, promptTokens, completionTokens, streamed, via
   // keep the log bounded: last 50k entries
   if (db.usage.length > 50000) db.usage.splice(0, db.usage.length - 50000);
   const k = db.keys.find(x => x.id === keyId);
-  if (k) k.lastUsedAt = nowIso();
+  if (k) {
+    k.lastUsedAt = nowIso();
+    if (k.userId) {
+      const owner = db.users.find(u => u.id === k.userId);
+      if (owner && owner.plan === 'gratis' && typeof owner.freeTokens === 'number') {
+        const used = (promptTokens || 0) + (completionTokens || 0);
+        owner.freeTokens = Math.max(0, owner.freeTokens - used);
+      }
+    }
+  }
   saveDb();
 }
 
@@ -829,6 +844,7 @@ app.post('/api/auth/register', async (req, res) => {
     suspended,
     plan: 'gratis',
     planExpiresAt: Date.now() + PLAN_DURATIONS.gratis,
+    freeTokens: 500000,
     createdAt: nowIso(),
     lastIp: clientIp(req) || null
   };
