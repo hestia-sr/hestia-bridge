@@ -309,11 +309,11 @@ let saveTimer = null;
       if (!u || u.plan !== 'gratis') return;
       // Set plan based on voucher tokens
       if (v.tokens >= 1000000) {
-        u.plan = '1minggu'; u.planStart = now; u.planEnd = now + 7*24*60*60*1000;
+        u.plan = '1minggu'; u.planStart = now; u.planEnd = now + 7*24*60*60*1000; u.planTokens = v.tokens; u.planTokensUsed = 0;
       } else if (v.tokens >= 500000) {
-        u.plan = '3hari'; u.planStart = now; u.planEnd = now + 3*24*60*60*1000;
+        u.plan = '3hari'; u.planStart = now; u.planEnd = now + 3*24*60*60*1000; u.planTokens = v.tokens; u.planTokensUsed = 0;
       } else if (v.tokens >= 300000) {
-        u.plan = '1hari'; u.planStart = now; u.planEnd = now + 24*60*60*1000;
+        u.plan = '1hari'; u.planStart = now; u.planEnd = now + 24*60*60*1000; u.planTokens = v.tokens; u.planTokensUsed = 0;
       } else {
         return;
       }
@@ -321,6 +321,23 @@ let saveTimer = null;
     });
     if (fixed > 0) { saveDb(); console.log('Fixed ' + fixed + ' voucher users'); }
   } catch (e) { console.error('migration voucher gagal:', e.message); }
+})();
+
+// Migration: set planTokens for paid users missing it
+(function(){
+  try {
+    if (!db.users) return;
+    let fixed = 0;
+    const planTokensMap = { '1hari': 300000, '3hari': 500000, '1minggu': 1000000 };
+    db.users.forEach(u => {
+      if (u.plan && u.plan !== 'gratis' && !u.planTokens && planTokensMap[u.plan]) {
+        u.planTokens = planTokensMap[u.plan];
+        if (typeof u.planTokensUsed !== 'number') u.planTokensUsed = 0;
+        fixed++;
+      }
+    });
+    if (fixed > 0) { saveDb(); console.log('Fixed ' + fixed + ' planTokens'); }
+  } catch (e) { console.error('migration planTokens gagal:', e.message); }
 })();
 function saveDb() {
   clearTimeout(saveTimer);
@@ -1763,13 +1780,13 @@ app.post('/api/vouchers/redeem', requireUser, (req, res) => {
   // Set plan based on voucher tokens so voucher models unlock
   const now = Date.now();
   if (v.tokens >= 2000000) {
-    u.plan = '1minggu'; u.planStart = now; u.planEnd = now + 7*24*60*60*1000;
+    u.plan = '1minggu'; u.planStart = now; u.planEnd = now + 7*24*60*60*1000; u.planTokens = 2000000; u.planTokensUsed = 0;
   } else if (v.tokens >= 1000000) {
-    u.plan = '1minggu'; u.planStart = now; u.planEnd = now + 7*24*60*60*1000;
+    u.plan = '1minggu'; u.planStart = now; u.planEnd = now + 7*24*60*60*1000; u.planTokens = 1000000; u.planTokensUsed = 0;
   } else if (v.tokens >= 500000) {
-    u.plan = '3hari'; u.planStart = now; u.planEnd = now + 3*24*60*60*1000;
+    u.plan = '3hari'; u.planStart = now; u.planEnd = now + 3*24*60*60*1000; u.planTokens = 500000; u.planTokensUsed = 0;
   } else if (v.tokens >= 300000) {
-    u.plan = '1hari'; u.planStart = now; u.planEnd = now + 24*60*60*1000;
+    u.plan = '1hari'; u.planStart = now; u.planEnd = now + 24*60*60*1000; u.planTokens = 300000; u.planTokensUsed = 0;
   }
   saveDb();
   logActivity('voucher_redeem', { userId: u.id, email: u.email, detail: code + ' +' + v.tokens });
