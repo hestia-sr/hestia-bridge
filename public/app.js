@@ -3134,6 +3134,8 @@ function initChat() {
   
   sendBtn.onclick = sendMessage;
   input.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
+  // Expose untuk handler langsung
+  window.chatSendMessage = sendMessage;
 }
 
 function addChatMsg(role, text) {
@@ -3169,6 +3171,22 @@ document.addEventListener('DOMContentLoaded', () => {
     menuBtn.onclick = () => {
       modelPopup.classList.toggle('show');
     };
+  }
+  // Handler send button langsung
+  const sendBtn = document.getElementById('chat-send');
+  const input = document.getElementById('chat-input');
+  // Panggil initChat untuk setup sendMessage
+  if (typeof initChat === 'function') {
+    try { initChat(); } catch(e) {}
+  }
+  if (sendBtn && input) {
+    const doSend = () => {
+      if (typeof window.chatSendMessage === 'function') {
+        window.chatSendMessage();
+      }
+    };
+    // Jangan timpa jika sudah ada handler dari initChat
+    if (!sendBtn.onclick) sendBtn.onclick = doSend;
   }
 });
 
