@@ -3050,14 +3050,7 @@ function initChat() {
   const sendBtn = document.getElementById('chat-send');
   const input = document.getElementById('chat-input');
 
-  // Toggle popup model saat tombol ••• diklik
-  const menuBtn = document.getElementById('chat-menu-btn');
-  const modelPopup = document.getElementById('chat-model-popup');
-  if (menuBtn && modelPopup) {
-    menuBtn.addEventListener('click', () => {
-      modelPopup.classList.toggle('show');
-    });
-  }
+  // Handler ••• sudah di DOMContentLoaded (jangan duplikat)
 
   // Auto-resize textarea
   if (input && input.tagName === 'TEXTAREA') {
