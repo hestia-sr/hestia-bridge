@@ -31,7 +31,18 @@ function resolveDataDir() {
   if (process.env.DATA_DIR) return process.env.DATA_DIR;
   try {
     const fsTest = require('fs');
-    if (fsTest.existsSync('/data')) return '/data';
+    // Coba /data dulu (volume Deplexo)
+    try {
+      if (!fsTest.existsSync('/data')) fsTest.mkdirSync('/data', { recursive: true });
+      fsTest.accessSync('/data', fsTest.constants.W_OK);
+      return '/data';
+    } catch (e) {}
+    // Fallback ke /tmp jika /data tidak bisa dipakai
+    try {
+      const tmpDir = '/tmp/hestia-bridge-data';
+      if (!fsTest.existsSync(tmpDir)) fsTest.mkdirSync(tmpDir, { recursive: true });
+      return tmpDir;
+    } catch (e2) {}
   } catch (e) {}
   return path.join(__dirname, 'data');
 }
