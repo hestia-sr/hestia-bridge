@@ -3095,6 +3095,10 @@ function initChat() {
         }
       }
       
+      // System prompt untuk chat harian yang ramah
+      const systemPrompt = { role: 'system', content: 'Kamu adalah asisten AI yang ramah dan membantu untuk chat harian. Jawab dengan bahasa Indonesia yang natural dan santai. Kamu bisa membantu dengan berbagai topik sehari-hari.' };
+      const messages = [systemPrompt, ...chatHistory];
+      
       const resp = await fetch(baseUrl + '/chat/completions', {
         method: 'POST',
         headers: {
@@ -3103,7 +3107,7 @@ function initChat() {
         },
         body: JSON.stringify({
           model: model,
-          messages: chatHistory,
+          messages: messages,
           stream: false
         })
       });
