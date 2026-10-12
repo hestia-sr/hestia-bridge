@@ -3161,6 +3161,17 @@ function addChatMsg(role, text) {
   return div;
 }
 
+// Handler langsung untuk tombol ••• (tidak bergantung initChat)
+document.addEventListener('DOMContentLoaded', () => {
+  const menuBtn = document.getElementById('chat-menu-btn');
+  const modelPopup = document.getElementById('chat-model-popup');
+  if (menuBtn && modelPopup) {
+    menuBtn.onclick = () => {
+      modelPopup.classList.toggle('show');
+    };
+  }
+});
+
 // Init chat saat view ditampilkan
 const origShowView = window.showView;
 if (origShowView) {
