@@ -95,10 +95,7 @@ const FREE_MODELS = [
   'qwen/qwen3-coder-plus:free',
   'mistralai/ministral-8b',
   'cohere/tiny-aya-global',
-  'liquid/lfm-2.5-2.6b:free',
-  'llama3.2:3b',
-  'qwen2.5:7b',
-  'qwen3-coder:30b'
+  'liquid/lfm-2.5-2.6b:free'
 ];
 const PAID_MODELS = [
   'qwen/qwen3-max:free',
