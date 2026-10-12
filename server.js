@@ -2365,3 +2365,4 @@ app.listen(PORT, () => {
     console.log('[hestia-bridge] WARNING: ADMIN_EMAIL / ADMIN_PASSWORD_HASH not set — admin login disabled.');
   }
 });
+
