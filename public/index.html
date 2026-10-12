@@ -29,6 +29,10 @@
 .chat-model-popup { display: none; margin: 0 auto 0.5rem auto; padding: 0.75rem 1.25rem; border-radius: 16px; background: white; border: 1px solid #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-size: 0.9rem; color: #333; max-width: 300px; text-align: center; }
 .chat-model-popup.show { display: block; }
 .chat-model-popup .model-name { font-weight: 600; color: #a855f7; }
+.stream-cursor { display: inline-block; animation: blink 0.8s infinite; color: #a855f7; font-weight: bold; }
+@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+.chat-code { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 12px; overflow-x: auto; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.85rem; line-height: 1.5; margin: 0.5rem 0; }
+.chat-code code { background: none; padding: 0; }
 
 .chat-container { max-width: 800px; width: 100%; margin: 0 auto; padding: 1rem 1rem 0 1rem; display: flex; flex-direction: column; flex: 1; }
 .chat-input-row { display: flex; gap: 0.5rem; margin-top: auto; padding: 0; margin-bottom: 0; align-items: flex-end; width: 100%; }
