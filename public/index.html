@@ -550,11 +550,14 @@
     <!-- ===== CHAT VIEW ===== -->
     <section id="view-chat" class="view hidden">
       <div class="chat-container">
-        <button class="chat-menu-btn" id="chat-menu-btn" title="Model">•••</button>
-        <div class="chat-model-popup" id="chat-model-popup">
+        <div style="display: flex; justify-content: center; padding-top: 0.5rem;">
+          <button class="chat-menu-btn" id="chat-menu-btn" title="Model" style="margin: 0;">•••</button>
+        </div>
+        <div class="chat-model-popup" id="chat-model-popup" style="margin-top: 0.5rem;">
           <div class="model-name">Claude Sonnet 4.6</div>
           <div style="font-size: 0.8rem; color: #999; margin-top: 0.25rem;">Model Bridge</div>
         </div>
+        <div style="flex: 1;"></div>
         <div class="chat-input-row">
           <div class="chat-bubble">
             <textarea id="chat-input" rows="1" data-i18n-ph="chat.placeholder" placeholder="Ketik pesan..."></textarea>
