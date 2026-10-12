@@ -198,41 +198,6 @@ let saveTimer = null;
   } catch (e) { console.error('seed gateway gagal:', e.message); }
 })();
 
-// AI4All provider untuk model gratis tambahan (dari Hestia, 2026-10-11). Mendukung 2 key.
-(function(){
-  try {
-    const models = ['llama3.2:3b', 'qwen2.5:7b', 'qwen3-coder:30b'];
-    const keys = [
-      process.env.AI4ALL_API_KEY || '',
-      process.env.AI4ALL_API_KEY_2 || ''
-    ];
-    keys.forEach((k, i) => {
-      const pid = i === 0 ? 'ai4all' : 'ai4all-' + (i+1);
-      const pname = i === 0 ? 'AI4All' : 'AI4All ' + (i+1);
-      let ap = db.providers.find(p => p.id === pid);
-      if (!ap) {
-        db.providers.push({
-          id: pid,
-          name: pname,
-          baseUrl: process.env.AI4ALL_BASE_URL || '',
-          key: k,
-          models: models,
-          createdAt: nowIso()
-        });
-        saveDb();
-      } else {
-        let dirty = false;
-        const ai4allBase = process.env.AI4ALL_BASE_URL || ''; if (ai4allBase && ap.baseUrl !== ai4allBase) { ap.baseUrl = ai4allBase; dirty = true; }
-        // Jangan timpa key yang di-set manual via admin dengan env kosong.
-        if (k && ap.key !== k) { ap.key = k; dirty = true; }
-        ap.models = models; dirty = true;
-        ap.name = pname; dirty = true;
-        if (dirty) saveDb();
-      }
-    });
-  } catch (e) { console.error('seed ai4all gagal:', e.message); }
-})();
-
 // MapleFlow providers for premium models (supports up to 3 keys)
 (function(){
   try {
