@@ -28,22 +28,29 @@ const PORT = parseInt(process.env.PORT || '3000', 10);
 // DATA_DIR: Railway mount di /app/data, Deplexo mount di /data.
 // Coba env var dulu, lalu /data (Deplexo), lalu ./data sebagai fallback.
 function resolveDataDir() {
-  if (process.env.DATA_DIR) return process.env.DATA_DIR;
-  try {
-    const fsTest = require('fs');
-    // Coba /data dulu (volume Deplexo)
+  const fsTest = require('fs');
+  // Helper: test if a dir is usable (can create and write)
+  const testDir = (dir) => {
     try {
-      if (!fsTest.existsSync('/data')) fsTest.mkdirSync('/data', { recursive: true });
-      fsTest.accessSync('/data', fsTest.constants.W_OK);
-      return '/data';
-    } catch (e) {}
-    // Fallback ke /tmp jika /data tidak bisa dipakai
-    try {
-      const tmpDir = '/tmp/hestia-bridge-data';
-      if (!fsTest.existsSync(tmpDir)) fsTest.mkdirSync(tmpDir, { recursive: true });
-      return tmpDir;
-    } catch (e2) {}
-  } catch (e) {}
+      if (!fsTest.existsSync(dir)) fsTest.mkdirSync(dir, { recursive: true });
+      fsTest.accessSync(dir, fsTest.constants.W_OK);
+      // Test write
+      const testFile = path.join(dir, '.writetest');
+      fsTest.writeFileSync(testFile, 'test');
+      fsTest.unlinkSync(testFile);
+      return true;
+    } catch (e) { return false; }
+  };
+  // 1. Coba DATA_DIR dari env (jika ada dan bisa dipakai)
+  if (process.env.DATA_DIR && testDir(process.env.DATA_DIR)) {
+    return process.env.DATA_DIR;
+  }
+  // 2. Coba /data (volume Deplexo)
+  if (testDir('/data')) return '/data';
+  // 3. Fallback ke /tmp (selalu bisa)
+  const tmpDir = '/tmp/hestia-bridge-data';
+  if (testDir(tmpDir)) return tmpDir;
+  // 4. Last resort: __dirname/data
   return path.join(__dirname, 'data');
 }
 const DATA_DIR = resolveDataDir();
