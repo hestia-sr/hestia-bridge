@@ -535,23 +535,6 @@
     <!-- ===== CHAT VIEW ===== -->
     <section id="view-chat" class="view hidden">
       <div class="chat-container">
-        <div class="chat-mode-tabs">
-          <button class="chat-tab active" data-mode="provided" data-i18n="chat.modeProvided">Model Kami</button>
-          <button class="chat-tab" data-mode="byok" data-i18n="chat.modeByok">Key Sendiri</button>
-        </div>
-
-        <div class="chat-byok hidden" id="chat-byok">
-          <input type="text" id="chat-baseurl" class="input" placeholder="Base URL (https://...)" />
-          <input type="text" id="chat-apikey" class="input" placeholder="API Key" type="password" />
-          <input type="text" id="chat-model" class="input" placeholder="Model (cth: gpt-4o)" />
-        </div>
-
-        <div class="chat-model-row">
-          <select id="chat-model-select" class="input">
-            <option value="claude-sonnet-4-6">claude-sonnet-4-6</option>
-          </select>
-        </div>
-
         <div class="chat-messages" id="chat-messages">
           <div class="chat-empty" data-i18n="chat.empty">Mulai percakapan dengan AI...</div>
         </div>
