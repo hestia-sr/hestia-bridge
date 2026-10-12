@@ -198,32 +198,6 @@ let saveTimer = null;
   } catch (e) { console.error('seed gateway gagal:', e.message); }
 })();
 
-// GateAI Bansos provider
-(function(){
-  try {
-    const gateaiKey = process.env.GATEAI_API_KEY || '';
-    const gateaiBase = process.env.GATEAI_BASE_URL || '';
-    let gp = db.providers.find(p => p.id === 'gateai-bansos');
-    const models = ['Atria-Dawn-Preview', 'deepseek-v4-pro', 'deepseek-v4.1-flash', 'gpt-5.6-luna', 'gpt-5.6-sol'];
-    if (!gp) {
-      db.providers.push({
-        id: 'gateai-bansos',
-        name: 'GateAI Bansos',
-        baseUrl: gateaiBase,
-        key: gateaiKey,
-        models: models,
-        createdAt: nowIso()
-      });
-      saveDb();
-    } else {
-      let dirty = false;
-      if (gp.key !== gateaiKey) { gp.key = gateaiKey; dirty = true; }
-      gp.models = models; dirty = true;
-      if (dirty) saveDb();
-    }
-  } catch (e) { console.error('seed gateai gagal:', e.message); }
-})();
-
 // AI4All provider untuk model gratis tambahan (dari Hestia, 2026-10-11). Mendukung 2 key.
 (function(){
   try {
@@ -296,35 +270,6 @@ let saveTimer = null;
     });
     if (dirty) saveDb();
   } catch (e) { console.error('seed mapleflow gagal:', e.message); }
-})();
-
-// Create 3 bansos API keys
-(function(){
-  try {
-    const gp = db.providers.find(p => p.id === 'gateai-bansos');
-    if (!gp) return;
-    const existing = db.keys.filter(k => k.providerId === 'gateai-bansos' && !k.revoked);
-    if (existing.length >= 3) return;
-    for (let i = existing.length; i < 3; i++) {
-      const k = {
-        id: uid('key_'),
-        token: genKeyToken('provider'),
-        name: 'Bansos ' + (i + 1),
-        mode: 'provider',
-        providerId: 'gateai-bansos',
-        workerId: null,
-        model: null,
-        userId: null,
-        tokenQuota: 100000000,
-        createdAt: nowIso(),
-        lastUsedAt: null,
-        revoked: false
-      };
-      db.keys.push(k);
-    }
-    saveDb();
-    console.log('Bansos keys created');
-  } catch (e) { console.error('seed bansos keys gagal:', e.message); }
 })();
 
 // Create 3 MapleFlow API keys
@@ -803,15 +748,10 @@ function customProviderOf(user) {
 /* ============================ public: health ============================= */
 app.get('/api/bansos/pool', (req, res) => {
   try {
-    // Total pool Bansos ditetapkan Hestia: 50 juta token (11 Okt 2026).
-    // Jangan jumlahkan quota semua key — itu kegandaan.
-    const total = 50000000;
-    const keys = (db.keys || []).filter(k => k.providerId === 'gateai-bansos' && !k.revoked);
-    let used = 0;
-    keys.forEach(k => { used += (k.tokenUsed || 0); });
-    res.json({ total, remaining: Math.max(0, total - used) });
+    // Bansos sedang upcoming (promo selesai 12 Okt 2026) — tampilkan status upcoming.
+    res.json({ total: 0, remaining: 0, upcoming: true });
   } catch (e) {
-    res.json({ total: 0, remaining: 0 });
+    res.json({ total: 0, remaining: 0, upcoming: true });
   }
 });
 app.get('/api/health', (req, res) => res.json({ ok: true, service: 'hestia-bridge' }));
