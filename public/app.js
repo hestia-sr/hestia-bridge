@@ -2510,9 +2510,6 @@ const MODELS_GRATIS = [
   { id: 'mistralai/ministral-8b', name: 'Ministral 8B', desc: 'Model kecil Mistral yang cepat.', provider: 'Mistral', context: '256.000', caps: { reasoning: false, text: true, vision: true } },
   { id: 'cohere/tiny-aya-global', name: 'Tiny Aya Global', desc: 'Model ringan Cohere.', provider: 'Cohere', context: '32.000', caps: { reasoning: false, text: true, vision: false } },
   { id: 'liquid/lfm-2.5-2.6b:free', name: 'LFM 2.5 2.6B', desc: 'Model compact yang efisien.', provider: 'Liquid', context: '32.000', caps: { reasoning: false, text: true, vision: false } },
-  { id: 'llama3.2:3b', name: 'Llama 3.2 3B', desc: 'Model ringan Meta yang cepat.', provider: 'Meta', context: '128.000', caps: { reasoning: false, text: true, vision: false } },
-  { id: 'qwen2.5:7b', name: 'Qwen2.5 7B', desc: 'Model Qwen serbaguna.', provider: 'Qwen', context: '32.000', caps: { reasoning: false, text: true, vision: false } },
-  { id: 'qwen3-coder:30b', name: 'Qwen3 Coder 30B', desc: 'Model coding Qwen yang powerful.', provider: 'Qwen', context: '256.000', caps: { reasoning: true, text: true, vision: false } },
 ];
 const MODELS_MATI = [];
 const MODELS_VOUCHER = [
