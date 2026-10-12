@@ -3049,6 +3049,21 @@ function initChat() {
 
   const sendBtn = document.getElementById('chat-send');
   const input = document.getElementById('chat-input');
+
+  // Auto-resize textarea
+  if (input && input.tagName === 'TEXTAREA') {
+    input.addEventListener('input', () => {
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+    });
+    // Enter untuk kirim, Shift+Enter untuk baris baru
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  }
   
   const sendMessage = async () => {
     const text = input.value.trim();
@@ -3056,6 +3071,7 @@ function initChat() {
     
     addChatMsg('user', text);
     input.value = '';
+    if (input.tagName === 'TEXTAREA') input.style.height = 'auto';
     chatHistory.push({ role: 'user', content: text });
     
     const aiMsgEl = addChatMsg('ai', '...');
