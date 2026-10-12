@@ -46,9 +46,13 @@ const RATE_LIMIT_MAX = 60; // requests per minute per bridge key
 /* ------------------------------ storage --------------------------------- */
 function ensureDataDir() {
   try {
-    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  } catch (e) {
-    console.error('[hestia-bridge] cannot create DATA_DIR ' + DATA_DIR + ': ' + e.message);
+    try {
+      if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    } catch (e) {
+      console.error('[hestia-bridge] cannot create DATA_DIR ' + DATA_DIR + ': ' + e.message);
+    }
+  } catch (e2) {
+    console.error('[hestia-bridge] ensureDataDir fatal: ' + (e2 && e2.message));
   }
 }
 function loadDb() {
