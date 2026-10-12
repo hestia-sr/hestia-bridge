@@ -3032,6 +3032,18 @@ const CHAT_PROVIDED = {
   model: 'claude-sonnet-4-6'
 };
 
+// Helper untuk streaming
+function escapeHtml(t) {
+  return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function formatChatText(t) {
+  // Format code blocks ```...```
+  let h = escapeHtml(t);
+  h = h.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="chat-code"><code>$2</code></pre>');
+  h = h.replace(/\n/g, '<br>');
+  return h;
+}
+
 let chatMode = 'provided';
 let chatHistory = [];
 
@@ -3108,7 +3120,7 @@ function initChat() {
         body: JSON.stringify({
           model: model,
           messages: messages,
-          stream: false
+          stream: true
         })
       });
       
@@ -3117,9 +3129,37 @@ function initChat() {
         throw new Error('HTTP ' + resp.status + ': ' + err.substring(0, 200));
       }
       
-      const data = await resp.json();
-      const reply = data.choices?.[0]?.message?.content || '(kosong)';
-      aiMsgEl.querySelector('.chat-text').textContent = reply;
+      // Streaming SSE dengan animasi kursor
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let reply = '';
+      const textEl = aiMsgEl.querySelector('.chat-text');
+      textEl.innerHTML = '<span class="stream-cursor">▍</span>';
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6).trim();
+            if (data === '[DONE]') break;
+            try {
+              const json = JSON.parse(data);
+              const delta = json.choices?.[0]?.delta?.content || '';
+              if (delta) {
+                reply += delta;
+                // Render dengan kursor berkedip di akhir
+                textEl.innerHTML = escapeHtml(reply) + '<span class="stream-cursor">▍</span>';
+                document.getElementById('chat-messages').scrollTop = 999999;
+              }
+            } catch(e) {}
+          }
+        }
+      }
+      // Hapus kursor setelah selesai, render final dengan format kode
+      textEl.innerHTML = formatChatText(reply);
       chatHistory.push({ role: 'assistant', content: reply });
       
     } catch (e) {
