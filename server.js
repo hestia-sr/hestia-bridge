@@ -65,6 +65,11 @@ const RATE_LIMIT_MAX = 60; // requests per minute per bridge key
 /* ------------------------------ storage --------------------------------- */
 function ensureDataDir() {
   try {
+    // JANGAN pernah coba mkdir /app/data - skip saja
+    if (DATA_DIR === '/app/data' || DATA_DIR.startsWith('/app/data/')) {
+      console.error('[hestia-bridge] SKIP mkdir /app/data (blacklisted)');
+      return;
+    }
     try {
       if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
     } catch (e) {
