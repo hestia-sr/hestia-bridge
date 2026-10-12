@@ -41,9 +41,10 @@ function resolveDataDir() {
       return true;
     } catch (e) { return false; }
   };
-  // 1. Coba DATA_DIR dari env (jika ada dan bisa dipakai)
-  if (process.env.DATA_DIR && testDir(process.env.DATA_DIR)) {
-    return process.env.DATA_DIR;
+  // 1. Coba DATA_DIR dari env (jika ada, bisa dipakai, dan BUKAN /app/data)
+  const envDir = process.env.DATA_DIR;
+  if (envDir && envDir !== '/app/data' && !envDir.startsWith('/app/data/') && testDir(envDir)) {
+    return envDir;
   }
   // 2. Coba /data (volume Deplexo)
   if (testDir('/data')) return '/data';
