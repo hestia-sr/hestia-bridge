@@ -504,7 +504,7 @@ function closeDrawer() {
 }
 $('#drawer-btn').addEventListener('click', openDrawer);
 $('#drawer-backdrop').addEventListener('click', closeDrawer);
-const VIEW_TITLES = { home: 'nav.home', keys: 'topbar.keys', providers: 'nav.providers', users: 'nav.users', activities: 'nav.activities', vouchermgmt: 'nav.vouchermgmt', mykeys: 'nav.mykeys', myworkers: 'nav.myworkers', settings: 'nav.settings', models: 'Model', voucher: 'Voucher' };
+const VIEW_TITLES = { home: 'nav.home', keys: 'topbar.keys', providers: 'nav.providers', users: 'nav.users', activities: 'nav.activities', vouchermgmt: 'nav.vouchermgmt', mykeys: 'nav.mykeys', myworkers: 'nav.myworkers', settings: 'nav.settings', models: 'Model', voucher: 'Voucher', chat: 'nav.chat' };
 function switchView(name) {
   document.querySelectorAll('.drawer-btn[data-view]').forEach(b =>
     b.classList.toggle('active', b.dataset.view === name));
@@ -1858,6 +1858,14 @@ const I18N = {
     'auth.forgot.done': 'Kata sandi berhasil direset. Silakan masuk.',
     'auth.forgot.toast': 'Kode reset terkirim, periksa di Gmail anda.',
     'nav.home': 'Beranda',
+    'nav.chat': 'Chat AI',
+    'chat.title': 'Chat AI',
+    'chat.sub': 'Coba AI langsung dari browser',
+    'chat.modeProvided': 'Model Kami',
+    'chat.modeByok': 'Key Sendiri',
+    'chat.empty': 'Mulai percakapan dengan AI...',
+    'chat.placeholder': 'Ketik pesan...',
+    'chat.send': 'Kirim',
     'home.title': 'Selamat datang di Hestia Bridge',
     'home.sub': 'Sambungkan API key kamu ke aplikasi AI favoritmu. Satu key, banyak aplikasi.',
     'home.cta': 'Lihat Key Saya',
@@ -2210,6 +2218,14 @@ const I18N = {
     'auth.reg.tos': 'I agree to the Hestia Bridge <a href="#" id="tos-link">Terms &amp; Conditions</a>',
     'tos.content': '<h4>1. Acceptance</h4><p>By registering and using Hestia Bridge, you agree to all of these Terms &amp; Conditions.</p><h4>2. Account</h4><ul><li>Only valid Gmail addresses may register.</li><li>One device is limited to a certain number of accounts.</li><li>You are responsible for keeping your password and API keys confidential.</li></ul><h4>3. Prohibited Use</h4><ul><li>Using the service for illegal activity, spam, or abuse is prohibited.</li><li>Sharing your API keys with others without permission is prohibited.</li><li>Attempting to damage, disrupt, or exploit the system is prohibited.</li></ul><h4>4. Quotas &amp; Limits</h4><p>Usage follows each provider\'s quota and limits set by the admin. Violations may result in account suspension.</p><h4>5. Service Changes</h4><p>We may change, suspend, or discontinue the service at any time with reasonable notice.</p><h4>6. Contact Us</h4><p>For questions or reports, contact the Hestia Bridge team through the available official channels.</p>',
     'nav.home': 'Home',
+    'nav.chat': 'AI Chat',
+    'chat.title': 'AI Chat',
+    'chat.sub': 'Try AI right from your browser',
+    'chat.modeProvided': 'Our Model',
+    'chat.modeByok': 'Own Key',
+    'chat.empty': 'Start a conversation with AI...',
+    'chat.placeholder': 'Type a message...',
+    'chat.send': 'Send',
     'home.title': 'Welcome to Hestia Bridge',
     'home.sub': 'Connect your API key to your favorite AI apps. One key, many apps.',
     'home.cta': 'View My Keys',
@@ -3007,5 +3023,125 @@ function showVoucherPopup(text) {
   document.getElementById('voucher-popup-text').textContent = text;
   ov.style.display = 'flex';
   requestAnimationFrame(() => { ov.style.opacity = '1'; document.getElementById('voucher-popup-box').style.transform = 'scale(1)'; });
+}
+
+// ===== CHAT AI =====
+const CHAT_PROVIDED = {
+  baseUrl: 'https://vyceai.com/v1',
+  apiKey: 'sk-cb5cd07f6a7282a8f4444220bfc68eae4368aded3faf4810',
+  model: 'claude-sonnet-4-6'
+};
+
+let chatMode = 'provided';
+let chatHistory = [];
+
+function initChat() {
+  const tabs = document.querySelectorAll('.chat-tab');
+  tabs.forEach(tab => {
+    tab.onclick = () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      chatMode = tab.dataset.mode;
+      document.getElementById('chat-byok').classList.toggle('hidden', chatMode !== 'byok');
+      document.getElementById('chat-model-select').style.display = chatMode === 'provided' ? '' : 'none';
+    };
+  });
+
+  const sendBtn = document.getElementById('chat-send');
+  const input = document.getElementById('chat-input');
+  
+  const sendMessage = async () => {
+    const text = input.value.trim();
+    if (!text) return;
+    
+    addChatMsg('user', text);
+    input.value = '';
+    chatHistory.push({ role: 'user', content: text });
+    
+    const aiMsgEl = addChatMsg('ai', '...');
+    
+    try {
+      let baseUrl, apiKey, model;
+      
+      if (chatMode === 'provided') {
+        baseUrl = CHAT_PROVIDED.baseUrl;
+        apiKey = CHAT_PROVIDED.apiKey;
+        model = document.getElementById('chat-model-select').value || CHAT_PROVIDED.model;
+      } else {
+        baseUrl = document.getElementById('chat-baseurl').value.trim().replace(/\/$/, '');
+        apiKey = document.getElementById('chat-apikey').value.trim();
+        model = document.getElementById('chat-model').value.trim();
+        if (!baseUrl || !apiKey || !model) {
+          aiMsgEl.querySelector('.chat-text').textContent = 'Lengkapi Base URL, API Key, dan Model!';
+          return;
+        }
+      }
+      
+      const resp = await fetch(baseUrl + '/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + apiKey
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: chatHistory,
+          stream: false
+        })
+      });
+      
+      if (!resp.ok) {
+        const err = await resp.text();
+        throw new Error('HTTP ' + resp.status + ': ' + err.substring(0, 200));
+      }
+      
+      const data = await resp.json();
+      const reply = data.choices?.[0]?.message?.content || '(kosong)';
+      aiMsgEl.querySelector('.chat-text').textContent = reply;
+      chatHistory.push({ role: 'assistant', content: reply });
+      
+    } catch (e) {
+      aiMsgEl.querySelector('.chat-text').textContent = 'Error: ' + e.message;
+    }
+    
+    document.getElementById('chat-messages').scrollTop = 999999;
+  };
+  
+  sendBtn.onclick = sendMessage;
+  input.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
+}
+
+function addChatMsg(role, text) {
+  const container = document.getElementById('chat-messages');
+  const empty = container.querySelector('.chat-empty');
+  if (empty) empty.remove();
+  
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + role;
+  
+  const textSpan = document.createElement('div');
+  textSpan.className = 'chat-text';
+  textSpan.textContent = text;
+  div.appendChild(textSpan);
+  
+  if (role === 'ai') {
+    const actions = document.createElement('div');
+    actions.className = 'chat-msg-actions';
+    actions.innerHTML = '<button title="Salin" onclick="navigator.clipboard.writeText(this.closest(\'.chat-msg\').querySelector(\'.chat-text\').textContent)">📋</button>';
+    div.appendChild(actions);
+  }
+  
+  container.appendChild(div);
+  container.scrollTop = 999999;
+  return div;
+}
+
+// Init chat saat view ditampilkan
+const origShowView = window.showView;
+if (origShowView) {
+  window.showView = function(v) {
+    origShowView(v);
+    if (v === 'chat') initChat();
+  };
 }
 
