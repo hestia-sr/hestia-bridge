@@ -3050,6 +3050,15 @@ function initChat() {
   const sendBtn = document.getElementById('chat-send');
   const input = document.getElementById('chat-input');
 
+  // Toggle popup model saat tombol ••• diklik
+  const menuBtn = document.getElementById('chat-menu-btn');
+  const modelPopup = document.getElementById('chat-model-popup');
+  if (menuBtn && modelPopup) {
+    menuBtn.addEventListener('click', () => {
+      modelPopup.classList.toggle('show');
+    });
+  }
+
   // Auto-resize textarea
   if (input && input.tagName === 'TEXTAREA') {
     input.addEventListener('input', () => {
@@ -3082,7 +3091,7 @@ function initChat() {
       if (chatMode === 'provided') {
         baseUrl = CHAT_PROVIDED.baseUrl;
         apiKey = CHAT_PROVIDED.apiKey;
-        model = document.getElementById('chat-model-select').value || CHAT_PROVIDED.model;
+        model = (document.getElementById('chat-model-select') || {}).value || CHAT_PROVIDED.model;
       } else {
         baseUrl = document.getElementById('chat-baseurl').value.trim().replace(/\/$/, '');
         apiKey = document.getElementById('chat-apikey').value.trim();
