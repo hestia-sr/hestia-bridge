@@ -25,7 +25,17 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
+// DATA_DIR: Railway mount di /app/data, Deplexo mount di /data.
+// Coba env var dulu, lalu /data (Deplexo), lalu ./data sebagai fallback.
+function resolveDataDir() {
+  if (process.env.DATA_DIR) return process.env.DATA_DIR;
+  try {
+    const fsTest = require('fs');
+    if (fsTest.existsSync('/data')) return '/data';
+  } catch (e) {}
+  return path.join(__dirname, 'data');
+}
+const DATA_DIR = resolveDataDir();
 const DB_PATH = path.join(DATA_DIR, 'db.json');
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
 const ADMIN_PASSWORD_HASH = (process.env.ADMIN_PASSWORD_HASH || '').trim();
@@ -35,7 +45,11 @@ const RATE_LIMIT_MAX = 60; // requests per minute per bridge key
 
 /* ------------------------------ storage --------------------------------- */
 function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  try {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  } catch (e) {
+    console.error('[hestia-bridge] cannot create DATA_DIR ' + DATA_DIR + ': ' + e.message);
+  }
 }
 function loadDb() {
   ensureDataDir();
