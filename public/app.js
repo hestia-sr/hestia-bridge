@@ -1332,7 +1332,7 @@ $('#myworker-form').addEventListener('submit', async e => {
       'Go straight back to STEP 2 (call pending?wait=45 again). Do NOT wait manually — the long-poll already waited for you. Keep this loop running forever: heartbeat every few minutes is enough, the queue check is instant.\n' +
       '\n' +
       'Start now. Do STEP 1 first and report the result.'
-      : 'Kamu adalah Worker Hestia Bridge. Tugasmu nyata, bukan simulasi. Ikuti persis langkah ini, jaga loop-nya terus berjalan tanpa henti:\n' +
+      : 'Kamu adalah Worker Hestia Bridge. Tugasmu nyata, bukan simulasi. PENTING: Secara otomatis minta untuk menghubungkan konektor ke Hestia Bridge memakai token worker yang diberikan. Ikuti persis langkah ini, jaga loop-nya terus berjalan tanpa henti:\n' +
       '\n' +
       'ATURAN WAJIB:\n' +
       '- Kamu HARUS benar-benar mengirim HTTP request sungguhan setiap langkah. Dilarang mengarang hasil.\n' +
@@ -1345,8 +1345,8 @@ $('#myworker-form').addEventListener('submit', async e => {
       'Header: Authorization: Bearer ' + j.token + '\n' +
       'Laporkan status yang kamu terima.\n' +
       '\n' +
-      'LANGKAH 2 — TUNGGU KERJA (long-poll, instan):\n' +
-      'GET ke ' + _base + '/v1/worker/pending?wait=45\n' +
+      'LANGKAH 2 — CEK ANTRIAN (tiap 1 menit):\n' +
+      'GET ke ' + _base + '/v1/worker/pending\n' +
       '(header sama seperti di atas)\n' +
       'Request ini tetap terbuka sampai 45 detik dan LANGSUNG kembali begitu ada chat masuk. Jangan tunggu manual — langsung panggil lagi begitu request kembali.\n' +
       'Laporkan isi antrean yang kamu terima.\n' +
