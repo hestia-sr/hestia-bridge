@@ -174,11 +174,12 @@ let saveTimer = null;
       'qwen/qwen3-coder-plus:free': { context: 'Konteks besar', caps: ['Text Generation', 'Vision'], popular: false }
     };
     const xkiroKey = process.env.GATEWAY_API_KEY || '';
+    const xkiroBase = process.env.XKIRO_BASE_URL || 'https://api.xkiro.com/v1';
     if (!gp) {
       db.providers.push({
         id: 'gateway-test',
         name: 'Hestia Gateway',
-        baseUrl: 'https://api.xkiro.com/v1',
+        baseUrl: xkiroBase,
         key: xkiroKey,
         models: xkiroModels,
         modelMeta: xkiroMeta,
@@ -187,7 +188,7 @@ let saveTimer = null;
       saveDb();
     } else {
       let dirty = false;
-      if (gp.baseUrl !== 'https://api.xkiro.com/v1') { gp.baseUrl = 'https://api.xkiro.com/v1'; dirty = true; }
+      if (gp.baseUrl !== xkiroBase) { gp.baseUrl = xkiroBase; dirty = true; }
       if (gp.key !== xkiroKey) { gp.key = xkiroKey; dirty = true; }
       gp.models = xkiroModels; dirty = true;
       gp.modelMeta = xkiroMeta; dirty = true;
@@ -200,14 +201,15 @@ let saveTimer = null;
 // GateAI Bansos provider
 (function(){
   try {
-    const gateaiKey = process.env.GATEAI_API_KEY || 'sk-live-a45e5f6317506448d467297917410544af9604e82aef07b499469f59c98f5938';
+    const gateaiKey = process.env.GATEAI_API_KEY || '';
+    const gateaiBase = process.env.GATEAI_BASE_URL || 'https://gateai.id/v1';
     let gp = db.providers.find(p => p.id === 'gateai-bansos');
     const models = ['Atria-Dawn-Preview', 'deepseek-v4-pro', 'deepseek-v4.1-flash', 'gpt-5.6-luna', 'gpt-5.6-sol'];
     if (!gp) {
       db.providers.push({
         id: 'gateai-bansos',
         name: 'GateAI Bansos',
-        baseUrl: 'https://gateai.id/v1',
+        baseUrl: gateaiBase,
         key: gateaiKey,
         models: models,
         createdAt: nowIso()
@@ -238,7 +240,7 @@ let saveTimer = null;
         db.providers.push({
           id: pid,
           name: pname,
-          baseUrl: 'https://ai4all.infergo.ai/v1',
+          baseUrl: process.env.AI4ALL_BASE_URL || 'https://ai4all.infergo.ai/v1',
           key: k,
           models: models,
           createdAt: nowIso()
@@ -276,7 +278,7 @@ let saveTimer = null;
         db.providers.push({
           id: pid,
           name: pname,
-          baseUrl: 'https://api.mapleflow.io/v1',
+          baseUrl: process.env.MAPLEFLOW_BASE_URL || 'https://api.mapleflow.io/v1',
           key: k,
           models: models,
           createdAt: nowIso()
