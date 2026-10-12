@@ -174,7 +174,7 @@ let saveTimer = null;
       'qwen/qwen3-coder-plus:free': { context: 'Konteks besar', caps: ['Text Generation', 'Vision'], popular: false }
     };
     const xkiroKey = process.env.GATEWAY_API_KEY || '';
-    const xkiroBase = process.env.XKIRO_BASE_URL || 'https://api.xkiro.com/v1';
+    const xkiroBase = process.env.XKIRO_BASE_URL || '';
     if (!gp) {
       db.providers.push({
         id: 'gateway-test',
@@ -202,7 +202,7 @@ let saveTimer = null;
 (function(){
   try {
     const gateaiKey = process.env.GATEAI_API_KEY || '';
-    const gateaiBase = process.env.GATEAI_BASE_URL || 'https://gateai.id/v1';
+    const gateaiBase = process.env.GATEAI_BASE_URL || '';
     let gp = db.providers.find(p => p.id === 'gateai-bansos');
     const models = ['Atria-Dawn-Preview', 'deepseek-v4-pro', 'deepseek-v4.1-flash', 'gpt-5.6-luna', 'gpt-5.6-sol'];
     if (!gp) {
@@ -240,7 +240,7 @@ let saveTimer = null;
         db.providers.push({
           id: pid,
           name: pname,
-          baseUrl: process.env.AI4ALL_BASE_URL || 'https://ai4all.infergo.ai/v1',
+          baseUrl: process.env.AI4ALL_BASE_URL || '',
           key: k,
           models: models,
           createdAt: nowIso()
@@ -248,7 +248,7 @@ let saveTimer = null;
         saveDb();
       } else {
         let dirty = false;
-        if (ap.baseUrl !== 'https://ai4all.infergo.ai/v1') { ap.baseUrl = 'https://ai4all.infergo.ai/v1'; dirty = true; }
+        const ai4allBase = process.env.AI4ALL_BASE_URL || ''; if (ai4allBase && ap.baseUrl !== ai4allBase) { ap.baseUrl = ai4allBase; dirty = true; }
         // Jangan timpa key yang di-set manual via admin dengan env kosong.
         if (k && ap.key !== k) { ap.key = k; dirty = true; }
         ap.models = models; dirty = true;
@@ -278,7 +278,7 @@ let saveTimer = null;
         db.providers.push({
           id: pid,
           name: pname,
-          baseUrl: process.env.MAPLEFLOW_BASE_URL || 'https://api.mapleflow.io/v1',
+          baseUrl: process.env.MAPLEFLOW_BASE_URL || '',
           key: k,
           models: models,
           createdAt: nowIso()
