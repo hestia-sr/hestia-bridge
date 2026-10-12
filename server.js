@@ -71,7 +71,7 @@ function loadDb() {
   } catch (e) {
     console.error('[db] load failed, starting fresh:', e.message);
   }
-  return { providers: [], keys: [], usage: [], workers: [], wqueue: [], users: [], sessions: {}, freeTokenDevices: [], vouchers: [] };
+  return { providers: [], keys: [], usage: [], workers: [], wqueue: [], users: [], sessions: {}, freeTokenDevices: [], vouchers: [], conversations: {} };
 }
 const PLAN_DURATIONS = {
   gratis: 24 * 3600 * 1000,
@@ -1917,6 +1917,20 @@ app.post('/v1/worker/done', requireWorker, (req, res) => {
   if (q.workerId !== req.worker.id) return res.status(403).json({ error: 'not_your_queue_item' });
   q.status = 'done';
   q.answer = String(content == null ? '' : content);
+  // Simpan ke riwayat percakapan per API key (biar nyambung)
+  if (!db.conversations) db.conversations = {};
+  if (!db.conversations[q.keyId]) db.conversations[q.keyId] = [];
+  const hist = db.conversations[q.keyId];
+  // Tambahkan pesan user dan jawaban assistant
+  const userMsgs = (q.messages || []).filter(m => m.role === 'user' || m.role === 'assistant');
+  // Ambil pesan baru saja (yang bukan dari history)
+  const newUserMsg = (q.messages || []).slice(-1)[0];
+  if (newUserMsg && newUserMsg.role === 'user') {
+    hist.push({ role: 'user', content: newUserMsg.content });
+  }
+  hist.push({ role: 'assistant', content: q.answer });
+  // Batasi 40 pesan terakhir
+  if (hist.length > 40) hist.splice(0, hist.length - 40);
   saveDb();
   res.json({ ok: true });
 });
@@ -2077,12 +2091,17 @@ async function handleWorkerChat(req, res) {
   if (!worker || !workerOnline(worker)) {
     return res.status(503).json({ error: { message: 'worker offline', code: 'worker_offline' } });
   }
+  // Ambil riwayat percakapan untuk key ini (per-user)
+  const history = (db.conversations && db.conversations[key.id]) || [];
+  const newMessages = Array.isArray(body.messages) ? body.messages : [];
+  // Gabungkan riwayat + pesan baru (batasi 20 pesan terakhir biar tidak terlalu panjang)
+  const allMessages = [...history.slice(-20), ...newMessages];
   const item = {
     id: uid('wq_'),
     keyId: key.id,
     workerId: key.workerId,
     model: body.model || 'worker',
-    messages: Array.isArray(body.messages) ? body.messages : [],
+    messages: allMessages,
     maxTokens: body.max_tokens != null ? body.max_tokens : null,
     receivedAt: nowIso(),
     status: 'pending',
