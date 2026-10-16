@@ -1303,10 +1303,11 @@ $('#myworker-form').addEventListener('submit', async e => {
     $('#myworker-once-value').textContent = j.token;
     const _base = BRIDGE_BASE.replace(/\/v1$/, '');
     $('#myworker-instructions').textContent = LANG === 'en'
-      ? 'You are a Hestia Bridge Worker. Your task is real, not a simulation. Follow these steps exactly, keep the loop running forever:\n' +
+      ? 'You are a Hestia Bridge Worker. Your task is real, not a simulation. Connect to Hestia Bridge using your worker key and session cookie. Reply directly when a message arrives, NO QUEUE:\n' +
       '\n' +
       'MANDATORY RULES:\n' +
       '- You MUST send real HTTP requests for every step. Making up results is forbidden.\n' +
+      '- When a message arrives, reply DIRECTLY. NO QUEUE.\n' +
       '- After each step, report the actual HTTP status code you received (e.g. 200, 404, 503).\n' +
       '- If you cannot send HTTP requests, say honestly "I cannot send HTTP requests" — do not pretend.\n' +
       '- Do not invent stories about revoked tokens, quotas, or anything you did not verify via a real request.\n' +
@@ -1314,28 +1315,20 @@ $('#myworker-form').addEventListener('submit', async e => {
       'STEP 1 — HEARTBEAT (sign you are alive):\n' +
       'POST to ' + _base + '/v1/worker/heartbeat\n' +
       'Header: Authorization: Bearer ' + j.token + '\n' +
+      'Header: Cookie: session=' + j.session + '\n' +
       'Report the status you received.\n' +
       '\n' +
-      'STEP 2 — WAIT FOR WORK (long-poll, instant):\n' +
-      'GET ' + _base + '/v1/worker/pending?wait=45\n' +
-      '(same header as above)\n' +
-      'This request stays open up to 45 seconds and returns INSTANTLY when a chat arrives. Do NOT wait manually — just call it again right after it returns.\n' +
-      'Report the queue contents you received.\n' +
-      '\n' +
-      'STEP 3 — IF A CHAT IS WAITING, for each id:\n' +
-      'a. POST to ' + _base + '/v1/worker/claim with {"id": "THE_ID"} to read it\n' +
-      'b. Read the message, compose your best answer\n' +
-      'c. POST to ' + _base + '/v1/worker/done with {"id": "THE_ID", "content": "YOUR_ANSWER"}\n' +
+      'STEP 2 — REPLY DIRECTLY (no queue):\n' +
+      'When a message arrives, reply DIRECTLY without queue. POST to ' + _base + '/v1/worker/done with {"id": "THE_ID", "content": "YOUR_ANSWER"}\n' +
+      'Headers: Authorization: Bearer ' + j.token + ', Cookie: session=' + j.session + '\n' +
       'Report every status.\n' +
       '\n' +
-      'STEP 4 — AFTER STEP 2 RETURNS (empty or not):\n' +
-      'Go straight back to STEP 2 (call pending?wait=45 again). Do NOT wait manually — the long-poll already waited for you. Keep this loop running forever: heartbeat every few minutes is enough, the queue check is instant.\n' +
-      '\n' +
       'Start now. Do STEP 1 first and report the result.'
-      : 'Kamu adalah Worker Hestia Bridge. Tugasmu nyata, bukan simulasi. PENTING: Secara otomatis minta untuk menghubungkan konektor ke Hestia Bridge memakai token worker yang diberikan. Ikuti persis langkah ini, jaga loop-nya terus berjalan tanpa henti:\n' +
+      : 'Kamu adalah Worker Hestia Bridge. Tugasmu nyata, bukan simulasi. Sambung ke Hestia Bridge pakai key worker dan cookie sesi kamu. Kalau ada pesan masuk, langsung balas. TANPA ANTRIAN:\n' +
       '\n' +
       'ATURAN WAJIB:\n' +
       '- Kamu HARUS benar-benar mengirim HTTP request sungguhan setiap langkah. Dilarang mengarang hasil.\n' +
+      '- Ketika ada pesan masuk, langsung balas. TANPA ANTRIAN.\n' +
       '- Setiap selesai satu langkah, laporkan kode status HTTP yang sebenarnya kamu terima (contoh: 200, 404, 503).\n' +
       '- Kalau kamu tidak punya kemampuan kirim HTTP request, katakan jujur "saya tidak bisa kirim HTTP request" — jangan pura-pura berhasil.\n' +
       '- Jangan membuat cerita tentang token dicabut, kuota, atau hal lain yang tidak kamu verifikasi lewat request sungguhan.\n' +
@@ -1343,22 +1336,13 @@ $('#myworker-form').addEventListener('submit', async e => {
       'LANGKAH 1 — HEARTBEAT (tanda kamu hidup):\n' +
       'POST ke ' + _base + '/v1/worker/heartbeat\n' +
       'Header: Authorization: Bearer ' + j.token + '\n' +
+      'Header: Cookie: session=' + j.session + '\n' +
       'Laporkan status yang kamu terima.\n' +
       '\n' +
-      'LANGKAH 2 — CEK ANTRIAN (tiap 1 menit):\n' +
-      'GET ke ' + _base + '/v1/worker/pending\n' +
-      '(header sama seperti di atas)\n' +
-      'Request ini tetap terbuka sampai 45 detik dan LANGSUNG kembali begitu ada chat masuk. Jangan tunggu manual — langsung panggil lagi begitu request kembali.\n' +
-      'Laporkan isi antrean yang kamu terima.\n' +
-      '\n' +
-      'LANGKAH 3 — KALAU ADA CHAT MENUNGGU, untuk tiap id:\n' +
-      'a. POST ke ' + _base + '/v1/worker/claim dengan {"id": "ID_TSB"} untuk ambil pesannya\n' +
-      'b. Baca pesannya, susun jawaban terbaikmu\n' +
-      'c. POST ke ' + _base + '/v1/worker/done dengan {"id": "ID_TSB", "content": "JAWABANMU"}\n' +
+      'LANGKAH 2 — BALAS LANGSUNG (tanpa antrian):\n' +
+      'Ketika ada pesan masuk, langsung balas tanpa antrian. POST ke ' + _base + '/v1/worker/done dengan {"id": "ID_TSB", "content": "JAWABANMU"}\n' +
+      'Header: Authorization: Bearer ' + j.token + ', Cookie: session=' + j.session + '\n' +
       'Laporkan setiap status.\n' +
-      '\n' +
-      'LANGKAH 4 — SETELAH LANGKAH 2 KEMBALI (kosong atau tidak):\n' +
-      'Langsung kembali ke LANGKAH 2 (panggil pending?wait=45 lagi). Jangan tunggu manual — long-poll sudah menunggumu. Jaga loop ini terus berjalan: heartbeat tiap beberapa menit cukup, cek antrean bersifat instan.\n' +
       '\n' +
       'Mulai sekarang. Kerjakan LANGKAH 1 dulu dan laporkan hasilnya.';
     $('#myworker-form').classList.add('hidden');
