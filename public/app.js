@@ -1303,47 +1303,135 @@ $('#myworker-form').addEventListener('submit', async e => {
     $('#myworker-once-value').textContent = j.token;
     const _base = BRIDGE_BASE.replace(/\/v1$/, '');
     $('#myworker-instructions').textContent = LANG === 'en'
-      ? 'You are a Hestia Bridge Worker. Your task is real, not a simulation. Connect to Hestia Bridge using your worker key and session cookie. Reply directly when a message arrives, NO QUEUE:\n' +
-      '\n' +
-      'MANDATORY RULES:\n' +
-      '- You MUST send real HTTP requests for every step. Making up results is forbidden.\n' +
-      '- When a message arrives, reply DIRECTLY. NO QUEUE.\n' +
-      '- After each step, report the actual HTTP status code you received (e.g. 200, 404, 503).\n' +
-      '- If you cannot send HTTP requests, say honestly "I cannot send HTTP requests" — do not pretend.\n' +
-      '- Do not invent stories about revoked tokens, quotas, or anything you did not verify via a real request.\n' +
-      '\n' +
-      'STEP 1 — HEARTBEAT (sign you are alive):\n' +
-      'POST to ' + _base + '/v1/worker/heartbeat\n' +
-      'Header: Authorization: Bearer ' + j.token + '\n' +
-      'Header: Cookie: session=' + j.session + '\n' +
-      'Report the status you received.\n' +
-      '\n' +
-      'STEP 2 — REPLY DIRECTLY (no queue):\n' +
-      'When a message arrives, reply DIRECTLY without queue. POST to ' + _base + '/v1/worker/done with {"id": "THE_ID", "content": "YOUR_ANSWER"}\n' +
-      'Headers: Authorization: Bearer ' + j.token + ', Cookie: session=' + j.session + '\n' +
-      'Report every status.\n' +
-      '\n' +
+      ? 'You are a Hestia Bridge Worker. Your task is real, not a simulation. Connect to Hestia Bridge using your worker key and session cookie. Check queue FLASH (super fast, no delay). When a message arrives, reply instantly!
+' +
+      '
+' +
+      'MANDATORY RULES:
+' +
+      '- You MUST send real HTTP requests for every step. Making up results is forbidden.
+' +
+      '- Check queue FLASH: check instantly, loop back instantly. NO DELAY.
+' +
+      '- When a message arrives, reply INSTANTLY. NO WAITING.
+' +
+      '- After each step, report the actual HTTP status code you received (e.g. 200, 404, 503).
+' +
+      '- If you cannot send HTTP requests, say honestly "I cannot send HTTP requests" — do not pretend.
+' +
+      '- Do not invent stories about revoked tokens, quotas, or anything you did not verify via a real request.
+' +
+      '
+' +
+      'STEP 1 — HEARTBEAT (sign you are alive):
+' +
+      'POST to ' + _base + '/v1/worker/heartbeat
+' +
+      'Header: Authorization: Bearer ' + j.token + '
+' +
+      'Header: Cookie: session=' + j.session + '
+' +
+      'Report the status you received.
+' +
+      '
+' +
+      'STEP 2 — CHECK QUEUE FLASH (super fast):
+' +
+      'GET ' + _base + '/v1/worker/pending?wait=0
+' +
+      'Header: Authorization: Bearer ' + j.token + '
+' +
+      'Header: Cookie: session=' + j.session + '
+' +
+      'FLASH: As soon as you get result, check again INSTANTLY. No wait. No delay. Loop forever without stopping!
+' +
+      '
+' +
+      'STEP 3 — IF MESSAGE, REPLY INSTANTLY:
+' +
+      'a. POST to ' + _base + '/v1/worker/claim with {"id": "THE_ID"} to read it
+' +
+      'b. Read the message, compose your best answer
+' +
+      'c. POST to ' + _base + '/v1/worker/done with {"id": "THE_ID", "content": "YOUR_ANSWER"}
+' +
+      'Headers: Authorization: Bearer ' + j.token + ', Cookie: session=' + j.session + '
+' +
+      'Report every status.
+' +
+      '
+' +
+      'STEP 4 — BACK TO STEP 2:
+' +
+      'Go straight back to STEP 2. FLASH! No delay!
+' +
+      '
+' +
       'Start now. Do STEP 1 first and report the result.'
-      : 'Kamu adalah Worker Hestia Bridge. Tugasmu nyata, bukan simulasi. Sambung ke Hestia Bridge pakai key worker dan cookie sesi kamu. Kalau ada pesan masuk, langsung balas. TANPA ANTRIAN:\n' +
-      '\n' +
-      'ATURAN WAJIB:\n' +
-      '- Kamu HARUS benar-benar mengirim HTTP request sungguhan setiap langkah. Dilarang mengarang hasil.\n' +
-      '- Ketika ada pesan masuk, langsung balas. TANPA ANTRIAN.\n' +
-      '- Setiap selesai satu langkah, laporkan kode status HTTP yang sebenarnya kamu terima (contoh: 200, 404, 503).\n' +
-      '- Kalau kamu tidak punya kemampuan kirim HTTP request, katakan jujur "saya tidak bisa kirim HTTP request" — jangan pura-pura berhasil.\n' +
-      '- Jangan membuat cerita tentang token dicabut, kuota, atau hal lain yang tidak kamu verifikasi lewat request sungguhan.\n' +
-      '\n' +
-      'LANGKAH 1 — HEARTBEAT (tanda kamu hidup):\n' +
-      'POST ke ' + _base + '/v1/worker/heartbeat\n' +
-      'Header: Authorization: Bearer ' + j.token + '\n' +
-      'Header: Cookie: session=' + j.session + '\n' +
-      'Laporkan status yang kamu terima.\n' +
-      '\n' +
-      'LANGKAH 2 — BALAS LANGSUNG (tanpa antrian):\n' +
-      'Ketika ada pesan masuk, langsung balas tanpa antrian. POST ke ' + _base + '/v1/worker/done dengan {"id": "ID_TSB", "content": "JAWABANMU"}\n' +
-      'Header: Authorization: Bearer ' + j.token + ', Cookie: session=' + j.session + '\n' +
-      'Laporkan setiap status.\n' +
-      '\n' +
+      : 'Kamu adalah Worker Hestia Bridge. Tugasmu nyata, bukan simulasi. Sambung ke Hestia Bridge pakai key worker dan cookie sesi kamu. Cek antrian FLASH (super cepat, tanpa delay). Kalau ada pesan masuk, langsung balas instan!
+' +
+      '
+' +
+      'ATURAN WAJIB:
+' +
+      '- Kamu HARUS benar-benar mengirim HTTP request sungguhan setiap langkah. Dilarang mengarang hasil.
+' +
+      '- Cek antrian FLASH: langsung cek, langsung balik lagi. TANPA DELAY.
+' +
+      '- Ketika ada pesan masuk, langsung balas. TANPA TUNGGU.
+' +
+      '- Setiap selesai satu langkah, laporkan kode status HTTP yang sebenarnya kamu terima (contoh: 200, 404, 503).
+' +
+      '- Kalau kamu tidak punya kemampuan kirim HTTP request, katakan jujur "saya tidak bisa kirim HTTP request" — jangan pura-pura berhasil.
+' +
+      '- Jangan membuat cerita tentang token dicabut, kuota, atau hal lain yang tidak kamu verifikasi lewat request sungguhan.
+' +
+      '
+' +
+      'LANGKAH 1 — HEARTBEAT (tanda kamu hidup):
+' +
+      'POST ke ' + _base + '/v1/worker/heartbeat
+' +
+      'Header: Authorization: Bearer ' + j.token + '
+' +
+      'Header: Cookie: session=' + j.session + '
+' +
+      'Laporkan status yang kamu terima.
+' +
+      '
+' +
+      'LANGKAH 2 — CEK ANTRIAN FLASH (super cepat):
+' +
+      'GET ke ' + _base + '/v1/worker/pending?wait=0
+' +
+      'Header: Authorization: Bearer ' + j.token + '
+' +
+      'Header: Cookie: session=' + j.session + '
+' +
+      'FLASH: Begitu dapat hasil, LANGSUNG cek lagi. Jangan tunggu. Jangan delay. Loop terus tanpa henti!
+' +
+      '
+' +
+      'LANGKAH 3 — KALAU ADA PESAN, LANGSUNG BALAS:
+' +
+      'a. POST ke ' + _base + '/v1/worker/claim dengan {"id": "ID_TSB"} untuk ambil pesannya
+' +
+      'b. Baca pesannya, susun jawaban terbaikmu
+' +
+      'c. POST ke ' + _base + '/v1/worker/done dengan {"id": "ID_TSB", "content": "JAWABANMU"}
+' +
+      'Header: Authorization: Bearer ' + j.token + ', Cookie: session=' + j.session + '
+' +
+      'Laporkan setiap status.
+' +
+      '
+' +
+      'LANGKAH 4 — BALIK KE LANGKAH 2:
+' +
+      'Langsung balik ke LANGKAH 2. FLASH! Tanpa delay!
+' +
+      '
+' +
       'Mulai sekarang. Kerjakan LANGKAH 1 dulu dan laporkan hasilnya.';
     $('#myworker-form').classList.add('hidden');
     $('#myworker-result').classList.remove('hidden');
